@@ -81,7 +81,7 @@ jobs:
       run: npm run build:cordova freetube-${{ steps.versionNumber.outputs.result }}.apk cordova ./freetube.keystore ${{ secrets.KEYSTORE_PASSWORD }}
       
     - name: Upload Cordova APK Artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       if: startsWith(matrix.os, 'ubuntu') && startsWith(matrix.runtime, 'linux-x64')
       with:
         name: freetube-${{ steps.versionNumber.outputs.result }}.apk
@@ -92,7 +92,7 @@ jobs:
       run: npm run build:cordova freetube browser
 
     - name: Upload Cordova HTML5 Artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       if: startsWith(matrix.os, 'ubuntu') && startsWith(matrix.runtime, 'linux-x64')
       with:
         name: freetube-${{ steps.versionNumber.outputs.result }}-HTML5
