@@ -40,7 +40,7 @@ jobs:
 
     - name: Set Version Number Variable
       id: versionNumber
-      uses: actions/github-script@v3
+      uses: actions/github-script@v6
       env:
         VERSION_NUMBER_DEVELOPMENT: ${{ env.PACKAGE_VERSION }}-development-${{ github.run_number }}
       with:
@@ -49,7 +49,7 @@ jobs:
           return "${{ env.VERSION_NUMBER_DEVELOPMENT }}"
           
     - name: Update package.json version
-      uses: jossef/action-set-json-field@v1
+      uses: jossef/action-set-json-field@v2
       with:
         file: package.json
         field: version
@@ -81,7 +81,7 @@ jobs:
       run: npm run build:cordova freetube-${{ steps.versionNumber.outputs.result }}.apk cordova ./freetube.keystore ${{ secrets.KEYSTORE_PASSWORD }}
       
     - name: Upload Cordova APK Artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       if: startsWith(matrix.os, 'ubuntu') && startsWith(matrix.runtime, 'linux-x64')
       with:
         name: freetube-${{ steps.versionNumber.outputs.result }}.apk
@@ -92,7 +92,7 @@ jobs:
       run: npm run build:cordova freetube browser
 
     - name: Upload Cordova HTML5 Artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       if: startsWith(matrix.os, 'ubuntu') && startsWith(matrix.runtime, 'linux-x64')
       with:
         name: freetube-${{ steps.versionNumber.outputs.result }}-HTML5
