@@ -2980,7 +2980,7 @@ dom-walk@^0.1.0:
 domelementtype@^2.0.1, domelementtype@^2.2.0:
   version "2.3.0"
   resolved "https://registry.npmjs.org/domelementtype/-/domelementtype-2.3.0.tgz"
-
+  
 domhandler@^4.0.0, domhandler@^4.2.0, domhandler@^4.3.1:
   version "4.3.1"
   resolved "https://registry.npmjs.org/domhandler/-/domhandler-4.3.1.tgz"
@@ -3077,7 +3077,7 @@ electron-builder@^23.3.3:
     read-config-file "6.2.0"
     update-notifier "^5.1.0"
     yargs "^17.0.1"
-
+    
 electron-context-menu@^3.1.2:
   version "3.1.2"
   resolved "https://registry.npmjs.org/electron-context-menu/-/electron-context-menu-3.1.2.tgz"
@@ -3649,11 +3649,11 @@ fast-glob@^3.2.11, fast-glob@^3.2.2, fast-glob@^3.2.9:
 fast-json-parse@^1.0.3:
   version "1.0.3"
   resolved "https://registry.npmjs.org/fast-json-parse/-/fast-json-parse-1.0.3.tgz"
-
+  
 fast-json-stable-stringify@^2.0.0:
   version "2.1.0"
   resolved "https://registry.npmjs.org/fast-json-stable-stringify/-/fast-json-stable-stringify-2.1.0.tgz"
-
+  
 fast-levenshtein@^2.0.6:
   version "2.0.6"
   resolved "https://registry.npmjs.org/fast-levenshtein/-/fast-levenshtein-2.0.6.tgz"
@@ -7652,7 +7652,7 @@ vue-template-es2015-compiler@^1.9.0:
 vue@^2.6.14:
   version "2.6.14"
   resolved "https://registry.npmjs.org/vue/-/vue-2.6.14.tgz"
-
+  
 vuex@^3.6.2:
   version "3.6.2"
   resolved "https://registry.npmjs.org/vuex/-/vuex-3.6.2.tgz"
