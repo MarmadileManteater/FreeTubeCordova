@@ -40,7 +40,7 @@ jobs:
 
     - name: Set Version Number Variable
       id: versionNumber
-      uses: actions/github-script@v3
+      uses: actions/github-script@v6
       env:
         VERSION_NUMBER_DEVELOPMENT: ${{ env.PACKAGE_VERSION }}-development-${{ github.run_number }}
       with:
