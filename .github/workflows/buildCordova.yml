@@ -66,7 +66,7 @@ jobs:
 
     - name: Setup Android SDK Tools
       if: contains(matrix.runtime, 'x64')
-      uses: android-actions/setup-android@v2.0.2
+      uses: android-actions/setup-android@v2.0.9
 
     - name: Fetch keystore from secrets
       run: |
