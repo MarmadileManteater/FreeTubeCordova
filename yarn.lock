@@ -889,9 +889,9 @@
   dependencies:
     "@fortawesome/fontawesome-common-types" "^0.2.36"
 
-"@fortawesome/vue-fontawesome@^2.0.2":
-  version "2.0.6"
-  resolved "https://registry.npmjs.org/@fortawesome/vue-fontawesome/-/vue-fontawesome-2.0.6.tgz"
+"@fortawesome/vue-fontawesome@^2.0.8":
+  version "2.0.8"
+  resolved "https://registry.yarnpkg.com/@fortawesome/vue-fontawesome/-/vue-fontawesome-2.0.8.tgz#9c9ae1cd2cbe7f4b0c63dd53709c26167d541aa6"
 
 "@freetube/youtube-chat@^1.1.2":
   version "1.1.2"
@@ -3077,9 +3077,10 @@ electron-builder@^23.3.3:
     read-config-file "6.2.0"
     update-notifier "^5.1.0"
     yargs "^17.0.1"
-electron-context-menu@^3.1.2:
-  version "3.1.2"
-  resolved "https://registry.npmjs.org/electron-context-menu/-/electron-context-menu-3.1.2.tgz"
+
+electron-context-menu@^3.5.0:
+  version "3.5.0"
+  resolved "https://registry.yarnpkg.com/electron-context-menu/-/electron-context-menu-3.5.0.tgz#f5d6df982e37555a77666bcecff59b094211b54a"
   dependencies:
     cli-truncate "^2.1.0"
     electron-dl "^3.2.1"
