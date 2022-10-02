@@ -3077,7 +3077,6 @@ electron-builder@^23.3.3:
     read-config-file "6.2.0"
     update-notifier "^5.1.0"
     yargs "^17.0.1"
-
 electron-context-menu@^3.1.2:
   version "3.1.2"
   resolved "https://registry.npmjs.org/electron-context-menu/-/electron-context-menu-3.1.2.tgz"
