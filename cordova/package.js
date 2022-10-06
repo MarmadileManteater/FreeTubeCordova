@@ -11,6 +11,9 @@ module.exports = {
   license: pkg.license,
   description: pkg.description,
   private: pkg.private,
+  scripts: {
+    restore: 'npx cordova platform add android'
+  },
   devDependencies: {
     'cordova-clipboard': '^1.3.0',
     'cordova-plugin-advanced-background-mode': '^1.1.1',
