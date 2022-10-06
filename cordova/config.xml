@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<widget id="io.freetubeapp.freetube" version="0.17.1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+  <name>FreeTube</name>
+  <description>A private YouTube client</description>
+  <author email="FreeTubeApp@protonmail.com" href="https://github.com/FreeTubeApp/FreeTube">PrestonN</author>
+  <content src="index.html"/>
+  <allow-intent href="http://*/*"/>
+  <allow-intent href="https://*/*"/>
+  <platform name="android">
+    <icon background="res/icon/android/background_16x16.png" density="ldpi" foreground="res/icon/android/icon_16x16_padded.png"/>
+    <icon background="res/icon/android/background_32x32.png" density="mdpi" foreground="res/icon/android/icon_32x32_padded.png"/>
+    <icon background="res/icon/android/background_48x48.png" density="hdpi" foreground="res/icon/android/icon_48x48_padded.png"/>
+    <icon background="res/icon/android/background_64x64.png" density="xhdpi" foreground="res/icon/android/icon_64x64_padded.png"/>
+    <icon background="res/icon/android/background_128x128.png" density="xxhdpi" foreground="res/icon/android/icon_128x128_padded.png"/>
+    <icon background="res/icon/android/background.png" density="xxxhdpi" foreground="res/icon/android/iconColor_256_padded.png"/>
+  </platform>
+  <preference name="AndroidPersistentFileLocation" value="Compatibility"/>
+  <preference name="AllowInlineMediaPlayback" value="true"/>
+</widget>
