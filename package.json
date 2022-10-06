@@ -20,6 +20,8 @@
   },
   "scripts": {
     "build": "run-s rebuild:electron pack build-release",
+    "build:cordova": "node _scripts/cordova-build.js",
+    "run:cordova": "cd dist/cordova && npx cordova run android",
     "build:arm64": "run-s rebuild:electron pack build-release:arm64",
     "build:arm32": "run-s rebuild:electron pack build-release:arm32",
     "build-release": "node _scripts/build.js",

@@ -1,5 +1,5 @@
 
-const pkg = require('../package.json')
+const pkg = require('../../package.json')
 
 module.exports = {
   name: pkg.name,
