@@ -24,7 +24,8 @@ const config = {
     filename: '[name].js',
   },
   externals: {
-    electron: '{}'
+    electron: '{}',
+    cordova: '{}'
   },
   module: {
     rules: [
