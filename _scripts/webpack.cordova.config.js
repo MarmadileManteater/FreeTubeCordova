@@ -199,11 +199,11 @@ if (isDevMode) {
         patterns: [
           {
             from: path.join(__dirname, '../static/pwabuilder-sw.js'),
-            to: path.join(__dirname, '../dist/cordova/pwabuilder-sw.js'),
+            to: path.join(__dirname, '../dist/cordova/www/pwabuilder-sw.js'),
           },
           {
             from: path.join(__dirname, '../static'),
-            to: path.join(__dirname, '../dist/cordova/static'),
+            to: path.join(__dirname, '../dist/cordova/www/static'),
             globOptions: {
               dot: true,
               ignore: ['**/.*', '**/locales/**', '**/pwabuilder-sw.js', '**/dashFiles/**', '**/storyboards/**'],
