@@ -256,9 +256,13 @@ const actions = {
    * @param {string} messageOnError the message to be displayed as a toast when the copy fails (optional)
    */
   async copyToClipboard ({ dispatch }, { content, messageOnSuccess, messageOnError }) {
-    if (navigator.clipboard !== undefined && window.isSecureContext) {
+    let clipboardAPI = navigator.clipboard?.writeText.bind(navigator.clipboard)
+    if (window.cordova !== undefined) {
+      clipboardAPI = window.cordova.plugins.clipboard.copy
+    }
+    if (clipboardAPI !== undefined && window.isSecureContext) {
       try {
-        await navigator.clipboard.writeText(content)
+        await clipboardAPI(content)
         if (messageOnSuccess !== undefined) {
           dispatch('showToast', {
             message: messageOnSuccess
