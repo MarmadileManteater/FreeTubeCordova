@@ -257,8 +257,8 @@ const actions = {
    */
   async copyToClipboard ({ dispatch }, { content, messageOnSuccess, messageOnError }) {
     let clipboardAPI = navigator.clipboard?.writeText.bind(navigator.clipboard)
-    if (window.cordova !== undefined) {
-      clipboardAPI = window.cordova.plugins.clipboard.copy
+    if (process.env.IS_CORDOVA) {
+      clipboardAPI = cordova.plugins.clipboard.copy
     }
     if (clipboardAPI !== undefined && window.isSecureContext) {
       try {
@@ -436,7 +436,7 @@ const actions = {
       return new Promise((resolve) => {
         const fileInput = document.createElement('input')
         fileInput.setAttribute('type', 'file')
-        if (typeof cordova.plugins === 'undefined') {
+        if (process.env.IS_CORDOVA) {
           if (options?.filters[0]?.extensions !== undefined) {
             // this will map the given extensions from the options to the accept attribute of the input
             fileInput.setAttribute('accept', options.filters[0].extensions.map((extension) => { return `.${extension}` }).join(', '))
