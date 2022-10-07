@@ -155,8 +155,12 @@ export default Vue.extend({
       this.grabAllProfiles(this.$t('Profile.All Channels')).then(async () => {
         this.grabHistory()
         this.grabAllPlaylists()
-
         this.watchSystemTheme()
+        document.addEventListener('visibilitychange', (event) => {
+          if (!document.hidden) { // if the window was unfocused, the system theme might have changed
+            this.watchSystemTheme()
+          }
+        })
         if (process.env.IS_ELECTRON) {
           ipcRenderer = require('electron').ipcRenderer
           this.setupListenersToSyncWindows()
