@@ -7,6 +7,7 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const JsonMinimizerPlugin = require('json-minimizer-webpack-plugin')
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin')
 const ProcessLocalesPlugin = require('./ProcessLocalesPlugin')
+const CordovaPlugin = require('./CordovaPlugin')
 
 const { productName } = require('../package.json')
 
@@ -21,7 +22,7 @@ const config = {
   },
   output: {
     publicPath: '',
-    path: path.join(__dirname, '../dist/web'),
+    path: path.join(__dirname, '../dist/cordova/www'),
     filename: '[name].js',
   },
   externals: {
@@ -122,6 +123,7 @@ const config = {
     __filename: isDevMode,
   },
   plugins: [
+    new CordovaPlugin(),
     new webpack.DefinePlugin({
       'process.env.PRODUCT_NAME': JSON.stringify(productName),
       'process.env.IS_ELECTRON': false
@@ -196,11 +198,11 @@ if (isDevMode) {
         patterns: [
           {
             from: path.join(__dirname, '../static/pwabuilder-sw.js'),
-            to: path.join(__dirname, '../dist/web/pwabuilder-sw.js'),
+            to: path.join(__dirname, '../dist/cordova/pwabuilder-sw.js'),
           },
           {
             from: path.join(__dirname, '../static'),
-            to: path.join(__dirname, '../dist/web/static'),
+            to: path.join(__dirname, '../dist/cordova/static'),
             globOptions: {
               dot: true,
               ignore: ['**/.*', '**/locales/**', '**/pwabuilder-sw.js', '**/dashFiles/**', '**/storyboards/**'],
