@@ -13,6 +13,7 @@ import { marked } from 'marked'
 import Parser from 'rss-parser'
 import { IpcChannels } from '../constants'
 import packageDetails from '../../package.json'
+import cordova from 'cordova'
 
 let ipcRenderer = null
 
@@ -155,6 +156,7 @@ export default Vue.extend({
         this.grabHistory()
         this.grabAllPlaylists()
 
+        this.watchSystemTheme()
         if (process.env.IS_ELECTRON) {
           ipcRenderer = require('electron').ipcRenderer
           this.setupListenersToSyncWindows()
@@ -162,7 +164,6 @@ export default Vue.extend({
           this.openAllLinksExternally()
           this.enableSetSearchQueryText()
           this.enableOpenUrl()
-          this.watchSystemTheme()
           await this.checkExternalPlayer()
         }
 
@@ -464,9 +465,19 @@ export default Vue.extend({
      * all systems running the electron app.
      */
     watchSystemTheme: function () {
-      ipcRenderer.on(IpcChannels.NATIVE_THEME_UPDATE, (event, shouldUseDarkColors) => {
-        document.body.dataset.systemTheme = shouldUseDarkColors ? 'dark' : 'light'
-      })
+      if (process.env.IS_ELECTRON) {
+        ipcRenderer.on(IpcChannels.NATIVE_THEME_UPDATE, (event, shouldUseDarkColors) => {
+          document.body.dataset.systemTheme = shouldUseDarkColors ? 'dark' : 'light'
+        })
+      } else if (process.env.IS_CORDOVA) {
+        cordova.plugins.ThemeDetection.isAvailable((isThemeDetectionAvailable) => {
+          if (isThemeDetectionAvailable) {
+            cordova.plugins.ThemeDetection.isDarkModeEnabled((message) => {
+              document.body.dataset.systemTheme = message.value ? 'dark' : 'light'
+            })
+          }
+        }, console.error)
+      }
     },
 
     openInternalPath: function({ path, doCreateNewWindow, query = {}, searchQueryText = null }) {
