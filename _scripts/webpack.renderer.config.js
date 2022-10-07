@@ -31,7 +31,7 @@ const config = {
   // webpack spits out errors while inlining ytpl and ytsr as
   // they dynamically import their package.json file to extract the bug report URL
   // the error: "Critical dependency: the request of a dependency is an expression"
-  externals: ['ytpl', 'ytsr'],
+  externals: ['ytpl', 'ytsr', 'cordova'],
   module: {
     rules: [
       {
