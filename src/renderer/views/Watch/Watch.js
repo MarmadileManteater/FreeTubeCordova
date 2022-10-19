@@ -15,7 +15,7 @@ import WatchVideoPlaylist from '../../components/watch-video-playlist/watch-vide
 import WatchVideoRecommendations from '../../components/watch-video-recommendations/watch-video-recommendations.vue'
 import FtAgeRestricted from '../../components/ft-age-restricted/ft-age-restricted.vue'
 import i18n from '../../i18n/index'
-import { buildVTTFileLocally, showToast } from '../../helpers/utils'
+import { buildVTTFileLocally, copyToClipboard, showToast } from '../../helpers/utils'
 
 const isDev = process.env.NODE_ENV === 'development'
 
@@ -627,12 +627,8 @@ export default Vue.extend({
         })
         .catch(err => {
           const errorMessage = this.$t('Local API Error (Click to copy)')
-          showToast({
-            message: `${errorMessage}: ${err}`,
-            time: 10000,
-            action: () => {
-              this.copyToClipboard({ content: err })
-            }
+          showToast(`${errorMessage}: ${err}`, 10000, () => {
+            copyToClipboard(err)
           })
           console.error(err)
           if (this.backendPreference === 'local' && this.backendFallback && !err.toString().includes('private')) {
@@ -851,12 +847,8 @@ export default Vue.extend({
         .catch(err => {
           console.error(err)
           const errorMessage = this.$t('Invidious API Error (Click to copy)')
-          showToast({
-            message: `${errorMessage}: ${err.responseText}`,
-            time: 10000,
-            action: () => {
-              this.copyToClipboard({ content: err.responseText })
-            }
+          showToast(`${errorMessage}: ${err.responseText}`, 10000, () => {
+            copyToClipboard(err.responseText)
           })
           console.error(err)
           if (this.backendPreference === 'invidious' && this.backendFallback) {
@@ -1042,12 +1034,8 @@ export default Vue.extend({
         })
         .catch(err => {
           const errorMessage = this.$t('Local API Error (Click to copy)')
-          showToast({
-            message: `${errorMessage}: ${err}`,
-            time: 10000,
-            action: () => {
-              this.copyToClipboard({ content: err })
-            }
+          showToast(`${errorMessage}: ${err}`, 10000, () => {
+            copyToClipboard(err)
           })
           console.error(err)
           if (!process.env.IS_ELECTRON || (this.backendPreference === 'local' && this.backendFallback)) {
@@ -1524,8 +1512,7 @@ export default Vue.extend({
       'getUserDataPath',
       'ytGetVideoInformation',
       'invidiousGetVideoInformation',
-      'updateSubscriptionDetails',
-      'copyToClipboard'
+      'updateSubscriptionDetails'
     ])
   }
 })
