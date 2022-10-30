@@ -465,6 +465,7 @@ export default Vue.extend({
      * all systems running the electron app.
      */
     watchSystemTheme: function () {
+      const { ipcRenderer } = require('electron')
       if (process.env.IS_ELECTRON) {
         ipcRenderer.on(IpcChannels.NATIVE_THEME_UPDATE, (event, shouldUseDarkColors) => {
           document.body.dataset.systemTheme = shouldUseDarkColors ? 'dark' : 'light'
