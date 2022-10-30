@@ -1,24 +1,29 @@
 import Vue from 'vue'
 import FtSettingsSection from '../ft-settings-section/ft-settings-section.vue'
 import { mapActions, mapMutations } from 'vuex'
-import FtCard from '../ft-card/ft-card.vue'
 import FtButton from '../ft-button/ft-button.vue'
-import FtToggleSwitch from '../ft-toggle-switch/ft-toggle-switch.vue'
 import FtFlexBox from '../ft-flex-box/ft-flex-box.vue'
 import FtPrompt from '../ft-prompt/ft-prompt.vue'
 import { MAIN_PROFILE_ID } from '../../../constants'
 
 import { opmlToJSON } from 'opml-to-json'
 import ytch from 'yt-channel-info'
-import { calculateColorLuminance, copyToClipboard, getRandomColor, showToast } from '../../helpers/utils'
+import {
+  calculateColorLuminance,
+  copyToClipboard,
+  getRandomColor,
+  readFileFromDialog,
+  showOpenDialog,
+  showSaveDialog,
+  showToast,
+  writeFileFromDialog
+} from '../../helpers/utils'
 
 export default Vue.extend({
   name: 'DataSettings',
   components: {
     'ft-settings-section': FtSettingsSection,
-    'ft-card': FtCard,
     'ft-button': FtButton,
-    'ft-toggle-switch': FtToggleSwitch,
     'ft-flex-box': FtFlexBox,
     'ft-prompt': FtPrompt
   },
@@ -97,13 +102,13 @@ export default Vue.extend({
         ]
       }
 
-      const response = await this.showOpenDialog(options)
+      const response = await showOpenDialog(options)
       if (response.canceled || response.filePaths?.length === 0) {
         return
       }
       let textDecode
       try {
-        textDecode = await this.readFileFromDialog({ response })
+        textDecode = await readFileFromDialog(response)
       } catch (err) {
         const message = this.$t('Settings.Data Settings.Unable to read file')
         showToast(`${message}: ${err}`)
@@ -503,13 +508,13 @@ export default Vue.extend({
         ]
       }
 
-      const response = await this.showSaveDialog(options)
+      const response = await showSaveDialog(options)
       if (response.canceled || response.filePath === '') {
         // User canceled the save dialog
         return
       }
       try {
-        await this.writeFileFromDialog({ response, content: subscriptionsDb })
+        await writeFileFromDialog(response, subscriptionsDb)
       } catch (writeErr) {
         const message = this.$t('Settings.Data Settings.Unable to read file')
         showToast(`${message}: ${writeErr}`)
@@ -568,14 +573,14 @@ export default Vue.extend({
         return object
       })
 
-      const response = await this.showSaveDialog(options)
+      const response = await showSaveDialog(options)
       if (response.canceled || response.filePath === '') {
         // User canceled the save dialog
         return
       }
 
       try {
-        await this.writeFileFromDialog({ response, content: JSON.stringify(subscriptionsObject) })
+        await writeFileFromDialog(response, JSON.stringify(subscriptionsObject))
       } catch (writeErr) {
         const message = this.$t('Settings.Data Settings.Unable to write file')
         showToast(`${message}: ${writeErr}`)
@@ -613,14 +618,14 @@ export default Vue.extend({
         }
       })
 
-      const response = await this.showSaveDialog(options)
+      const response = await showSaveDialog(options)
       if (response.canceled || response.filePath === '') {
         // User canceled the save dialog
         return
       }
 
       try {
-        await this.writeFileFromDialog({ response, content: opmlData })
+        await writeFileFromDialog(response, opmlData)
       } catch (writeErr) {
         const message = this.$t('Settings.Data Settings.Unable to write file')
         showToast(`${message}: ${writeErr}`)
@@ -652,14 +657,14 @@ export default Vue.extend({
         exportText += `${channel.id},${channelUrl},${channelName}\n`
       })
       exportText += '\n'
-      const response = await this.showSaveDialog(options)
+      const response = await showSaveDialog(options)
       if (response.canceled || response.filePath === '') {
         // User canceled the save dialog
         return
       }
 
       try {
-        await this.writeFileFromDialog({ response, content: exportText })
+        await writeFileFromDialog(response, exportText)
       } catch (writeErr) {
         const message = this.$t('Settings.Data Settings.Unable to write file')
         showToast(`${message}: ${writeErr}`)
@@ -699,13 +704,13 @@ export default Vue.extend({
         newPipeObject.subscriptions.push(subscription)
       })
 
-      const response = await this.showSaveDialog(options)
+      const response = await showSaveDialog(options)
       if (response.canceled || response.filePath === '') {
         // User canceled the save dialog
         return
       }
       try {
-        await this.writeFileFromDialog({ response, content: JSON.stringify(newPipeObject) })
+        await writeFileFromDialog(response, JSON.stringify(newPipeObject))
       } catch (writeErr) {
         const message = this.$t('Settings.Data Settings.Unable to write file')
         showToast(`${message}: ${writeErr}`)
@@ -725,13 +730,13 @@ export default Vue.extend({
         ]
       }
 
-      const response = await this.showOpenDialog(options)
+      const response = await showOpenDialog(options)
       if (response.canceled || response.filePaths?.length === 0) {
         return
       }
       let textDecode
       try {
-        textDecode = await this.readFileFromDialog({ response })
+        textDecode = await readFileFromDialog(response)
       } catch (err) {
         const message = this.$t('Settings.Data Settings.Unable to read file')
         showToast(`${message}: ${err}`)
@@ -799,14 +804,14 @@ export default Vue.extend({
         ]
       }
 
-      const response = await this.showSaveDialog(options)
+      const response = await showSaveDialog(options)
       if (response.canceled || response.filePath === '') {
         // User canceled the save dialog
         return
       }
 
       try {
-        await this.writeFileFromDialog({ response, content: historyDb })
+        await writeFileFromDialog(response, historyDb)
       } catch (writeErr) {
         const message = this.$t('Settings.Data Settings.Unable to write file')
         showToast(`${message}: ${writeErr}`)
@@ -825,13 +830,13 @@ export default Vue.extend({
         ]
       }
 
-      const response = await this.showOpenDialog(options)
+      const response = await showOpenDialog(options)
       if (response.canceled || response.filePaths?.length === 0) {
         return
       }
       let data
       try {
-        data = await this.readFileFromDialog({ response })
+        data = await readFileFromDialog(response)
       } catch (err) {
         const message = this.$t('Settings.Data Settings.Unable to read file')
         showToast(`${message}: ${err}`)
@@ -942,13 +947,13 @@ export default Vue.extend({
         ]
       }
 
-      const response = await this.showSaveDialog(options)
+      const response = await showSaveDialog(options)
       if (response.canceled || response.filePath === '') {
         // User canceled the save dialog
         return
       }
       try {
-        await this.writeFileFromDialog({ response, content: JSON.stringify(this.allPlaylists) })
+        await writeFileFromDialog(response, JSON.stringify(this.allPlaylists))
       } catch (writeErr) {
         const message = this.$t('Settings.Data Settings.Unable to write file')
         showToast(`${message}: ${writeErr}`)
@@ -1100,10 +1105,6 @@ export default Vue.extend({
       'updateShowProgressBar',
       'updateHistory',
       'compactHistory',
-      'showOpenDialog',
-      'readFileFromDialog',
-      'showSaveDialog',
-      'writeFileFromDialog',
       'getUserDataPath',
       'addPlaylist',
       'addVideo'
