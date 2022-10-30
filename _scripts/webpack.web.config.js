@@ -28,7 +28,8 @@ const config = {
     electron: '{}',
     ytpl: '{}',
     ytsr: '{}',
-    cordova: '{}'
+    cordova: '{}',
+    'music-controls': '{}'
   },
   module: {
     rules: [

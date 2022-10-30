@@ -28,7 +28,8 @@ const config = {
   },
   externals: {
     electron: '{}',
-    cordova: 'cordova'
+    cordova: 'cordova',
+    'music-controls': 'MusicControls'
   },
   module: {
     rules: [

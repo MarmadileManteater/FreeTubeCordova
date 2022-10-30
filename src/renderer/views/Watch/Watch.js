@@ -14,6 +14,7 @@ import WatchVideoRecommendations from '../../components/watch-video-recommendati
 import FtAgeRestricted from '../../components/ft-age-restricted/ft-age-restricted.vue'
 import i18n from '../../i18n/index'
 import { buildVTTFileLocally, copyToClipboard, showToast } from '../../helpers/utils'
+import MusicControls from 'music-controls'
 
 const isDev = process.env.NODE_ENV === 'development'
 
@@ -646,6 +647,59 @@ export default Vue.extend({
 
       this.invidiousGetVideoInformation(this.videoId)
         .then(result => {
+          if (process.env.IS_CORDOVA) {
+            try {
+              MusicControls.destroy()
+            } catch (err) {
+              console.error(err)
+            }
+            MusicControls.create({
+              track: result.title,
+              artist: result.author,
+              cover: result.videoThumbnails[result.videoThumbnails.length - 4].url
+            })
+            const playPauseListeners = []
+            MusicControls.subscribe((action) => {
+              const { player } = this.$refs.videoPlayer
+              if (playPauseListeners.length === 0) {
+                playPauseListeners.push(player.el().querySelector('video').addEventListener('pause', () => {
+                  MusicControls.updateIsPlaying(false)
+                }))
+                playPauseListeners.push(player.el().querySelector('video').addEventListener('play', () => {
+                  MusicControls.updateIsPlaying(true)
+                }))
+              }
+              if (JSON.parse(action).message === 'music-controls-play' || JSON.parse(action).message === 'music-controls-pause') {
+                if (!player.paused()) {
+                  player.pause()
+                } else {
+                  player.play()
+                }
+              } else {
+                switch (JSON.parse(action).message) {
+                  case 'music-controls-next':
+                    // TODO implement next control
+                    if (this.watchingPlaylist) {
+                      this.$refs.watchVideoPlaylist.playNextVideo()
+                    } else {
+                      const nextVideoId = this.recommendedVideos[0].videoId
+                      this.$router.push({
+                        path: `/watch/${nextVideoId}`
+                      })
+                      showToast(this.$t('Playing Next Video'))
+                    }
+                    break
+                  case 'music-controls-previous':
+                    // TODO implement previous control
+                    history.back()
+                    break
+                }
+              }
+              MusicControls.updateIsPlaying(!player.paused())
+            })
+            MusicControls.listen()
+          }
+
           if (result.error) {
             throw new Error(result.error)
           }
