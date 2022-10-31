@@ -31,7 +31,12 @@ const config = {
   // webpack spits out errors while inlining ytpl and ytsr as
   // they dynamically import their package.json file to extract the bug report URL
   // the error: "Critical dependency: the request of a dependency is an expression"
-  externals: ['ytpl', 'ytsr', 'cordova', 'music-controls'],
+  externals: {
+    'ytpl': 'ytpl',
+    'ytsr': 'ytsr',
+    'cordova': 'browserify/lib/_empty.js',
+    'music-controls': 'browserify/lib/_empty.js'
+  },
   module: {
     rules: [
       {
