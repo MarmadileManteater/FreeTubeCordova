@@ -27,6 +27,8 @@ const config = {
     filename: '[name].js',
   },
   externals: {
+    ytpl: '{}',
+    ytsr: '{}',
     electron: '{}',
     cordova: 'cordova',
     'music-controls': 'MusicControls'
