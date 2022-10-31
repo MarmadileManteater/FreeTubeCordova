@@ -144,6 +144,18 @@ export default Vue.extend({
     this.setWindowTitle()
   },
   mounted: function () {
+    if (process.env.IS_CORDOVA) {
+      const { backgroundMode } = cordova.plugins
+      backgroundMode.setDefaults({
+        // MusicControls already generates a push notification for FreeTube
+        silent: true
+      })
+      backgroundMode.enable()
+      backgroundMode.on('activate', () => {
+        // By default android wants to pause videos in the background, this disables that "optimization"
+        backgroundMode.disableWebViewOptimizations()
+      })
+    }
     this.grabUserSettings().then(async () => {
       this.checkThemeSettings()
 
