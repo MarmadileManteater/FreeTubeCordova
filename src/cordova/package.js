@@ -19,7 +19,7 @@ module.exports = {
     'cordova-clipboard': '^1.3.0',
     'cordova-plugin-advanced-background-mode': '^1.1.1',
     'cordova-plugin-android-permissions': '^1.1.4',
-    'cordova-plugin-music-controls2': 'github:ghenry22/cordova-plugin-music-controls2',
+    'cordova-plugin-music-controls2': '3.0.5',
     'cordova-plugin-save-dialog': '^1.1.1',
     'cordova-plugin-theme-detection': '^1.3.0',
     'cordova-plugin-device': '^2.1.0'

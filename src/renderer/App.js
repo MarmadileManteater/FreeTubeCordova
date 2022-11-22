@@ -12,7 +12,7 @@ import FtProgressBar from './components/ft-progress-bar/ft-progress-bar.vue'
 import { marked } from 'marked'
 import { IpcChannels } from '../constants'
 import packageDetails from '../../package.json'
-import { openExternalLink, showToast } from './helpers/utils'
+import { openExternalLink, openInternalPath, showToast } from './helpers/utils'
 import cordova from 'cordova'
 
 let ipcRenderer = null
@@ -398,9 +398,9 @@ export default Vue.extend({
             if (playlistId && playlistId.length > 0) {
               query.playlistId = playlistId
             }
-            const path = `/watch/${videoId}`
-            this.openInternalPath({
-              path,
+
+            openInternalPath({
+              path: `/watch/${videoId}`,
               query,
               doCreateNewWindow
             })
@@ -410,9 +410,8 @@ export default Vue.extend({
           case 'playlist': {
             const { playlistId, query } = result
 
-            const path = `/playlist/${playlistId}`
-            this.openInternalPath({
-              path,
+            openInternalPath({
+              path: `/playlist/${playlistId}`,
               query,
               doCreateNewWindow
             })
@@ -422,9 +421,8 @@ export default Vue.extend({
           case 'search': {
             const { searchQuery, query } = result
 
-            const path = `/search/${encodeURIComponent(searchQuery)}`
-            this.openInternalPath({
-              path,
+            openInternalPath({
+              path: `/search/${encodeURIComponent(searchQuery)}`,
               query,
               doCreateNewWindow,
               searchQueryText: searchQuery
@@ -446,9 +444,8 @@ export default Vue.extend({
           case 'channel': {
             const { channelId, subPath } = result
 
-            const path = `/channel/${channelId}/${subPath}`
-            this.openInternalPath({
-              path,
+            openInternalPath({
+              path: `/channel/${channelId}/${subPath}`,
               doCreateNewWindow
             })
             break
@@ -477,7 +474,6 @@ export default Vue.extend({
      * all systems running the electron app.
      */
     watchSystemTheme: function () {
-      const { ipcRenderer } = require('electron')
       if (process.env.IS_ELECTRON) {
         ipcRenderer.on(IpcChannels.NATIVE_THEME_UPDATE, (event, shouldUseDarkColors) => {
           document.body.dataset.systemTheme = shouldUseDarkColors ? 'dark' : 'light'

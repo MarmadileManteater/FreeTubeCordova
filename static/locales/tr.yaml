@@ -268,6 +268,7 @@ Settings:
         %S Saniye 2 basamak. %T Milisaniye 3 basamak. %s Video Saniyesi. %t Video
         Milisaniyesi 3 basamak. %i Video Kimliği. Alt klasörler oluşturmak için "\"
         veya "/" kullanabilirsiniz.
+    Enter Fullscreen on Display Rotate: Ekran Döndürüldüğünde Tam Ekrana Geç
   Privacy Settings:
     Privacy Settings: 'Gizlilik Ayarları'
     Remember History: 'Geçmişi Hatırla'
@@ -773,6 +774,7 @@ Share:
     kopyalandı'
   YouTube Channel URL copied to clipboard: Youtube Kanalı Adresi panoya kopyalandı
   Invidious Channel URL copied to clipboard: Invidious Kanalı Adresi panoya kopyalandı
+  Share Channel: Kanalı Paylaş
 Mini Player: 'Mini Oynatıcı'
 Comments:
   Comments: 'Yorumlar'
