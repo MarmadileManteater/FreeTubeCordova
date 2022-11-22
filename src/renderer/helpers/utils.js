@@ -3,6 +3,7 @@ import { IpcChannels } from '../../constants'
 import FtToastEvents from '../components/ft-toast/ft-toast-events'
 import i18n from '../i18n/index'
 import router from '../router/index'
+import cordova from 'cordova'
 
 export function calculatePublishedDate(publishedText) {
   const date = new Date()
