@@ -9700,10 +9700,10 @@ video.js@7.18.1, "video.js@^6 || ^7", video.js@^7.0.0, "video.js@^7.2.0 || ^6.6.
     videojs-font "3.2.0"
     videojs-vtt.js "^0.15.3"
 
-videojs-contrib-quality-levels@^2.0.4, videojs-contrib-quality-levels@^2.1.0:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/videojs-contrib-quality-levels/-/videojs-contrib-quality-levels-2.1.0.tgz#046e9e21ed01043f512b83a1916001d552457083"
-  integrity sha512-dqGQGbL9AFhucxki7Zh0c3kIhH0PAPcHEh6jUdRyaFCVeOuqnJrOYs/3wNtsokDdBdRf2Du2annpu4Z2XaSZRg==
+videojs-contrib-quality-levels@^2.0.4, videojs-contrib-quality-levels@^2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/videojs-contrib-quality-levels/-/videojs-contrib-quality-levels-2.2.0.tgz#f711cc78fd5e6559b68cb55537aba1a7e5ee931b"
+  integrity sha512-r4LFNhjyeBmlGk4Ul43xl+f7sNJ9vFyM6p4NcZNbPlvs1IvykEXCqxvsvaR6KTBjHoHGJnr26grXWcJiLFP+cA==
   dependencies:
     global "^4.3.2"
     video.js "^6 || ^7"
