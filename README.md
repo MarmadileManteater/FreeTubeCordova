@@ -6,7 +6,7 @@ FreeTube Cordova is an open source YouTube player built with privacy in mind. Us
 Available for Android and as a PWA. FreeTube Cordova is a fork of [FreeTube](https://www.github.com/FreeTubeApp).
 FreeTube Cordova is currently in Beta. While it should work well for most users, there are still bugs and missing features that need to be addressed.
 
-<p align="center"><a href="https://github.com/FreeTubeApp/FreeTube/releases">Download FreeTubeCordova</a></p>
+<p align="center"><a href="https://github.com/MarmadileManteater/FreeTubeCordova/releases">Download FreeTubeCordova</a></p>
 
 <hr>
 <p align="center"><a href="#screenshots">Screenshots</a> &bull; <a href="#how-does-it-work">How does it work?</a> &bull; <a href="#features">Features</a> &bull; <a href="#how-to-build-and-test">Building and testing</a> &bull; <a href="#contributing">Contributing</a> &bull; <a href="#localization">Localization</a> &bull; <a href="#contact">Contact</a> &bull; <a href="#upstream-donations">Donate</a> &bull; <a href="#license">License</a></p>
