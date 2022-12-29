@@ -14,7 +14,7 @@ FreeTube Cordova is currently in Beta. While it should work well for most users,
 <hr>
 
 ## How does it work?
-FreeTube Cordova uses the [Invidious API](https://github.com/iv-org/invidious) to seve data and videos. No official YouTube APIs are used to obtain data. Your subscriptions and history are stored locally on your device and are never sent out.
+FreeTube Cordova uses the [Invidious API](https://github.com/iv-org/invidious) to serve data and videos. No official YouTube APIs are used to obtain data. Your subscriptions and history are stored locally on your device and are never sent out.
 
 ## Features
 * Watch videos without ads
@@ -57,7 +57,7 @@ There is an APK which can be downloaded here:
 ## How to build and test
 
 ```bash
-    npm run pack:browser
+    yarn pack:browser
     # This creates the cordova project, 
     # copies the dist folder, browserifies 
     # it, and replaces a bunch of functions
@@ -65,14 +65,14 @@ There is an APK which can be downloaded here:
     # After your first build, most of the
     # build components will be recycled
     # from that build.
-    npm run build:cordova
+    yarn build:cordova
     # This opens up the cordova application 
     # in a web browser
-    npm run run:cordova browser
+    yarn run:cordova browser
     # This opens up the cordova application
     # on an android device connected with 
     # debugging enabled
-    npm run run:cordova android
+    yarn run:cordova android
 ```
 
 #### Automated Builds (Nightly / Weekly)
