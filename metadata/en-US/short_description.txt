@@ -1,0 +1,1 @@
+FreeTube Cordova is an open source YouTube player built with privacy in mind.

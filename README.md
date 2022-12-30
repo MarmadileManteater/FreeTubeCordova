@@ -42,7 +42,7 @@ FreeTube Cordova uses the [Invidious API](https://github.com/iv-org/invidious) t
 Go to [FreeTube's Documentation](https://docs.freetubeapp.io/) if you'd like to know more about how to operate FreeTube and its features.
 
 ## Screenshots
-<img alt="subscriptions" src="https://user-images.githubusercontent.com/78101139/209993178-ebec42bc-7082-42c7-b283-3073e39e938c.png" width=300> <img alt="trending videos" src="https://user-images.githubusercontent.com/78101139/209993253-29519061-570a-4640-aee3-a38f8e9e8ae5.png" width=300> <img alt="watching video" src="https://user-images.githubusercontent.com/78101139/209993912-c82ca1f6-b8f8-4d6b-a67f-3d5a36686484.png" width=300> <img  alt="video comments" src="https://user-images.githubusercontent.com/78101139/209994008-26ffb0cb-e2da-4a6c-9d0b-0c438d3dc41c.png" width=300> 
+<img alt="watching video" src="./metadata/en-US/images/phoneScreenshots/1.png" width=300> <img alt="trending videos" src="./metadata/en-US/images/phoneScreenshots/2.png" width=300> <img alt="subscription feed" src="./metadata/en-US/images/phoneScreenshots/3.png" width=300>
 
 ## How to install
 

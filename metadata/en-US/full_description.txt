@@ -1,0 +1,18 @@
+FreeTube Cordova is a YouTube client that uses the Invidious API to serve data and videos from YouTube.
+No official YouTube APIs are used to obtain data.
+Your subscriptions and history are stored locally on your device and are never sent out.
+
+Features:
+- Watch videos without ads
+- Use YouTube without Google tracking you using cookies and JavaScript
+- Organize your subscriptions into Profiles to create a more focused feed
+- Export and import subscriptions from a variety of sources (Ex: YouTube, NewPipe, Invidious)
+- Support for SponsorBlock
+- Support for Comments and Replies
+- Support for YouTube Chapters
+- Support for Live chat
+- Option to password protect settings
+- Parental controls
+- Subscribe to channels without an account
+
+FreeTube Cordova is currently in Beta. While it should work well for most users, there are still bugs and missing features that need to be addressed.
