@@ -19,7 +19,6 @@ FreeTube Cordova uses the [Invidious API](https://github.com/iv-org/invidious) t
 ## Features
 * Watch videos without ads
 * Use YouTube without Google tracking you using cookies and JavaScript
-* Two extractor APIs to choose from (Built in or Invidious)
 * Subscribe to channels without an account
 * Connect to an externally setup proxy such as Tor
 * View and search your local subscriptions, history, and saved videos
@@ -29,7 +28,6 @@ FreeTube Cordova uses the [Invidious API](https://github.com/iv-org/invidious) t
 * Youtube Chapters
 * Most popular videos page based on the set Invidious instance
 * SponsorBlock 
-* Open videos from your browser directly into FreeTube (with extension)
 * Watch videos using an external player
 * Full Theme support
 * Make a screenshot of a video

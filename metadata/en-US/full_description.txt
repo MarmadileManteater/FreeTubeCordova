@@ -10,7 +10,6 @@ Features:
 - Support for SponsorBlock
 - Support for Comments and Replies
 - Support for YouTube Chapters
-- Support for Live chat
 - Option to password protect settings
 - Parental controls
 - Subscribe to channels without an account
