@@ -28,9 +28,7 @@ FreeTube Cordova uses the [Invidious API](https://github.com/iv-org/invidious) t
 * Youtube Chapters
 * Most popular videos page based on the set Invidious instance
 * SponsorBlock 
-* Watch videos using an external player
 * Full Theme support
-* Make a screenshot of a video
 * Multiple windows
 * Mini Player (Picture-in-Picture)
 * Keyboard shortcuts
