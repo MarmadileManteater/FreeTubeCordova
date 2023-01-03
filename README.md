@@ -94,7 +94,7 @@ before sending your pull request.
 <img src="https://hosted.weblate.org/widgets/free-tube/-/287x66-grey.png" alt="Translation status" />
 </a>
 
-If you'd like to localize FreeTubeCordova, please send submissions to [FreeTube's weblate](https://hosted.weblate.org/engage/free-tube/)
+If you'd like to localize FreeTubeCordova, please send submissions to [FreeTube's weblate](https://hosted.weblate.org/engage/free-tube/).
 
 ## Contact
 If you ever have any questions, feel free to make an issue here on GitHub. 
