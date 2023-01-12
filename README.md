@@ -1,16 +1,37 @@
 <p align="center" >
- <img src="https://docs.freetubeapp.io/images/logoColor.png" width=500 align="center">
+ <img src="https://docs.freetubeapp.io/images/logoColor.png" width=500 align="center" alt="FreeTube Logo">
 </p>
+<h2 align='center'>
+An open source YouTube player built with privacy in mind.
+</h2>
+
+<p align='center'>
+  <a href='https://github.com/MarmadileManteater/FreeTubeCordova/actions/workflows/buildCordova.yml'>
+    <img alt='Build Status' src='https://github.com/MarmadileManteater/FreeTubeCordova/actions/workflows/buildCordova.yml/badge.svg'>
+  </a>
+  <a href="https://apt.izzysoft.de/fdroid/index/apk/io.freetubeapp.freetube">
+    <img alt='izzyondroid version' src="https://img.shields.io/endpoint?url=https://apt.izzysoft.de/fdroid/api/v1/shield/io.freetubeapp.freetube">
+  </a>
+<a href="https://hosted.weblate.org/engage/free-tube/">
+<img src="https://hosted.weblate.org/widgets/free-tube/-/svg-badge.svg" alt="Translation status" />
+</a>
+</p>
+<hr>
+<p align="center"><a href="#screenshots">Screenshots</a> &bull; <a href="#how-does-it-work">How does it work?</a> &bull; <a href="#features">Features</a> &bull; <a href="#how-to-build-and-test">Building and testing</a> &bull; <a href="#contributing">Contributing</a> &bull; <a href="#localization">Localization</a> &bull; <a href="#contact">Contact</a> &bull; <a href="#upstream-donations">Donate</a> &bull; <a href="#license">License</a></p>
+<p align="center"><a href="https://freetubeapp.io/">Website</a> &bull; <a href="https://blog.freetubeapp.io/">Blog</a> &bull; <a href="https://docs.freetubeapp.io/">Documentation</a> &bull; <a href="https://docs.freetubeapp.io/faq/">FAQ</a> &bull; <a href="https://github.com/FreeTubeApp/FreeTube/discussions">Discussions</a></p>
+<hr>
 
 FreeTube Cordova is an open source YouTube player built with privacy in mind. Use YouTube without advertisements and prevent Google from tracking you with their cookies and JavaScript.
 Available for Android and as a PWA. FreeTube Cordova is a fork of [FreeTube](https://www.github.com/FreeTubeApp).
 FreeTube Cordova is currently in Beta. While it should work well for most users, there are still bugs and missing features that need to be addressed.
+<p align='center'>
+  <a href='https://apt.izzysoft.de/fdroid/index/apk/io.freetubeapp.freetube'>
+    <img height='50' alt='Get it on IzzyOnDroid' src='https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png'>
+  </a>
+</p>
 
 <p align="center"><a href="https://github.com/MarmadileManteater/FreeTubeCordova/releases">Download FreeTubeCordova</a></p>
 
-<hr>
-<p align="center"><a href="#screenshots">Screenshots</a> &bull; <a href="#how-does-it-work">How does it work?</a> &bull; <a href="#features">Features</a> &bull; <a href="#how-to-build-and-test">Building and testing</a> &bull; <a href="#contributing">Contributing</a> &bull; <a href="#localization">Localization</a> &bull; <a href="#contact">Contact</a> &bull; <a href="#upstream-donations">Donate</a> &bull; <a href="#license">License</a></p>
-<p align="center"><a href="https://freetubeapp.io/">Website</a> &bull; <a href="https://blog.freetubeapp.io/">Blog</a> &bull; <a href="https://docs.freetubeapp.io/">Documentation</a> &bull; <a href="https://docs.freetubeapp.io/faq/">FAQ</a> &bull; <a href="https://github.com/FreeTubeApp/FreeTube/discussions">Discussions</a></p>
 <hr>
 
 ## How does it work?
@@ -50,6 +71,11 @@ There is an APK which can be downloaded here:
 
 [https://github.com/MarmadileManteater/FreeTubeCordova/releases](https://github.com/MarmadileManteater/FreeTubeCordova/releases)
 
+### Automated Builds (Nightly / Weekly)
+Builds are automatically created from changes to our development branch via [GitHub Actions](https://github.com/MarmadileManteater/FreeTubeCordova/actions/workflows/buildCordova.yml).
+
+The first build with a green check mark is the latest build. You will need to have a GitHub account to download these builds.
+
 ## How to build and test
 
 ```bash
@@ -70,11 +96,6 @@ There is an APK which can be downloaded here:
     # debugging enabled
     yarn run:cordova android
 ```
-
-#### Automated Builds (Nightly / Weekly)
-Builds are automatically created from changes to our development branch via [GitHub Actions](https://github.com/MarmadileManteater/FreeTubeCordova/actions/workflows/buildCordova.yml).
-
-The first build with a green check mark is the latest build. You will need to have a GitHub account to download these builds.
 
 ## Contributing
 

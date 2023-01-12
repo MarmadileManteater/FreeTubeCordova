@@ -1,1 +1,1 @@
-FreeTube Cordova est un lecteur YouTube open source construit avec la confidentialité à l’esprit.
+un lecteur YouTube open source construit avec la confidentialité à l’esprit
