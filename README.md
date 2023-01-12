@@ -26,7 +26,7 @@ Available for Android and as a PWA. FreeTube Cordova is a fork of [FreeTube](htt
 FreeTube Cordova is currently in Beta. While it should work well for most users, there are still bugs and missing features that need to be addressed.
 <p align='center'>
   <a href='https://apt.izzysoft.de/fdroid/index/apk/io.freetubeapp.freetube'>
-    <img height='50' alt='Get it on IzzyOnDroid' src='https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png'>
+    <img height='100' alt='Get it on IzzyOnDroid' src='https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png'>
   </a>
 </p>
 
