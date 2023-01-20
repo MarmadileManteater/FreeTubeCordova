@@ -212,6 +212,7 @@ Settings:
     Expand Side Bar by Default: Domyślnie rozwiń pasek boczny
     Disable Smooth Scrolling: Wyłącz płynne przewijanie
     Hide Side Bar Labels: Schowaj etykiety paska bocznego
+    Hide FreeTube Header Logo: Schowaj logo FreeTube z paska górnego
   Player Settings:
     Player Settings: 'Ustawienia odtwarzacza'
     Force Local Backend for Legacy Formats: 'Wymuś lokalny back-end dla starych formatów'
@@ -248,7 +249,7 @@ Settings:
     Display Play Button In Video Player: Pokaż przycisk odtwarzania na odtwarzaczu
     Fast-Forward / Rewind Interval: Interwał przewijania
     Scroll Playback Rate Over Video Player: Kontroluj szybkość odtwarzania kółkiem
-      myszy na obszarze odtwarzania
+      myszy na obszarze odtwarzacza
     Max Video Playback Rate: Maksymalna szybkość odtwarzania
     Video Playback Rate Interval: Przeskoki w wyborze prędkości odtwarzania
     Screenshot:
@@ -268,7 +269,9 @@ Settings:
         Empty File Name: Pusta nazwa pliku
       Enable: Włącz zrzuty ekranu
     Enter Fullscreen on Display Rotate: Przyłącz na tryb pełnoekranowy przy zmianie
-      orientacji wyświetlacza
+      orientacji ekranu
+    Skip by Scrolling Over Video Player: Przewijaj film kółkiem myszy na obszarze
+      odtwarzacza
   Subscription Settings:
     Subscription Settings: 'Ustawienia subskrypcji'
     Hide Videos on Watch: 'Ukrywaj filmy po obejrzeniu'
@@ -392,6 +395,11 @@ Settings:
     Hide Sharing Actions: Schowaj linki do dzielenia się filmem
     Hide Live Streams: Schowaj transmisje na żywo
     Hide Chapters: Schowaj rozdziały
+    Hide Upcoming Premieres: Schowaj nadchodzące premiery
+    Hide Channels: Schowaj filmy z kanałów
+    Hide Channels Placeholder: Nazwa albo ID kanału
+    Display Titles Without Excessive Capitalisation: Wyświetlaj tytuły bez nadmiernych
+      wielkich liter
   The app needs to restart for changes to take effect. Restart and apply change?: Aplikacja
     musi zostać ponownie uruchomiona, aby zmiany zostały wprowadzone. Uruchomić ponownie
     i zastosować zmiany?
@@ -421,7 +429,7 @@ Settings:
     Skip Options:
       Skip Option: Opcja pominięcia
       Auto Skip: Pomijaj automatycznie
-      Show In Seek Bar: Pokaż na pasku postępu
+      Show In Seek Bar: Pokazuj na pasku postępu
       Prompt To Skip: Zapytaj, czy pominąć
       Do Nothing: Nic nie rób
     Category Color: Kolor segmentu
@@ -443,7 +451,7 @@ Settings:
     Download in app: Pobierz w aplikacji
     Open in web browser: Otwórz w przeglądarce
   Parental Control Settings:
-    Parental Control Settings: Opcje kontroli rodzicielskiej
+    Parental Control Settings: Ustawienia kontroli rodzicielskiej
     Hide Unsubscribe Button: Schowaj przycisk „Odsubskrybuj”
     Show Family Friendly Only: Pokazuj tylko filmy przyjazne rodzinie
     Hide Search Bar: Schowaj pole wyszukiwania
@@ -452,6 +460,16 @@ Settings:
     Experimental Settings: Ustawienia eksperymentalne
     Warning: Te ustawienia są w fazie testów i po włączeniu mogą spowodować wywalenie
       się programu. Zalecane jest stworzenie kopii zapasowej. Używaj na własne ryzyko!
+  Password Dialog:
+    Unlock: Odblokuj
+    Enter Password To Unlock: Wprowadź hasło, by odblokować ustawienia
+    Password Incorrect: Niepoprawne hasło
+    Password: Hasło
+  Password Settings:
+    Password Settings: Ustawienia hasła
+    Set Password To Prevent Access: Ustaw hasło, aby zabezpieczyć dostęp do ustawień
+    Set Password: Ustaw hasło
+    Remove Password: Usuń hasło
 About:
   #On About page
   About: 'O projekcie'
@@ -689,6 +707,9 @@ Video:
     Dropped / Total Frames: Opuszczone klatki / klatki ogółem
   Premieres in: Premiera za
   Premieres: Premiery
+  Show Super Chat Comment: Pokazuj komentarze z „Superczatu”
+  Scroll to Bottom: Przewiń do końca
+  Upcoming: Nadchodzące
 Videos:
   #& Sort By
   Sort By:
@@ -744,13 +765,13 @@ Share:
 Mini Player: 'Mini odtwarzacz'
 Comments:
   Comments: 'Komentarze'
-  Click to View Comments: 'Kliknij, aby wyświetlić komentarze'
+  Click to View Comments: 'Kliknij, aby zobaczyć komentarze'
   Getting comment replies, please wait: 'Pobieranie odpowiedzi do komentarza, proszę
     poczekać'
   Show Comments: 'Pokaż komentarze'
   Hide Comments: 'Schowaj komentarze'
   # Context: View 10 Replies, View 1 Reply
-  View: 'Wyświetl'
+  View: 'Zobacz'
   Hide: 'Schowaj'
   Replies: 'odpowiedzi'
   Reply: 'odpowiedź'
@@ -767,6 +788,8 @@ Comments:
   Pinned by: Przypięty przez
   From {channelName}: od {channelName}
   Member: Wspierający
+  Hearted: z serduszkiem
+  View {replyCount} replies: Zobacz {replyCount} odpowiedzi
 Up Next: 'Następne'
 
 # Toast Messages
@@ -858,8 +881,8 @@ Tooltips:
       danych. Lokalne API jest wbudowanym ekstraktorem. API Invidious wymaga połączenia
       z serwerem Invidious.
     Region for Trending: Obszar filmów „Na czasie” pozwala wybrać kraj, z którego
-      chciałbyś zobaczyć filmy zdobywające popularność. Nie wszystkie wyświetlone
-      kraje są obsługiwane przez YouTube.
+      chciałbyś zobaczyć filmy zdobywające popularność. Nie wszystkie wymienione kraje
+      są obsługiwane przez YouTube.
     Invidious Instance: Serwer Invidious, którym FreeTube będzie się łączył do wywołań
       API.
     Thumbnail Preference: Wszystkie miniaturki na FreeTube zostaną zastąpione klatką
@@ -882,11 +905,13 @@ Tooltips:
       aby kontrolować szybkość odtwarzania. Przytrzymaj klawisz „Ctrl” („Command”
       na Mac-u) i kliknij lewym przyciskiem myszy, by szybko powrócić do domyślnej
       wartości (1x, chyba że została zmieniona w ustawieniach).
+    Skip by Scrolling Over Video Player: Użyj kółka myszy, by przewijać film tak jak
+      w MPV.
   Privacy Settings:
     Remove Video Meta Files: Po włączeniu FreeTube automatycznie usunie pliki metadanych
       utworzone podczas odtwarzania filmu, gdy strona odtwarzania zostanie zamknięta.
   External Player Settings:
-    Ignore Warnings: Nie wyświetlaj ostrzeżeń o nieobsługiwanych akcjach przez zewnętrzny
+    Ignore Warnings: Nie pokazuj ostrzeżeń o nieobsługiwanych akcjach przez zewnętrzny
       odtwarzacz (n.p. odwracanie playlist, itp.).
     External Player: Wybranie zewnętrznego odtwarzacza spowoduje wyświetlenie na miniaturkach
       ikony, która otworzy film (playlistę, jeśli są obsługiwane) w zewnętrznym odtwarzaczu.
@@ -901,6 +926,10 @@ Tooltips:
     Replace HTTP Cache: Wyłącza opartą na przestrzeni dyskowej pamięć podręczną HTTP
       Electrona i włącza własny obraz pamięci podręcznej wewnątrz pamięci RAM. Spowoduje
       to większe użycie pamięci RAM.
+  Distraction Free Settings:
+    Hide Channels: Wprowadź nazwę albo ID kanału, aby schować wszystkie filmy i playlisty
+      tego kanału, oraz sam kanał z wyszukiwań, oraz z zakładki „Na czasie”. Nazwa
+      kanału musi być dokładnym dopasowaniem, z uwzględnieniem wielkości liter.
 Playing Next Video Interval: Odtwarzanie kolejnego filmu już za chwilę. Wciśnij aby
   przerwać. | Odtwarzanie kolejnego filmu za {nextVideoInterval} sekundę. Wciśnij
   aby przerwać. | Odtwarzanie kolejnego filmu za {nextVideoInterval} sekund. Wciśnij
@@ -956,3 +985,4 @@ Chapters:
   'Chapters list hidden, current chapter: {chapterName}': 'Spis treści schowany, obecny
     rozdział: {chapterName}'
 Preferences: Preferencje
+Ok: Ok

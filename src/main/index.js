@@ -1,6 +1,7 @@
 import {
   app, BrowserWindow, dialog, Menu, ipcMain,
-  powerSaveBlocker, screen, session, shell, nativeTheme, net, protocol
+  powerSaveBlocker, screen, session, shell,
+  nativeTheme, net, protocol, clipboard
 } from 'electron'
 import path from 'path'
 import cp from 'child_process'
@@ -21,6 +22,8 @@ function runApp() {
     showSearchWithGoogle: false,
     showSaveImageAs: true,
     showCopyImageAddress: true,
+    showSelectAll: false,
+    showCopyLink: false,
     prepend: (defaultActions, parameters, browserWindow) => [
       {
         label: 'Show / Hide Video Statistics',
@@ -36,8 +39,122 @@ function runApp() {
         click: () => {
           createWindow({ replaceMainWindow: false, windowStartupUrl: parameters.linkURL, showWindowNow: true })
         }
+      },
+      // Only show select all in text fields
+      {
+        label: 'Select All',
+        enabled: parameters.editFlags.canSelectAll,
+        visible: parameters.isEditable,
+        click: () => {
+          browserWindow.webContents.selectAll()
+        }
       }
-    ]
+    ],
+    // only show the copy link entry for external links and the /playlist, /channel and /watch in-app URLs
+    // the /playlist, /channel and /watch in-app URLs get transformed to their equivalent YouTube or Invidious URLs
+    append: (defaultActions, parameters, browserWindow) => {
+      let visible = false
+      const urlParts = parameters.linkURL.split('#')
+      const isInAppUrl = urlParts[0] === browserWindow.webContents.getURL().split('#')[0]
+
+      if (parameters.linkURL.length > 0) {
+        if (isInAppUrl) {
+          const path = urlParts[1]
+
+          if (path) {
+            visible = ['/playlist', '/channel', '/watch'].some(p => path.startsWith(p))
+          }
+        } else {
+          visible = true
+        }
+      }
+
+      const copy = (url) => {
+        if (parameters.linkText) {
+          clipboard.write({
+            bookmark: parameters.linkText,
+            text: url
+          })
+        } else {
+          clipboard.writeText(url)
+        }
+      }
+
+      const transformURL = (toYouTube) => {
+        let origin
+
+        if (toYouTube) {
+          origin = 'https://www.youtube.com'
+        } else {
+          origin = 'https://redirect.invidious.io'
+        }
+
+        const [path, query] = urlParts[1].split('?')
+        const [route, id] = path.split('/').filter(p => p)
+
+        switch (route) {
+          case 'playlist':
+            return `${origin}/playlist?list=${id}`
+          case 'channel':
+            return `${origin}/channel/${id}`
+          case 'watch': {
+            let url
+
+            if (toYouTube) {
+              url = `https://youtu.be/${id}`
+            } else {
+              url = `https://redirect.invidious.io/watch?v=${id}`
+            }
+
+            if (query) {
+              const params = new URLSearchParams(query)
+              const newParams = new URLSearchParams()
+              let hasParams = false
+
+              if (params.has('playlistId')) {
+                newParams.set('list', params.get('playlistId'))
+                hasParams = true
+              }
+
+              if (params.has('timestamp')) {
+                newParams.set('t', params.get('timestamp'))
+                hasParams = true
+              }
+
+              if (hasParams) {
+                url += '?' + newParams.toString()
+              }
+            }
+
+            return url
+          }
+        }
+      }
+
+      return [
+        {
+          label: 'Copy Lin&k',
+          visible: visible && !isInAppUrl,
+          click: () => {
+            copy(parameters.linkURL)
+          }
+        },
+        {
+          label: 'Copy YouTube Link',
+          visible: visible && isInAppUrl,
+          click: () => {
+            copy(transformURL(true))
+          }
+        },
+        {
+          label: 'Copy Invidious Link',
+          visible: visible && isInAppUrl,
+          click: () => {
+            copy(transformURL(false))
+          }
+        }
+      ]
+    }
   })
 
   // disable electron warning
@@ -148,9 +265,7 @@ function runApp() {
 
     // Set CONSENT cookie on reasonable domains
     const consentCookieDomains = [
-      'http://www.youtube.com',
       'https://www.youtube.com',
-      'http://youtube.com',
       'https://youtube.com'
     ]
     consentCookieDomains.forEach(url => {
@@ -160,6 +275,16 @@ function runApp() {
         value: 'YES+',
         sameSite: 'no_restriction'
       })
+    })
+
+    // make InnerTube requests work with the fetch function
+    // InnerTube rejects requests if the referer isn't YouTube or empty
+    const innertubeRequestFilter = { urls: ['https://www.youtube.com/youtubei/*'] }
+
+    session.defaultSession.webRequest.onBeforeSendHeaders(innertubeRequestFilter, ({ requestHeaders }, callback) => {
+      requestHeaders.referer = 'https://www.youtube.com'
+      // eslint-disable-next-line n/no-callback-literal
+      callback({ requestHeaders })
     })
 
     if (replaceHttpCache) {
@@ -173,7 +298,7 @@ function runApp() {
         if (imageCache.has(url)) {
           const cached = imageCache.get(url)
 
-          // eslint-disable-next-line node/no-callback-literal
+          // eslint-disable-next-line n/no-callback-literal
           callback({
             mimeType: cached.mimeType,
             data: cached.data
@@ -211,7 +336,7 @@ function runApp() {
 
             imageCache.add(url, mimeType, data, expiryTimestamp)
 
-            // eslint-disable-next-line node/no-callback-literal
+            // eslint-disable-next-line n/no-callback-literal
             callback({
               mimeType,
               data: data
@@ -239,13 +364,17 @@ function runApp() {
               return value
             })
 
-            // eslint-disable-next-line node/no-callback-literal
+            // eslint-disable-next-line n/no-callback-literal
             callback({
               statusCode: response.statusCode ?? 400,
               mimeType: 'application/json',
               data: Buffer.from(errorJson)
             })
           })
+        })
+
+        newRequest.on('error', (err) => {
+          console.error(err)
         })
 
         newRequest.end()
@@ -256,12 +385,12 @@ function runApp() {
         // the requests made by the imagecache:// handler to fetch the image,
         // are allowed through, as their resourceType is 'other'
         if (details.resourceType === 'image') {
-          // eslint-disable-next-line node/no-callback-literal
+          // eslint-disable-next-line n/no-callback-literal
           callback({
             redirectURL: `imagecache://${encodeURIComponent(details.url)}`
           })
         } else {
-          // eslint-disable-next-line node/no-callback-literal
+          // eslint-disable-next-line n/no-callback-literal
           callback({})
         }
       })
@@ -328,7 +457,7 @@ function runApp() {
       darkTheme: nativeTheme.shouldUseDarkColors,
       icon: process.env.NODE_ENV === 'development'
         ? path.join(__dirname, '../../_icons/iconColor.png')
-        /* eslint-disable-next-line */
+        /* eslint-disable-next-line n/no-path-concat */
         : `${__dirname}/_icons/iconColor.png`,
       autoHideMenuBar: true,
       // useContentSize: true,
@@ -419,7 +548,7 @@ function runApp() {
       if (windowStartupUrl != null) {
         newWindow.loadURL(windowStartupUrl)
       } else {
-        /* eslint-disable-next-line */
+        /* eslint-disable-next-line n/no-path-concat */
         newWindow.loadFile(`${__dirname}/index.html`)
       }
     }
@@ -611,6 +740,17 @@ function runApp() {
             event,
             { event: SyncEvents.GENERAL.UPSERT, data }
           )
+          switch (data._id) {
+            // Update app menu on related setting update
+            case 'hideTrendingVideos':
+            case 'hidePopularVideos':
+            case 'hidePlaylists':
+              await setMenu()
+              break
+
+            default:
+              // Do nothing for unmatched settings
+          }
           return null
 
         default:
@@ -888,7 +1028,7 @@ function runApp() {
     }
   }
 
-  /**
+  /*
    * Auto Updater
    *
    * Uncomment the following code below and install `electron-updater` to
@@ -907,12 +1047,23 @@ function runApp() {
   })
    */
 
-  /* eslint-disable-next-line */
-  const sendMenuEvent = async data => {
-    mainWindow.webContents.send('change-view', data)
+  function navigateTo(path, browserWindow) {
+    if (browserWindow == null) {
+      return
+    }
+
+    browserWindow.webContents.send(
+      'change-view',
+      { route: path }
+    )
   }
 
-  function setMenu() {
+  async function setMenu() {
+    const sidenavSettings = baseHandlers.settings._findSidenavSettings()
+    const hideTrendingVideos = (await sidenavSettings.hideTrendingVideos)?.value
+    const hidePopularVideos = (await sidenavSettings.hidePopularVideos)?.value
+    const hidePlaylists = (await sidenavSettings.hidePlaylists)?.value
+
     const template = [
       {
         label: 'File',
@@ -933,12 +1084,7 @@ function runApp() {
             label: 'Preferences',
             accelerator: 'CmdOrCtrl+,',
             click: (_menuItem, browserWindow, _event) => {
-              if (browserWindow == null) { return }
-
-              browserWindow.webContents.send(
-                'change-view',
-                { route: '/settings' }
-              )
+              navigateTo('/settings', browserWindow)
             },
             type: 'normal'
           },
@@ -998,8 +1144,83 @@ function runApp() {
           { role: 'zoomout' },
           { role: 'zoomout', accelerator: 'CmdOrCtrl+numsub', visible: false },
           { type: 'separator' },
-          { role: 'togglefullscreen' }
+          { role: 'togglefullscreen' },
+          { type: 'separator' },
+          {
+            label: 'Back',
+            accelerator: 'Alt+Left',
+            click: (_menuItem, browserWindow, _event) => {
+              if (browserWindow == null) { return }
+
+              browserWindow.webContents.send(
+                'history-back',
+              )
+            },
+            type: 'normal',
+          },
+          {
+            label: 'Forward',
+            accelerator: 'Alt+Right',
+            click: (_menuItem, browserWindow, _event) => {
+              if (browserWindow == null) { return }
+
+              browserWindow.webContents.send(
+                'history-forward',
+              )
+            },
+            type: 'normal',
+          },
         ]
+      },
+      {
+        label: 'Navigate',
+        submenu: [
+          {
+            label: 'Subscriptions',
+            click: (_menuItem, browserWindow, _event) => {
+              navigateTo('/subscriptions', browserWindow)
+            },
+            type: 'normal'
+          },
+          {
+            label: 'Channels',
+            click: (_menuItem, browserWindow, _event) => {
+              navigateTo('/subscribedchannels', browserWindow)
+            },
+            type: 'normal'
+          },
+          !hideTrendingVideos && {
+            label: 'Trending',
+            click: (_menuItem, browserWindow, _event) => {
+              navigateTo('/trending', browserWindow)
+            },
+            type: 'normal'
+          },
+          !hidePopularVideos && {
+            label: 'Most Popular',
+            click: (_menuItem, browserWindow, _event) => {
+              navigateTo('/popular', browserWindow)
+            },
+            type: 'normal'
+          },
+          !hidePlaylists && {
+            label: 'Playlists',
+            click: (_menuItem, browserWindow, _event) => {
+              navigateTo('/userplaylists', browserWindow)
+            },
+            type: 'normal'
+          },
+          {
+            label: 'History',
+            // MacOS: Command + Y
+            // Other OS: Ctrl + H
+            accelerator: process.platform === 'darwin' ? 'Cmd+Y' : 'Ctrl+H',
+            click: (_menuItem, browserWindow, _event) => {
+              navigateTo('/history', browserWindow)
+            },
+            type: 'normal'
+          },
+        ].filter((v) => v !== false),
       },
       {
         role: 'window',

@@ -1,4 +1,4 @@
-import Vue from 'vue'
+import { defineComponent } from 'vue'
 import { mapActions, mapMutations } from 'vuex'
 import FtLoader from '../../components/ft-loader/ft-loader.vue'
 import FtCard from '../../components/ft-card/ft-card.vue'
@@ -11,8 +11,9 @@ import FtChannelBubble from '../../components/ft-channel-bubble/ft-channel-bubbl
 import ytch from 'yt-channel-info'
 import { MAIN_PROFILE_ID } from '../../../constants'
 import { calculatePublishedDate, copyToClipboard, showToast } from '../../helpers/utils'
+import { invidiousAPICall } from '../../helpers/api/invidious'
 
-export default Vue.extend({
+export default defineComponent({
   name: 'Subscriptions',
   components: {
     'ft-loader': FtLoader,
@@ -88,6 +89,11 @@ export default Vue.extend({
     hideLiveStreams: function() {
       return this.$store.getters.getHideLiveStreams
     },
+
+    hideUpcomingPremieres: function () {
+      return this.$store.getters.getHideUpcomingPremieres
+    },
+
     fetchSubscriptionsAutomatically: function() {
       return this.$store.getters.getFetchSubscriptionsAutomatically
     }
@@ -193,6 +199,18 @@ export default Vue.extend({
           if (this.hideLiveStreams) {
             videoList = videoList.filter(item => {
               return (!item.liveNow && !item.isUpcoming)
+            })
+          }
+          if (this.hideUpcomingPremieres) {
+            videoList = videoList.filter(item => {
+              if (item.isRSS) {
+                // viewCount is our only method of detecting premieres in RSS
+                // data without sending an additional request.
+                // If we ever get a better flag, use it here instead.
+                return item.viewCount !== '0'
+              }
+              // Observed for premieres in Local API Subscriptions.
+              return item.durationText !== 'PREMIERE'
             })
           }
           const profileSubscriptions = {
@@ -342,8 +360,8 @@ export default Vue.extend({
           params: {}
         }
 
-        this.invidiousAPICall(subscriptionsPayload).then(async (result) => {
-          resolve(await Promise.all(result.map((video) => {
+        invidiousAPICall(subscriptionsPayload).then(async (result) => {
+          resolve(await Promise.all(result.videos.map((video) => {
             video.publishedDate = new Date(video.published * 1000)
             return video
           })))
@@ -358,7 +376,7 @@ export default Vue.extend({
               resolve(this.getChannelVideosInvidiousRSS(channel, failedAttempts + 1))
               break
             case 1:
-              if (this.backendFallback) {
+              if (process.env.IS_ELECTRON && this.backendFallback) {
                 showToast(this.$t('Falling back to the local API'))
                 resolve(this.getChannelVideosLocalScraper(channel, failedAttempts + 1))
               } else {
@@ -397,7 +415,7 @@ export default Vue.extend({
           case 0:
             return this.getChannelVideosInvidiousScraper(channel, failedAttempts + 1)
           case 1:
-            if (this.backendFallback) {
+            if (process.env.IS_ELECTRON && this.backendFallback) {
               showToast(this.$t('Falling back to the local API'))
               return this.getChannelVideosLocalRSS(channel, failedAttempts + 1)
             } else {
@@ -464,7 +482,6 @@ export default Vue.extend({
     },
 
     ...mapActions([
-      'invidiousAPICall',
       'updateShowProgressBar',
       'updateProfileSubscriptions',
       'updateAllSubscriptionsList'

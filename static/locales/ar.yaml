@@ -206,6 +206,7 @@ Settings:
     Disable Smooth Scrolling: عطّل التمرير المتجانس
     Expand Side Bar by Default: كبّر الشريط الجانبي بشكل افتراضي
     Hide Side Bar Labels: إخفاء تسميات الشريط الجانبي
+    Hide FreeTube Header Logo: إخفاء شعار رأس FreeTube
   Player Settings:
     Player Settings: 'إعدادات المشغل'
     Force Local Backend for Legacy Formats: 'فرض الواجهة الخلفية المحلية للتنسيقات
@@ -259,6 +260,7 @@ Settings:
         2 أرقام. % T ميلي ثانية 3 أرقام. %s الفيديو الثاني. % t فيديو ميلي ثانية 3
         أرقام. %i معرف الفيديو. يمكنك أيضا استخدام "\" أو "/" لإنشاء مجلدات فرعية.
     Enter Fullscreen on Display Rotate: وضع ملء الشاشة عند تدوير الشاشة
+    Skip by Scrolling Over Video Player: تخطي بالتمرير فوق مشغل الفيديو
   Privacy Settings:
     Privacy Settings: 'إعدادات الخصوصية'
     Remember History: 'تذّكر سجلّ المشاهدة'
@@ -379,6 +381,11 @@ Settings:
     Hide Sharing Actions: إخفاء إجراءات المشاركة
     Hide Live Streams: إخفاء البث المباشر
     Hide Chapters: إخفاء الفصول
+    Hide Upcoming Premieres: إخفاء العروض الأولى القادمة
+    Hide Channels: إخفاء مقاطع الفيديو من القنوات
+    Hide Channels Placeholder: اسم القناة أو معرفها
+    Display Titles Without Excessive Capitalisation: عرض العناوين بدون احرف كبيرة
+      بشكل مفرط
   The app needs to restart for changes to take effect. Restart and apply change?: البرنامج
     يحتاج لإعادة التشغيل كي يسري مفعول التغييرات. هل تريد إعادة التشغيل و تطبيق التغييرات؟
   Proxy Settings:
@@ -436,6 +443,16 @@ Settings:
     Experimental Settings: الإعدادات التجريبية
     Warning: هذه الإعدادات تجريبية ، فهي تسبب أعطال أثناء التمكين. يوصى بشدة بعمل
       نسخ احتياطية. استخدام على مسؤوليتك الخاصة!
+  Password Settings:
+    Set Password To Prevent Access: تعيين كلمة مرور لمنع الوصول إلى الإعدادات
+    Remove Password: إزالة كلمة المرور
+    Password Settings: إعدادات كلمة المرور
+    Set Password: ضبط كلمة السر
+  Password Dialog:
+    Password Incorrect: كلمة المرور غير صحيحة
+    Password: كلمة السر
+    Enter Password To Unlock: أدخل كلمة المرور لإلغاء قفل الإعدادات
+    Unlock: الغاء القفل
 About:
   #On About page
   About: 'حول'
@@ -704,6 +721,9 @@ Video:
     Mimetype: نمط ميمي
   Premieres in: العرض الأول في
   Premieres: العرض الأولي
+  Scroll to Bottom: انتقل إلى الأسفل
+  Show Super Chat Comment: إظهار تعليق Super Chat
+  Upcoming: القادمة
 Videos:
   #& Sort By
   Sort By:
@@ -776,6 +796,8 @@ Comments:
   And others: و اخرين
   From {channelName}: من {channelName}
   Member: عضو
+  View {replyCount} replies: عرض {replyCount} ردود
+  Hearted: القلب
 Up Next: 'التالي'
 
 # Toast Messages
@@ -837,6 +859,7 @@ Tooltips:
       للخلف للتحكم في معدل التشغيل. اضغط مع الاستمرار على مفتاح التحكم (مفتاح الأوامر
       على Mac) ثم انقر فوق الماوس للعودة بسرعة إلى معدل التشغيل الافتراضي (1x ما لم
       يتم تغييره في الإعدادات).
+    Skip by Scrolling Over Video Player: استخدم عجلة التمرير لتخطي الفيديو بنمط MPV.
   Privacy Settings:
     Remove Video Meta Files: عندما يمكن، يحذف Freetube تلقائيًا ملفات التعريف التي
       تم إنشاؤها أثناء تشغيل الفيديو ، عندما تكون صفحة المشاهدة مغلقة.
@@ -862,6 +885,10 @@ Tooltips:
     Replace HTTP Cache: تعطيل ذاكرة التخزين المؤقت HTTP المستندة إلى قرص Electron
       وتمكين ذاكرة تخزين مؤقت للصور في الذاكرة. سيؤدي إلى زيادة استخدام ذاكرة الوصول
       العشوائي.
+  Distraction Free Settings:
+    Hide Channels: أدخل اسم القناة أو رقم تعريف القناة لإخفاء كل الفيديوهات وقوائم
+      التشغيل والقناة نفسها من الظهور في "بحث Google" أو "المحتوى الرائج". يجب أن
+      يكون اسم القناة الذي تم إدخاله مطابقا تماما وحساسا لحالة الأحرف.
 This video is unavailable because of missing formats. This can happen due to country unavailability.: هذا
   الفيديو غير متاح الآن لعدم وجود ملفات فيديو . هذا قد يكون بسبب أن الفيديو غير متاح
   في بلدك.
@@ -914,3 +941,4 @@ Chapters:
   'Chapters list visible, current chapter: {chapterName}': 'قائمة الفصول المرئية ،
     الفصل الحالي: {sectionName}'
 Preferences: التفضيلات
+Ok: موافق

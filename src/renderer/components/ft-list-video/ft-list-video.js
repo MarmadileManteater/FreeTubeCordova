@@ -1,16 +1,17 @@
-import Vue from 'vue'
+import { defineComponent } from 'vue'
 import FtIconButton from '../ft-icon-button/ft-icon-button.vue'
 import { mapActions } from 'vuex'
-import i18n from '../../i18n/index'
 import {
   copyToClipboard,
   formatDurationAsTimestamp,
+  formatNumber,
   openExternalLink,
   showToast,
-  toLocalePublicationString
+  toLocalePublicationString,
+  toDistractionFreeTitle
 } from '../../helpers/utils'
 
-export default Vue.extend({
+export default defineComponent({
   name: 'FtListVideo',
   components: {
     'ft-icon-button': FtIconButton
@@ -98,7 +99,13 @@ export default Vue.extend({
     },
 
     invidiousUrl: function () {
-      return `${this.currentInvidiousInstance}/watch?v=${this.id}`
+      let videoUrl = `${this.currentInvidiousInstance}/watch?v=${this.id}`
+      // `playlistId` can be undefined
+      if (this.playlistId && this.playlistId.length !== 0) {
+        // `index` seems can be ignored
+        videoUrl += `&list=${this.playlistId}`
+      }
+      return videoUrl
     },
 
     invidiousChannelUrl: function () {
@@ -106,10 +113,21 @@ export default Vue.extend({
     },
 
     youtubeUrl: function () {
-      return `https://www.youtube.com/watch?v=${this.id}`
+      let videoUrl = `https://www.youtube.com/watch?v=${this.id}`
+      // `playlistId` can be undefined
+      if (this.playlistId && this.playlistId.length !== 0) {
+        // `index` seems can be ignored
+        videoUrl += `&list=${this.playlistId}`
+      }
+      return videoUrl
     },
 
     youtubeShareUrl: function () {
+      // `playlistId` can be undefined
+      if (this.playlistId && this.playlistId.length !== 0) {
+        // `index` seems can be ignored
+        return `https://youtu.be/${this.id}?list=${this.playlistId}`
+      }
       return `https://youtu.be/${this.id}`
     },
 
@@ -223,6 +241,10 @@ export default Vue.extend({
       return this.$store.getters.getHideLiveStreams
     },
 
+    hideUpcomingPremieres: function () {
+      return this.$store.getters.getHideUpcomingPremieres
+    },
+
     hideVideoViews: function () {
       return this.$store.getters.getHideVideoViews
     },
@@ -259,9 +281,16 @@ export default Vue.extend({
       return this.$store.getters.getSaveWatchedProgress
     },
 
-    currentLocale: function () {
-      return i18n.locale.replace('_', '-')
-    }
+    showDistractionFreeTitles: function () {
+      return this.$store.getters.getShowDistractionFreeTitles
+    },
+    displayTitle: function () {
+      if (this.showDistractionFreeTitles) {
+        return toDistractionFreeTitle(this.data.title)
+      } else {
+        return this.data.title
+      }
+    },
   },
   mounted: function () {
     this.parseVideoData()
@@ -352,7 +381,9 @@ export default Vue.extend({
       this.isPremium = this.data.premium || false
       this.viewCount = this.data.viewCount
 
-      if (typeof (this.data.premiereTimestamp) !== 'undefined') {
+      if (typeof this.data.premiereDate !== 'undefined') {
+        this.publishedText = this.data.premiereDate.toLocaleString()
+      } else if (typeof (this.data.premiereTimestamp) !== 'undefined') {
         this.publishedText = new Date(this.data.premiereTimestamp * 1000).toLocaleString()
       } else {
         this.publishedText = this.data.publishedText
@@ -371,7 +402,7 @@ export default Vue.extend({
       if (this.hideVideoViews) {
         this.hideViews = true
       } else if (typeof (this.data.viewCount) !== 'undefined' && this.data.viewCount !== null) {
-        this.parsedViewCount = Intl.NumberFormat(this.currentLocale).format(this.data.viewCount)
+        this.parsedViewCount = formatNumber(this.data.viewCount)
       } else if (typeof (this.data.viewCountText) !== 'undefined') {
         this.parsedViewCount = this.data.viewCountText.replace(' views', '')
       } else {

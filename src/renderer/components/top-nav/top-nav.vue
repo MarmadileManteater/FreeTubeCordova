@@ -51,6 +51,7 @@
         @keydown.enter.prevent="createNewWindow"
       />
       <div
+        v-if="!hideHeaderLogo"
         class="logo"
         role="link"
         tabindex="0"
@@ -79,7 +80,6 @@
           :placeholder="$t('Search / Go to URL')"
           class="searchInput"
           :is-search="true"
-          :select-on-focus="true"
           :data-list="searchSuggestionsDataList"
           :spellcheck="false"
           :show-clear-text-button="true"
@@ -108,4 +108,4 @@
 </template>
 
 <script src="./top-nav.js" />
-<style scoped lang="sass" src="./top-nav.sass" />
+<style scoped lang="scss" src="./top-nav.scss" />

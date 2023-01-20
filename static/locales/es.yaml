@@ -211,6 +211,7 @@ Settings:
     Expand Side Bar by Default: Expandir barra lateral por defecto
     Disable Smooth Scrolling: Desactivar desplazamiento suave
     Hide Side Bar Labels: Ocultar las etiquetas de la barra lateral
+    Hide FreeTube Header Logo: Ocultar el logotipo de Freetube de la parte superior
   Player Settings:
     Player Settings: 'Reproductor FreeTube'
     Force Local Backend for Legacy Formats: 'Forzar API local para formato «Legacy»'
@@ -267,6 +268,8 @@ Settings:
         Milisegundo 3 dígitos. %i Video ID. También puede utilizar "\" o "/" para
         crear subcarpetas.
     Enter Fullscreen on Display Rotate: Cambiar a pantalla completa al girar la pantalla
+    Skip by Scrolling Over Video Player: Omitir el desplazarse sobre el reproductor
+      de video
   Privacy Settings:
     Privacy Settings: 'Privacidad'
     Remember History: 'Recordar historial'
@@ -384,6 +387,11 @@ Settings:
     Hide Live Streams: Ocultar retransmisiones en directo
     Hide Sharing Actions: Ocultar acciones de uso compartido
     Hide Chapters: Ocultar los capítulos
+    Hide Upcoming Premieres: Ocultar los próximos estrenos
+    Hide Channels: Ocultar los vídeos de los canales
+    Hide Channels Placeholder: Nombre o ID del canal
+    Display Titles Without Excessive Capitalisation: Mostrar títulos sin demasiadas
+      mayúsculas
   The app needs to restart for changes to take effect. Restart and apply change?: ¿Quieres
     reiniciar FreeTube ahora para aplicar los cambios?
   Proxy Settings:
@@ -443,6 +451,17 @@ Settings:
       están activadas. Se recomienda hacer copias de seguridad. ¡Utilícelas bajo su
       propio riesgo!
     Replace HTTP Cache: Reemplazar la caché HTTP
+  Password Settings:
+    Password Settings: Configuración de la contraseña
+    Set Password To Prevent Access: Establecer una contraseña para impedir el acceso
+      a los ajustes
+    Set Password: Establecer contraseña
+    Remove Password: Eliminar contraseña
+  Password Dialog:
+    Password: Contraseña
+    Enter Password To Unlock: Introduce la contraseña para desbloquear los ajustes
+    Password Incorrect: Contraseña incorrecta
+    Unlock: Desbloquear
 About:
   #On About page
   About: 'Acerca de'
@@ -716,6 +735,9 @@ Video:
     Dropped / Total Frames: Fotogramas Perdidos / Fotogramas Totales
   Premieres in: Estrenos en
   Premieres: Estrenos
+  Show Super Chat Comment: Mostrar los comentarios del Super Chat
+  Scroll to Bottom: Desplazarse hacia abajo
+  Upcoming: Próximamente
 Videos:
   #& Sort By
   Sort By:
@@ -794,6 +816,8 @@ Comments:
   And others: y otros
   Pinned by: Fijado por
   Member: Miembro
+  Hearted: Corazón
+  View {replyCount} replies: Ver {replyCount} respuestas
 Up Next: 'A continuación'
 
 # Toast Messages
@@ -852,6 +876,8 @@ Tooltips:
       y mantén la tecla Control (Comando en Mac) y haz clic izquierdo para volver
       a la velocidad de reproducción por defecto (1x o la que hayas configurado en
       ajustes).
+    Skip by Scrolling Over Video Player: Use la rueda de desplazamiento para saltar
+      el video, estilo MPV.
   General Settings:
     Region for Trending: La región de las tendencias permite ver los vídeos más populares
       en un país determinado. YouTube no admite todos los países mostrados.
@@ -888,6 +914,11 @@ Tooltips:
     Replace HTTP Cache: Desactiva la caché HTTP basada en Electron disk y habilite
       una caché para la imagen en la memoria personalizada. Esto aumentará el uso
       de la memoria RAM.
+  Distraction Free Settings:
+    Hide Channels: Introduzca un nombre o ID de canal para ocultar todos los vídeos,
+      listas de reproducción y el propio canal y evitar que aparezcan en las búsquedas
+      o en las tendencias. El nombre del canal introducido debe coincidir completamente
+      y distingue entre mayúsculas y minúsculas.
 More: Más
 Unknown YouTube url type, cannot be opened in app: Tipo de URL desconocido. No se
   puede abrir en la aplicación
@@ -940,3 +971,4 @@ Chapters:
     ocultos, capítulo actual: {nombredelcapítulo}'
   Chapters: Capítulos
 Preferences: Preferencias
+Ok: De acuerdo

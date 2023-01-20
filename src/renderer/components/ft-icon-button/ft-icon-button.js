@@ -1,6 +1,7 @@
-import Vue from 'vue'
+import { defineComponent } from 'vue'
+import { sanitizeForHtmlId } from '../../helpers/accessibility'
 
-export default Vue.extend({
+export default defineComponent({
   name: 'FtIconButton',
   props: {
     title: {
@@ -59,6 +60,7 @@ export default Vue.extend({
     }
   },
   methods: {
+    sanitizeForHtmlId,
     // used by the share menu
     hideDropdown: function () {
       this.dropdownShown = false

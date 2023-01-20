@@ -1,9 +1,8 @@
-import Vue from 'vue'
+import { defineComponent } from 'vue'
 import FtListDropdown from '../ft-list-dropdown/ft-list-dropdown.vue'
-import i18n from '../../i18n/index'
-import { copyToClipboard, openExternalLink } from '../../helpers/utils'
+import { copyToClipboard, formatNumber, openExternalLink } from '../../helpers/utils'
 
-export default Vue.extend({
+export default defineComponent({
   name: 'PlaylistInfo',
   components: {
     'ft-list-dropdown': FtListDropdown
@@ -76,9 +75,6 @@ export default Vue.extend({
         default:
           return `https://i.ytimg.com/vi/${this.firstVideoId}/mqdefault.jpg`
       }
-    },
-    currentLocale: function () {
-      return i18n.locale.replace('_', '-')
     }
   },
   mounted: function () {
@@ -93,12 +89,12 @@ export default Vue.extend({
     this.infoSource = this.data.infoSource
 
     // Causes errors if not put inside of a check
-    if (typeof (this.data.viewCount) !== 'undefined') {
-      this.viewCount = this.hideViews ? null : Intl.NumberFormat(this.currentLocale).format(this.data.viewCount)
+    if (typeof (this.data.viewCount) !== 'undefined' && !isNaN(this.data.viewCount)) {
+      this.viewCount = this.hideViews ? null : formatNumber(this.data.viewCount)
     }
 
-    if (typeof (this.data.videoCount) !== 'undefined') {
-      this.videoCount = Intl.NumberFormat(this.currentLocale).format(this.data.videoCount)
+    if (typeof (this.data.videoCount) !== 'undefined' && !isNaN(this.data.videoCount)) {
+      this.videoCount = formatNumber(this.data.videoCount)
     }
 
     this.lastUpdated = this.data.lastUpdated
@@ -122,23 +118,6 @@ export default Vue.extend({
           openExternalLink(invidiousUrl)
           break
       }
-    },
-
-    playFirstVideo() {
-      const playlistInfo = {
-        playlistId: this.id
-      }
-
-      this.$router.push(
-        {
-          path: `/watch/${this.firstVideoId}`,
-          query: playlistInfo
-        }
-      )
-    },
-
-    goToChannel: function () {
-      this.$router.push({ path: `/channel/${this.channelId}` })
     }
   }
 })

@@ -29,22 +29,29 @@
             :key="channel.key"
             class="channel"
           >
-            <div class="thumbnailContainer">
+            <router-link
+              tabindex="-1"
+              class="thumbnailContainer"
+              :to="`/channel/${channel.id}`"
+            >
               <img
                 class="channelThumbnail"
                 :src="thumbnailURL(channel.thumbnail)"
-                @click="goToChannel(channel.id)"
+                alt=""
                 @error.once="updateThumbnail(channel)"
               >
-            </div>
-            <div
+            </router-link>
+            <router-link
               class="channelName"
               :title="channel.name"
-              @click="goToChannel(channel.id)"
+              :to="`/channel/${channel.id}`"
             >
               {{ channel.name }}
-            </div>
-            <div class="unsubscribeContainer">
+            </router-link>
+            <div
+              v-if="!hideUnsubscribeButton"
+              class="unsubscribeContainer"
+            >
               <ft-button
                 :label="$t('Channels.Unsubscribe')"
                 background-color="var(--search-bar-color)"

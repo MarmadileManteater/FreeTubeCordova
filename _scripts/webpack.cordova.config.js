@@ -10,29 +10,32 @@ const CssMinimizerPlugin = require('css-minimizer-webpack-plugin')
 const ProcessLocalesPlugin = require('./ProcessLocalesPlugin')
 const CordovaPlugin = require('./CordovaPlugin')
 
-const { productName } = require('../package.json')
-
 const isDevMode = process.env.NODE_ENV === 'development'
 
 const config = {
-  name: 'web',
+name: 'cordova',
   mode: process.env.NODE_ENV,
   devtool: isDevMode ? 'eval-cheap-module-source-map' : false,
   entry: {
     web: path.join(__dirname, '../src/renderer/main.js'),
   },
   output: {
-    publicPath: '',
     path: path.join(__dirname, '../dist/cordova/www'),
     filename: '[name].js',
   },
-  externals: {
-    ytpl: '{}',
-    ytsr: '{}',
-    electron: '{}',
-    cordova: 'cordova',
-    'music-controls': 'MusicControls'
-  },
+  externals: [
+    {
+      electron: '{}',
+      cordova: 'cordova',
+      'music-controls': 'MusicControls'
+    },
+    ({ request }, callback) => {
+      if (request.startsWith('youtubei.js')) {
+        return callback(null, '{}')
+      }
+      callback()
+    }
+  ],
   module: {
     rules: [
       {
@@ -42,20 +45,10 @@ const config = {
       },
       {
         test: /\.vue$/,
-        use: {
-          loader: 'vue-loader',
-          options: {
-            extractCSS: true,
-            loaders: {
-              sass: 'vue-style-loader!css-loader!sass-loader?indentedSyntax=1',
-              scss: 'vue-style-loader!css-loader!sass-loader',
-              less: 'vue-style-loader!css-loader!less-loader',
-            },
-          },
-        },
+        loader: 'vue-loader'
       },
       {
-        test: /\.s(c|a)ss$/,
+        test: /\.scss$/,
         use: [
           {
             loader: MiniCssExtractPlugin.loader,
@@ -69,11 +62,7 @@ const config = {
           {
             loader: 'sass-loader',
             options: {
-              // eslint-disable-next-line
-              implementation: require('sass'),
-              sassOptions: {
-                indentedSyntax: true
-              }
+              implementation: require('sass')
             }
           },
         ],
@@ -127,15 +116,14 @@ const config = {
     __filename: isDevMode,
   },
   plugins: [
-    new CordovaPlugin(),
     new webpack.DefinePlugin({
-      'process.env.PRODUCT_NAME': JSON.stringify(productName),
       'process.env.IS_ELECTRON': false,
+      'process.env.IS_ELECTRON_MAIN': false,
       'process.env.IS_CORDOVA': true
     }),
     new webpack.ProvidePlugin({
       process: 'process/browser',
-      Buffer: ['buffer', 'Buffer']
+      Buffer: ['buffer', 'Buffer'],
     }),
     new HtmlWebpackPlugin({
       excludeChunks: ['processTaskWorker'],
@@ -147,21 +135,16 @@ const config = {
     new MiniCssExtractPlugin({
       filename: isDevMode ? '[name].css' : '[name].[contenthash].css',
       chunkFilename: isDevMode ? '[id].css' : '[id].[contenthash].css',
-    }),
+    })
   ],
   resolve: {
     alias: {
-      '@': path.join(__dirname, '../src/renderer'),
-      vue$: 'vue/dist/vue.esm.js',
-      src: path.join(__dirname, '../src/'),
-      icons: path.join(__dirname, '../_icons/'),
-      images: path.join(__dirname, '../src/renderer/assets/img/'),
-      static: path.join(__dirname, '../static/')
+      vue$: 'vue/dist/vue.esm.js'
     },
     fallback: {
       buffer: require.resolve('buffer/'),
       dns: require.resolve('browserify/lib/_empty.js'),
-      fs: require.resolve('browserify/lib/_empty.js'),
+      'fs/promises': require.resolve('browserify/lib/_empty.js'),
       http: require.resolve('stream-http'),
       https: require.resolve('https-browserify'),
       net: require.resolve('browserify/lib/_empty.js'),
@@ -173,7 +156,7 @@ const config = {
       vm: require.resolve('vm-browserify'),
       zlib: require.resolve('browserify-zlib')
     },
-    extensions: ['.js', '.vue', '.json', '.css'],
+    extensions: ['.js', '.vue']
   },
   target: 'web',
 }
@@ -185,6 +168,7 @@ const processLocalesPlugin = new ProcessLocalesPlugin({
 })
 
 config.plugins.push(
+  new CordovaPlugin(),
   processLocalesPlugin,
   new webpack.DefinePlugin({
     'process.env.LOCALE_NAMES': JSON.stringify(processLocalesPlugin.localeNames),
@@ -205,13 +189,8 @@ config.plugins.push(
           },
         },
     ]
-  }),
-  // webpack doesn't get rid of js-yaml even though it isn't used in the production builds
-  // so we need to manually tell it to ignore any imports for `js-yaml`
-  new webpack.IgnorePlugin({
-    resourceRegExp: /^js-yaml$/,
-    contextRegExp: /i18n$/
   })
 )
+
 
 module.exports = config

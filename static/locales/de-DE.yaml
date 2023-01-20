@@ -8,7 +8,7 @@ FreeTube: FreeTube
 File: Datei
 Quit: Beenden
 Edit: Bearbeiten
-Undo: Rückgängig
+Undo: Rückgängig machen
 Redo: Wiederherstellen
 Cut: Ausschneiden
 Copy: Kopieren
@@ -214,6 +214,7 @@ Settings:
     Disable Smooth Scrolling: Gleichmäßiges Scrollen deaktivieren
     Expand Side Bar by Default: Seitenleiste standardmäßig erweitern
     Hide Side Bar Labels: Seitenleisten-Beschriftungen ausblenden
+    Hide FreeTube Header Logo: FreeTube Titel Logo ausblenden
   Player Settings:
     Player Settings: Videoabspieler-Einstellungen
     Force Local Backend for Legacy Formats: Lokales System für Legacy Formate erzwingen
@@ -268,6 +269,7 @@ Settings:
         Millisekunde 3 Ziffern. %i Video-ID. Sie können auch \ oder / verwenden, um
         Unterordner zu erstellen.
     Enter Fullscreen on Display Rotate: Bei drehen des Bildschirms zu Vollbild wechseln
+    Skip by Scrolling Over Video Player: Überspringen durch Scrollen über den Videoplayer
   Subscription Settings:
     Subscription Settings: Abonnement-Einstellungen
     Hide Videos on Watch: Verstecke Videos bei Wiedergabe
@@ -393,6 +395,11 @@ Settings:
     Hide Live Streams: Livestreams ausblenden
     Hide Sharing Actions: Freigabe-Aktionen ausblenden
     Hide Chapters: Kapitel ausblenden
+    Hide Upcoming Premieres: Anstehende Premieren ausblenden
+    Hide Channels: Videos aus Kanälen ausblenden
+    Hide Channels Placeholder: Kanalname oder Kanal-ID
+    Display Titles Without Excessive Capitalisation: Titel ohne übermäßige Großschreibung
+      anzeigen
   The app needs to restart for changes to take effect. Restart and apply change?: Um
     die Änderungen anzuwenden muss die Anwendung neustarten. Jetzt neustarten und
     Änderungen aktivieren?
@@ -453,6 +460,17 @@ Settings:
       wenn sie aktiviert sind. Es wird dringend empfohlen, Sicherungskopien zu erstellen.
       Verwendung auf eigene Gefahr!
     Replace HTTP Cache: HTTP-Cache ersetzen
+  Password Dialog:
+    Password: Passwort
+    Enter Password To Unlock: Gib das Passwort ein, um die Einstellungen zu entsperren
+    Password Incorrect: Passwort falsch
+    Unlock: Entsperren
+  Password Settings:
+    Remove Password: Passwort entfernen
+    Password Settings: Passworteinstellungen
+    Set Password To Prevent Access: Passwort festlegen, um den Zugriff auf die Einstellungen
+      zu verhindern
+    Set Password: Passwort festlegen
 About:
   #On About page
   About: Über
@@ -690,12 +708,15 @@ Video:
     Volume: Lautstärke
     Bandwidth: Bandbreite
     Buffered: Gepuffert
-    Dropped / Total Frames: Ausgelassene Bilder / Bilder insgesamt
+    Dropped / Total Frames: Entfallene Einzelbilder / Gesamtzahl der Einzelbilder
     Mimetype: Medientyp
     Video statistics are not available for legacy videos: Videostatistiken sind für
       ältere Videos nicht verfügbar
   Premieres in: Premieren in
   Premieres: Premiere
+  Show Super Chat Comment: Super-Chat-Kommentar anzeigen
+  Scroll to Bottom: Nach unten scrollen
+  Upcoming: Demnächst
 Videos:
   #& Sort By
   Sort By:
@@ -782,6 +803,8 @@ Comments:
   And others: und andere
   Pinned by: Angeheftet von
   Member: Mitglied
+  View {replyCount} replies: '{replyCount} Antworten ansehen'
+  Hearted: Gefällt mir
 Up Next: Nächster Titel
 
 # Toast Messages
@@ -897,6 +920,8 @@ Tooltips:
       zu steuern. Halten Sie die Strg-Taste (Befehlstaste auf dem Mac) gedrückt und
       klicken Sie mit der linken Maustaste, um schnell zur Standard-Wiedergabegeschwindigkeit
       zurückzukehren (1x, sofern sie nicht in den Einstellungen geändert wurde).
+    Skip by Scrolling Over Video Player: Verwenden Sie das Scrollrad, um durch das
+      Video zu springen, MPV-Stil.
   Privacy Settings:
     Remove Video Meta Files: Bei Aktivierung löscht FreeTube alle Meta-Dateien die
       während der Videowiedergabe erzeugt werden, sobald die Videoseite verlassen
@@ -918,6 +943,11 @@ Tooltips:
     Replace HTTP Cache: Deaktiviert den festplattenbasierten HTTP-Cache von Electron
       und aktiviert einen benutzerdefinierten In-Memory-Image-Cache. Dies führt zu
       einer erhöhten Nutzung des Direktzugriffsspeichers.
+  Distraction Free Settings:
+    Hide Channels: Geben Sie einen Kanalnamen oder eine Kanal-ID ein, um alle Videos,
+      Wiedergabelisten und den Kanal selbst vor der Anzeige in der Suche oder den
+      Trends zu verbergen. Der eingegebene Kanalname muss vollständig übereinstimmen
+      und es wird zwischen Groß- und Kleinschreibung unterschieden.
 Playing Next Video Interval: Nächstes Video wird sofort abgespielt. Zum Abbrechen
   klicken. | Nächstes Video wird in {nextVideoInterval} Sekunden abgespielt. Zum Abbrechen
   klicken. | Nächstes Video wird in {nextVideoInterval} Sekunden abgespielt. Zum Abbrechen
@@ -969,3 +999,4 @@ Chapters:
   'Chapters list hidden, current chapter: {chapterName}': 'Kapitelliste ausgeblendet,
     aktuelles Kapitel: {chapterName}'
 Preferences: Einstellungen
+Ok: OK
