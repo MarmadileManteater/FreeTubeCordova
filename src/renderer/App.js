@@ -219,32 +219,28 @@ export default defineComponent({
 
     checkForNewUpdates: function () {
       if (this.checkForUpdates) {
-        const requestUrl = 'https://api.github.com/repos/freetubeapp/freetube/releases?per_page=1'
+        const requestUrl = 'https://api.github.com/repos/marmadilemanteater/freetubecordova/releases?per_page=1'
+        // only check for an update if you are on a nightly version
+        if (packageDetails.version.indexOf('nightly') !== -1) {
+          fetch(requestUrl)
+            .then((response) => response.json())
+            .then((json) => {
+              const tagName = json[0].tag_name
+              const versionNumber = tagName.split('-nightly-')[1]
+              this.updateChangelog = marked.parse(json[0].body)
+              this.changeLogTitle = json[0].name
 
-        fetch(requestUrl)
-          .then((response) => response.json())
-          .then((json) => {
-            const tagName = json[0].tag_name
-            const versionNumber = tagName.replace('v', '').replace('-beta', '')
-            this.updateChangelog = marked.parse(json[0].body)
-            this.changeLogTitle = json[0].name
-
-            this.updateBannerMessage = this.$t('Version {versionNumber} is now available!  Click for more details', { versionNumber })
-
-            const appVersion = packageDetails.version.split('.')
-            const latestVersion = versionNumber.split('.')
-
-            if (parseInt(appVersion[0]) < parseInt(latestVersion[0])) {
-              this.showUpdatesBanner = true
-            } else if (parseInt(appVersion[1]) < parseInt(latestVersion[1])) {
-              this.showUpdatesBanner = true
-            } else if (parseInt(appVersion[2]) < parseInt(latestVersion[2]) && parseInt(appVersion[1]) <= parseInt(latestVersion[1])) {
-              this.showUpdatesBanner = true
-            }
-          })
-          .catch((error) => {
-            console.error('errored while checking for updates', requestUrl, error)
-          })
+              const message = this.$t('Version $ is now available!  Click for more details')
+              this.updateBannerMessage = message.replace('$', versionNumber)
+              const appVersion = packageDetails.version.split('-nightly-')[1]
+              if (parseInt(versionNumber) > parseInt(appVersion)) {
+                this.showUpdatesBanner = true
+              }
+            })
+            .catch((error) => {
+              console.error('errored while checking for updates', requestUrl, error)
+            })
+        }
       }
     },
 
@@ -301,7 +297,7 @@ export default defineComponent({
     },
 
     openDownloadsPage: function () {
-      const url = 'https://freetubeapp.io#download'
+      const url = 'https://github.com/MarmadileManteater/FreeTubeCordova/releases'
       openExternalLink(url)
       this.showReleaseNotes = false
       this.showUpdatesBanner = false

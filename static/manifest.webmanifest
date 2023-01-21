@@ -1,0 +1,15 @@
+{
+  "background_color": "white",
+  "description": "A private YouTube client",
+  "display": "standalone",
+  "icons": [
+    {
+      "src": "https://raw.githubusercontent.com/MarmadileManteater/MarmadileManteater.github.io/development/freetube/_icons/256x256.png",
+      "sizes": "256x256",
+      "type": "image/png"
+    }
+  ],
+  "name": "FreeTube",
+  "short_name": "FreeTube",
+  "start_url": "./index.html"
+}

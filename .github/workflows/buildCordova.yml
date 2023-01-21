@@ -1,0 +1,88 @@
+# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+name: Build Cordova
+
+on:
+  push:
+    branches: [ new-cordova-build ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: development
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v2
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: "yarn"
+    - name: 🧶 Yarn install
+      run: yarn ci
+
+    - name: 🔍Lint code
+      run: yarn lint
+
+    - name: Get Version Number
+      uses: nyaayaya/package-version@v1
+      with:
+        path: 'package.json'
+        follow-symlinks: false
+
+    - name: Set Version Number Variable
+      id: versionNumber
+      uses: actions/github-script@v6
+      env:
+        VERSION_NUMBER_DEVELOPMENT: ${{ env.PACKAGE_VERSION }}-development-${{ github.run_number }}
+      with:
+        result-encoding: string
+        script: |
+          return "${{ env.VERSION_NUMBER_DEVELOPMENT }}"
+
+    - name: ⬆ Update package.json version
+      uses: jossef/action-set-json-field@v2
+      with:
+        file: package.json
+        field: version
+        value: ${{ steps.versionNumber.outputs.result }}
+
+    - name: 🔨 Install libarchive-tools
+      if: startsWith(matrix.os, 'ubuntu') && startsWith(matrix.runtime, 'linux-x64')
+      run: sudo apt -y install libarchive-tools; echo "Version Number ${{ toJson(job) }} ${{ toJson(needs) }}"
+
+    - name: 📦 Pack for 🕸web with Node.js ${{ matrix.node-version}}
+      run: yarn pack:web
+
+    - name: 🚧 Setup Android SDK Tools
+      uses: android-actions/setup-android@v2.0.9
+
+    - name: 📦 Pack for 📱Android with Node.js ${{ matrix.node-version}} & Cordova
+      run: yarn pack:cordova
+
+    - name: 🦴 Fetch keystore from secrets
+      run: |
+         while read -r line;
+         do
+           echo "${line}" >> freetube.keystore.asc
+         done <<< '${{ secrets.KEYSTORE }}'
+         gpg -d --passphrase '${{ secrets.KEYSTORE_PASSWORD }}' --batch freetube.keystore.asc >> freetube.keystore
+
+    - name: Build APK with Cordova with Node.js ${{ matrix.node-version}}
+      if: startsWith(matrix.os, 'ubuntu') && startsWith(matrix.runtime, 'linux-x64')
+      run: yarn build:cordova freetube-${{ steps.versionNumber.outputs.result }}.apk ./freetube.keystore ${{ secrets.KEYSTORE_PASSWORD }}
+
+    - name: Upload Cordova APK Artifact
+      uses: actions/upload-artifact@v3
+      if: startsWith(matrix.os, 'ubuntu') && startsWith(matrix.runtime, 'linux-x64')
+      with:
+        name: freetube-${{ steps.versionNumber.outputs.result }}-Android.apk
+        path: dist/freetube-${{ steps.versionNumber.outputs.result }}.apk
+
+    - name: Upload PWA Artifact
+      uses: actions/upload-artifact@v3
+      if: startsWith(matrix.os, 'ubuntu') && startsWith(matrix.runtime, 'linux-x64')
+      with:
+        name: freetube-${{ steps.versionNumber.outputs.result }}-PWA
+        path: dist/web

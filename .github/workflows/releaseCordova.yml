@@ -1,0 +1,160 @@
+# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+name: Release Cordova
+on:
+  push:
+    branches: [ release ]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        node-version: [16.x]
+        runtime: [ linux-x64 ]
+        include:
+        - runtime: linux-x64
+          os: ubuntu-18.04
+
+    runs-on: ${{ matrix.os }}
+    environment: nightly
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v2
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: "yarn"
+    - run: npm run ci
+    - name: Get Version Number
+      uses: nyaayaya/package-version@v1
+      with:
+        path: 'package.json'
+        follow-symlinks: false
+
+    - name: Set Version Number Variable
+      id: versionNumber
+      uses: actions/github-script@v6
+      env:
+        IS_DEV: ${{ contains(github.ref, 'development') }}
+        IS_NIGHTLY: ${{ contains(github.ref, 'release') }}
+        VERSION_NUMBER_DEVELOPMENT: ${{ env.PACKAGE_VERSION }}-development-${{ github.run_number }}
+        VERSION_NUMBER_NIGHTLY: ${{ env.PACKAGE_VERSION }}-nightly-${{ github.run_number }}
+        VERSION_NUMBER_RELEASE: ${{ env.PACKAGE_VERSION }}.${{ github.run_number }}
+      with:
+        result-encoding: string
+        script: |
+          if (${{ env.IS_DEV }}) {
+            return "${{ env.VERSION_NUMBER_DEVELOPMENT }}"
+          } else if (${{ env.IS_NIGHTLY }}) {
+            return "${{ env.VERSION_NUMBER_NIGHTLY }}"
+          } else {
+           return "${{env.VERSION_NUMBER_RELEASE }}"
+          }
+        # script: if ${{ env.IS_DEV }} then echo ":token :set-output name=VERSION_NUMBER::${{ env.VERSION_NUMBER_NIGHTLY }}" else echo "::set-output name=VERSION_NUMBER::${{ env.VERSION_NUMBER }}" fi
+
+    - name: Update package.json version
+      uses: jossef/action-set-json-field@v2
+      with:
+        file: package.json
+        field: version
+        value: ${{ steps.versionNumber.outputs.result }}
+
+
+    - name: Install libarchive-tools
+      if: startsWith(matrix.os, 'ubuntu') && startsWith(matrix.runtime, 'linux-x64')
+      run: sudo apt -y install libarchive-tools; echo "Version Number ${{ toJson(job) }} ${{ toJson(needs) }}"
+
+    - name: Lint code
+      run: npm run lint
+
+    - name: Pack with Node.js ${{ matrix.node-version}}
+      if: contains(matrix.runtime, 'x64')
+      run: npm run pack:browser
+
+    - name: Setup Android SDK Tools
+      if: contains(matrix.runtime, 'x64')
+      uses: android-actions/setup-android@v2.0.9
+
+    - name: Fetch keystore from secrets
+      run: |
+         while read -r line;
+         do
+           echo "${line}" >> freetube.keystore.asc
+         done <<< '${{ secrets.KEYSTORE }}'
+         gpg -d --passphrase '${{ secrets.KEYSTORE_PASSWORD }}' --batch freetube.keystore.asc >> freetube.keystore
+
+    - name: Build APK with Cordova with Node.js ${{ matrix.node-version}}
+      if: startsWith(matrix.os, 'ubuntu') && startsWith(matrix.runtime, 'linux-x64')
+      run: npm run build:cordova freetube-${{ steps.versionNumber.outputs.result }}.apk cordova ./freetube.keystore ${{ secrets.KEYSTORE_PASSWORD }}
+
+    - name: Upload Cordova APK Artifact
+      uses: actions/upload-artifact@v3
+      if: startsWith(matrix.os, 'ubuntu') && startsWith(matrix.runtime, 'linux-x64')
+      with:
+        name: freetube-${{ steps.versionNumber.outputs.result }}.apk
+        path: build/freetube-${{ steps.versionNumber.outputs.result }}.apk
+
+    - name: Build HTML5 with Node.js ${{ matrix.node-version}}
+      if: startsWith(matrix.os, 'ubuntu') && startsWith(matrix.runtime, 'linux-x64')
+      run: npm run build:cordova freetube browser
+
+    - name: Setup Zip Action
+      if: startsWith(matrix.os, 'ubuntu') && startsWith(matrix.runtime, 'linux-x64')
+      uses: montudor/action-zip@v1.0.0
+
+    - name: Zip output
+      if: startsWith(matrix.os, 'ubuntu') && startsWith(matrix.runtime, 'linux-x64')
+      run: zip -qq -r freetube-${{ steps.versionNumber.outputs.result }}.zip *
+      working-directory: build/freetube/
+
+    - name: Upload Cordova HTML5 Artifact
+      uses: actions/upload-artifact@v3
+      if: startsWith(matrix.os, 'ubuntu') && startsWith(matrix.runtime, 'linux-x64')
+      with:
+        name: freetube-${{ steps.versionNumber.outputs.result }}.zip
+        path: build/freetube/freetube-${{ steps.versionNumber.outputs.result }}.zip
+
+    - name: Create release body
+      run: |
+        echo "${{ github.event.head_commit.message }}" >> release.txt
+        echo "" >> release.txt
+
+    - name: Create Draft Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.versionNumber.outputs.result }}
+        release_name: ${{ steps.versionNumber.outputs.result }}
+        draft: true
+        prerelease: false
+        body_path: release.txt
+
+    - name: Upload HTML5 Artifact to Release
+      uses: actions/upload-release-asset@v1.0.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: build/freetube/freetube-${{ steps.versionNumber.outputs.result }}.zip
+        asset_name: freetube-${{ steps.versionNumber.outputs.result }}-pwa.zip
+        asset_content_type: application/zip
+
+    - name: Upload Android APK Artifact to Release
+      uses: actions/upload-release-asset@v1.0.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: build/freetube-${{ steps.versionNumber.outputs.result }}.apk
+        asset_name: freetube-${{ steps.versionNumber.outputs.result }}-android.apk
+        asset_content_type: application/apk
+
+    - uses: eregon/publish-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        release_id: ${{ steps.create_release.outputs.id }}

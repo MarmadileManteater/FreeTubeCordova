@@ -20,9 +20,9 @@
   },
   "scripts": {
     "build": "run-s rebuild:electron pack build-release",
-    "run:cordova": "cd dist/cordova && npx cordova run android",
     "build:arm64": "run-s rebuild:electron pack build-release:arm64",
     "build:arm32": "run-s rebuild:electron pack build-release:arm32",
+    "build:cordova": "node _scripts/cordova-build.js",
     "build-release": "node _scripts/build.js",
     "build-release:arm64": "node _scripts/build.js arm64",
     "build-release:arm32": "node _scripts/build.js arm32",
@@ -50,6 +50,7 @@
     "prettier": "prettier --write \"{src,_scripts}/**/*.{js,vue}\"",
     "rebuild:electron": "electron-builder install-app-deps",
     "release": "run-s test build",
+    "run:cordova": "cd dist/cordova && npx cordova run android",
     "ci": "yarn install --silent --frozen-lockfile"
   },
   "dependencies": {

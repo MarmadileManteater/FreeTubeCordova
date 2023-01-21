@@ -6,7 +6,7 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0" />
     <% if (!process.env.IS_ELECTRON) { %>
-    <link rel="manifest" href="static/manifest.json" />
+    <link rel="manifest" href="static/manifest.webmanifest" />
     <% } %>
     <title></title>
     <% if (htmlWebpackPlugin.options.nodeModules) { %>
@@ -43,7 +43,9 @@
     }
     </script>
     <% } %>
+    <% if (process.env.IS_CORDOVA) { %>
     <script src="cordova.js"></script>
+    <% } %>
     <!-- webpack builds are automatically injected -->
   </body>
 

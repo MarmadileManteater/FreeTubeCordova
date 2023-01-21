@@ -28,6 +28,7 @@ const config = {
     level: isDevMode ? 'info' : 'none'
   },
   output: {
+    publicPath: '',
     libraryTarget: 'commonjs2',
     path: path.join(__dirname, '../dist'),
     filename: '[name].js',

@@ -19,6 +19,7 @@ const config = {
     web: path.join(__dirname, '../src/renderer/main.js'),
   },
   output: {
+    publicPath: '',
     path: path.join(__dirname, '../dist/web'),
     filename: '[name].js',
   },

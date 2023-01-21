@@ -13,7 +13,7 @@ const CordovaPlugin = require('./CordovaPlugin')
 const isDevMode = process.env.NODE_ENV === 'development'
 
 const config = {
-name: 'cordova',
+  name: 'cordova',
   mode: process.env.NODE_ENV,
   devtool: isDevMode ? 'eval-cheap-module-source-map' : false,
   entry: {
