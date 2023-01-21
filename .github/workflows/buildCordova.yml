@@ -28,9 +28,9 @@ jobs:
     - name: Read package.json into variable
       id: read_package
       run: |
-        echo 'PACKAGE_JSON<<EOF' >> $GITHUB_OUTPUT
-        cat ./package.json >> $GITHUB_OUTPUT
-        echo 'EOF' >> $GITHUB_OUTPUT
+        echo 'PACKAGE_JSON<<EOF' >> $GITHUB_ENV
+        cat ./package.json >> $GITHUB_ENV
+        echo 'EOF' >> $GITHUB_ENV
 
     - name: Set Version Number Variable
       id: versionNumber
@@ -38,7 +38,7 @@ jobs:
       with:
         result-encoding: string
         script: |
-          const version = JSON.parse(`${{ steps.read_package.outputs.packageJson }}`).version
+          const version = JSON.parse(`${{ env.PACKAGE_JSON }}`).version
           return `${version}-development-${{ github.run_number }}`
     - name: Set Product Name Variable
       id: productName
@@ -46,7 +46,7 @@ jobs:
       with:
         result-encoding: string
         script: |
-          return `${JSON.parse(`${{ steps.read_package.outputs.packageJson }}`).productName}.development`
+          return `${JSON.parse(`${{ env.PACKAGE_JSON }}`).productName}.development`
 
     - name: ⬆ Update package.json version
       uses: jossef/action-set-json-field@v2.1
