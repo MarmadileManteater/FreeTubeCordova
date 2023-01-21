@@ -1,4 +1,5 @@
-const { move, writeFile, copyFile, stat } = require('fs/promises')
+const { writeFile, copyFile, stat } = require('fs/promises')
+const { move } = require('fs-extra')
 const path = require('path')
 const pkg = require('../package.json')
 const exec = require('./helpers').execWithLiveOutput
