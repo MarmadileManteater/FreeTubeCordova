@@ -48,16 +48,19 @@ jobs:
         field: version
         value: ${{ steps.versionNumber.outputs.result }}
 
-    - name: 🔨 Install libarchive-tools
-      run: sudo apt -y install libarchive-tools; echo "Version Number ${{ toJson(job) }} ${{ toJson(needs) }}"
-
-    - name: 📦 Pack for 🕸web with Node.js ${{ matrix.node-version}}
+    - name: 📦 Pack for 🕸web with Node.js
       run: yarn pack:web
+
+    - name: 📡 Upload PWA Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: freetube-${{ steps.versionNumber.outputs.result }}-PWA
+        path: dist/web
 
     - name: 🚧 Setup Android SDK Tools
       uses: android-actions/setup-android@v2.0.9
 
-    - name: 📦 Pack for 📱Android with Node.js ${{ matrix.node-version}} & Cordova
+    - name: 📦 Pack for 📱Android with Node.js & Cordova
       run: yarn pack:cordova
 
     - name: 🦴 Fetch keystore from secrets
@@ -68,17 +71,11 @@ jobs:
          done <<< '${{ secrets.KEYSTORE }}'
          gpg -d --passphrase '${{ secrets.KEYSTORE_PASSWORD }}' --batch freetube.keystore.asc >> freetube.keystore
 
-    - name: Build APK with Cordova with Node.js ${{ matrix.node-version}}
+    - name: 👷‍♀️ Build APK with Cordova with Node.js
       run: yarn build:cordova freetube-${{ steps.versionNumber.outputs.result }}.apk ./freetube.keystore ${{ secrets.KEYSTORE_PASSWORD }}
 
-    - name: Upload Cordova APK Artifact
+    - name: 📡 Upload Cordova APK Artifact
       uses: actions/upload-artifact@v3
       with:
         name: freetube-${{ steps.versionNumber.outputs.result }}-Android.apk
         path: dist/freetube-${{ steps.versionNumber.outputs.result }}.apk
-
-    - name: Upload PWA Artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: freetube-${{ steps.versionNumber.outputs.result }}-PWA
-        path: dist/web
