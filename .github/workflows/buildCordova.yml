@@ -25,17 +25,22 @@ jobs:
     - name: 🔍Lint code
       run: yarn lint
 
-    - name: Get Version Number
-      uses: nyaa8/package-version@v1.0.3
-      with:
-        path: 'package.json'
-        follow-symlinks: false
+    - name: Read package.json into variable
+      id: read_package
+      run: |
+        content=`cat ./package.json`
+        # the following lines are only required for multi line json
+        content="${content//'%'/'%25'}"
+        content="${content//$'\n'/'%0A'}"
+        content="${content//$'\r'/'%0D'}"
+        # end of optional handling for multi line json
+        echo "packageJson=$content" >> $GITHUB_OUTPUT
 
     - name: Set Version Number Variable
       id: versionNumber
       uses: actions/github-script@v6
       env:
-        VERSION_NUMBER_DEVELOPMENT: ${{ env.PACKAGE_VERSION }}-development-${{ github.run_number }}
+        VERSION_NUMBER_DEVELOPMENT: ${{fromJson(steps.read_package.outputs.packageJson).version}}-development-${{ github.run_number }}
       with:
         result-encoding: string
         script: |
@@ -47,6 +52,13 @@ jobs:
         file: package.json
         field: version
         value: ${{ steps.versionNumber.outputs.result }}
+
+    - name: ⬆ Update package.json app environment
+      uses: jossef/action-set-json-field@v2.1
+      with:
+        file: package.json
+        field: productName
+        value: ${{fromJson(steps.read_package.outputs.packageJson).productName}}.development
 
     - name: 📦 Pack for 🕸web with Node.js
       run: yarn pack:web
