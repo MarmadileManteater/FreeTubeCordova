@@ -111,8 +111,12 @@
   @media screen and (max-width: 680px) {
     justify-content: flex-start;
 
-    :deep(.iconDropdown) {
+    :deep(.option .iconDropdown) {
       left: calc(50% - 20px);
+      right: auto;
+    }
+    :deep(.option:last-child .iconDropdown) {
+      left: auto;
       right: auto;
     }
   }
