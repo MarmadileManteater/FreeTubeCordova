@@ -35,12 +35,14 @@ jobs:
         content="${content//$'\r'/'%0D'}"
         # end of optional handling for multi line json
         echo "packageJson=$content" >> $GITHUB_OUTPUT
-
+    - name: Check json
+      run:
+        echo "${{ steps.read_package.outputs.packageJson }}"
     - name: Set Version Number Variable
       id: versionNumber
       uses: actions/github-script@v6
       env:
-        VERSION_NUMBER_DEVELOPMENT: ${{fromJson(steps.read_package.outputs.packageJson).version}}-development-${{ github.run_number }}
+        VERSION_NUMBER_DEVELOPMENT: ${{ fromJson(steps.read_package.outputs.packageJson).version }}-development-${{ github.run_number }}
       with:
         result-encoding: string
         script: |
