@@ -128,7 +128,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: freetube-${{ steps.versionNumber.outputs.result }}.zip
+        asset_path: dist/web/freetube-${{ steps.versionNumber.outputs.result }}.zip
         asset_name: freetube-${{ steps.versionNumber.outputs.result }}-pwa.zip
         asset_content_type: application/zip
 
