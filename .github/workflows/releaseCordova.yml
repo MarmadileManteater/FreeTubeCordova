@@ -10,7 +10,7 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
-    environment: nightly
+    environment: release
 
     steps:
     - uses: actions/checkout@v3
@@ -91,18 +91,53 @@ jobs:
 
     - name: 👷‍♀️ Build APK with Cordova with Node.js
       run: yarn build:cordova freetube-${{ steps.versionNumber.outputs.result }}.apk ./freetube.keystore ${{ secrets.KEYSTORE_PASSWORD }}
+
     - name: 📡 Upload Cordova APK Artifact
       uses: actions/upload-artifact@v3
       with:
         name: freetube-${{ steps.versionNumber.outputs.result }}-Android.apk
         path: dist/freetube-${{ steps.versionNumber.outputs.result }}.apk
-        
-    - name: 🏗Install SSH Key
-      uses: shimataro/ssh-key-action@v2
+
+    - name: 🔨 Setup Zip Action
+      uses: montudor/action-zip@v1.0.0
+
+    - name: 🤐 Zip output
+      run: zip -qq -r freetube-${{ steps.versionNumber.outputs.result }}.zip *
+      working-directory: dist/web/
+
+    - name: Create release body
+      run: |
+        echo "${{ github.event.head_commit.message }}" >> release.txt
+        echo "" >> release.txt
+
+    - name: 📝 Create Draft Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        known_hosts: 'just-a-placeholder'
-    - name: Add known hosts
-      run: ssh-keyscan -H ${{ secrets.SSH_SERVER }} >> ~/.ssh/known_hosts
-    - name: 🚀Deploy with scp
-      run: scp -r $(pwd) ${{ secrets.SSH_USER }}@${{ secrets.SSH_SERVER }}:~/FreeTubeCordova/
+        tag_name: ${{ steps.versionNumber.outputs.result }}
+        release_name: ${{ steps.versionNumber.outputs.result }}
+        draft: true
+        prerelease: false
+        body_path: release.txt
+
+    - name: ⬆ Upload HTML5 Artifact to Release
+      uses: actions/upload-release-asset@v1.0.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: dist/freetube-${{ steps.versionNumber.outputs.result }}.zip
+        asset_name: freetube-${{ steps.versionNumber.outputs.result }}-pwa.zip
+        asset_content_type: application/zip
+
+    - name: ⬆ Upload Android APK Artifact to Release
+      uses: actions/upload-release-asset@v1.0.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: dist/freetube-${{ steps.versionNumber.outputs.result }}.apk
+        asset_name: freetube-${{ steps.versionNumber.outputs.result }}-android.apk
+        asset_content_type: application/apk
