@@ -167,7 +167,7 @@ export default defineComponent({
         this.grabHistory()
         this.grabAllPlaylists()
         this.watchSystemTheme()
-        document.addEventListener('visibilitychange', (event) => {
+        document.addEventListener('visibilitychange', () => {
           if (!document.hidden) { // if the window was unfocused, the system theme might have changed
             this.watchSystemTheme()
           }
@@ -184,7 +184,12 @@ export default defineComponent({
         }
 
         this.dataReady = true
-
+        setTimeout(() => {
+          if (process.env.IS_CORDOVA) {
+            // hide the splashscreen
+            navigator.splashscreen.hide()
+          }
+        }, 250)
         setTimeout(() => {
           this.checkForNewUpdates()
           this.checkForNewBlogPosts()

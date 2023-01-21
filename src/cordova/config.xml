@@ -15,8 +15,7 @@
     <icon background="res/icon/android/background.png" density="xxxhdpi" foreground="res/icon/android/iconColor_256_padded.png"/>
     <preference name="AndroidWindowSplashScreenBackground" value="#212121" />
     <preference name="AndroidWindowSplashScreenAnimatedIcon" value="res/icon/android/iconColor_256_padded.png" />
-    <preference name="SplashScreenDelay" value="3000" />
-
+    <preference name="AutoHideSplashScreen" value="false" />
   </platform>
   <preference name="AndroidPersistentFileLocation" value="Compatibility"/>
   <preference name="AllowInlineMediaPlayback" value="true"/>
