@@ -175,22 +175,21 @@ config.plugins.push(
     'process.env.GEOLOCATION_NAMES': JSON.stringify(fs.readdirSync(path.join(__dirname, '..', 'static', 'geolocations')))
   }),
   new CopyWebpackPlugin({
-      patterns: [
-        {
-          from: path.join(__dirname, '../static/pwabuilder-sw.js'),
-          to: path.join(__dirname, '../dist/cordova/www/pwabuilder-sw.js'),
+    patterns: [
+      {
+        from: path.join(__dirname, '../static/pwabuilder-sw.js'),
+        to: path.join(__dirname, '../dist/cordova/www/pwabuilder-sw.js'),
+      },
+      {
+        from: path.join(__dirname, '../static'),
+        to: path.join(__dirname, '../dist/cordova/www/static'),
+        globOptions: {
+          dot: true,
+          ignore: ['**/.*', '**/locales/**', '**/pwabuilder-sw.js', '**/dashFiles/**', '**/storyboards/**'],
         },
-        {
-          from: path.join(__dirname, '../static'),
-          to: path.join(__dirname, '../dist/cordova/www/static'),
-          globOptions: {
-            dot: true,
-            ignore: ['**/.*', '**/locales/**', '**/pwabuilder-sw.js', '**/dashFiles/**', '**/storyboards/**'],
-          },
-        },
+      },
     ]
   })
 )
-
 
 module.exports = config

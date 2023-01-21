@@ -2,7 +2,7 @@ import i18n from '../../i18n/index'
 import { MAIN_PROFILE_ID, IpcChannels, SyncEvents } from '../../../constants'
 import { DBSettingHandlers } from '../../../datastores/handlers/index'
 import { getSystemLocale, showToast } from '../../helpers/utils'
-
+import cordova from 'cordova'
 /*
  * Due to the complexity of the settings module in FreeTube, a more
  * in-depth explanation for adding new settings is required.
@@ -356,6 +356,19 @@ const stateWithSideEffects = {
       if (process.env.IS_ELECTRON) {
         const { webFrame } = require('electron')
         webFrame.setZoomFactor(value / 100)
+      }
+    }
+  },
+  disableBackgroundModeNotification: {
+    defaultValue: false,
+    sideEffectsHandler: (_, value) => {
+      console.warn(value)
+      if (process.env.IS_CORDOVA) {
+        const { backgroundMode } = cordova.plugins
+        backgroundMode.setDefaults({
+          title: 'FreeTube',
+          silent: value
+        })
       }
     }
   }

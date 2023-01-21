@@ -428,6 +428,11 @@ Settings:
     Set Password To Prevent Access: Set a password to prevent access to settings
     Set Password: Set Password
     Remove Password: Remove Password
+  Cordova Settings:
+    Cordova Settings:
+      Cordova Settings
+    Disable Background Notification:
+      Disable notification when app in background
 About:
   #On About page
   About: About
@@ -808,7 +813,9 @@ Tooltips:
       when the watch page is closed.
   Experimental Settings:
     Replace HTTP Cache: Disables Electron's disk based HTTP cache and enables a custom in-memory image cache. Will lead to increased RAM usage.
-
+  Cordova Settings:
+    Disable Background Notification:
+      Disables the "FreeTube is running" background notificiation. Beware, disabling this notification may cause Android to close the app when it is in the background.
 # Toast Messages
 Local API Error (Click to copy): Local API Error (Click to copy)
 Invidious API Error (Click to copy): Invidious API Error (Click to copy)

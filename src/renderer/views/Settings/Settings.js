@@ -14,6 +14,7 @@ import ParentControlSettings from '../../components/parental-control-settings/pa
 import ExperimentalSettings from '../../components/experimental-settings/experimental-settings.vue'
 import PasswordSettings from '../../components/password-settings/password-settings.vue'
 import PasswordDialog from '../../components/password-dialog/password-dialog.vue'
+import CordovaSettings from '../../components/cordova-settings/cordova-settings.vue'
 
 export default defineComponent({
   name: 'Settings',
@@ -31,6 +32,7 @@ export default defineComponent({
     'download-settings': DownloadSettings,
     'parental-control-settings': ParentControlSettings,
     'experimental-settings': ExperimentalSettings,
+    'cordova-settings': CordovaSettings,
     'password-settings': PasswordSettings,
     'password-dialog': PasswordDialog,
   },
@@ -42,6 +44,10 @@ export default defineComponent({
   computed: {
     usingElectron: function () {
       return process.env.IS_ELECTRON
+    },
+
+    usingCordova: function () {
+      return process.env.IS_CORDOVA
     },
 
     settingsPassword: function () {

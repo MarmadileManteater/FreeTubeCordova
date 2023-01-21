@@ -147,8 +147,7 @@ export default defineComponent({
     if (process.env.IS_CORDOVA) {
       const { backgroundMode } = cordova.plugins
       backgroundMode.setDefaults({
-        // MusicControls already generates a push notification for FreeTube
-        silent: true
+        title: 'FreeTube'
       })
       backgroundMode.enable()
       backgroundMode.on('activate', () => {
