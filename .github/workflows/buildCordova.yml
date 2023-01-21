@@ -37,7 +37,7 @@ jobs:
         echo "packageJson=$content" >> $GITHUB_OUTPUT
     - name: Check json
       run:
-        echo "${{ steps.read_package.outputs.packageJson }}"
+        echo "${{ fromJSON(steps.read_package.outputs.packageJson).productName }}"
     - name: Set Version Number Variable
       id: versionNumber
       uses: actions/github-script@v6
