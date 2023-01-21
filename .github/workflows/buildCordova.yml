@@ -63,8 +63,8 @@ jobs:
       uses: jossef/action-set-json-field@v2.1
       with:
         file: package.json
-        field: name
-        value: ${{ steps.pkg.outputs.name }} Development
+        field: productName
+        value: ${{ steps.pkg.outputs.product }}-Development
 
     - name: 📦 Pack for 🕸web with Node.js
       run: yarn pack:web
