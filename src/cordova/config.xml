@@ -14,8 +14,8 @@
     <icon background="res/icon/android/background_128x128.png" density="xxhdpi" foreground="res/icon/android/icon_128x128_padded.png"/>
     <icon background="res/icon/android/background.png" density="xxxhdpi" foreground="res/icon/android/iconColor_256_padded.png"/>
     <preference name="AndroidWindowSplashScreenBackground" value="#212121" />
+    <preference name="AndroidWindowSplashScreenAnimatedIcon" value="res/icon/android/iconColor_256_padded.png" />
     <preference name="SplashScreenDelay" value="3000" />
-
 
   </platform>
   <preference name="AndroidPersistentFileLocation" value="Compatibility"/>
