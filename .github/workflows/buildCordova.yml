@@ -13,9 +13,9 @@ jobs:
     environment: development
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Use Node.js
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v3
       with:
         node-version: 16.x
         cache: "yarn"
@@ -26,7 +26,7 @@ jobs:
       run: yarn lint
 
     - name: Get Version Number
-      uses: nyaayaya/package-version@v1
+      uses: nyaa8/package-version@v1.0.3
       with:
         path: 'package.json'
         follow-symlinks: false
@@ -42,7 +42,7 @@ jobs:
           return "${{ env.VERSION_NUMBER_DEVELOPMENT }}"
 
     - name: ⬆ Update package.json version
-      uses: jossef/action-set-json-field@v2
+      uses: jossef/action-set-json-field@v2.1
       with:
         file: package.json
         field: version
