@@ -64,7 +64,7 @@ jobs:
       with:
         file: package.json
         field: productName
-        value: ${{ steps.pkg.outputs.productName }}-Development
+        value: ${{ steps.pkg.outputs.productName }} Development
 
     - name: 📦 Pack for 🕸web with Node.js
       run: yarn pack:web
