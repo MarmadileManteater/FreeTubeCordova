@@ -49,7 +49,6 @@ jobs:
         value: ${{ steps.versionNumber.outputs.result }}
 
     - name: 🔨 Install libarchive-tools
-      if: startsWith(matrix.os, 'ubuntu') && startsWith(matrix.runtime, 'linux-x64')
       run: sudo apt -y install libarchive-tools; echo "Version Number ${{ toJson(job) }} ${{ toJson(needs) }}"
 
     - name: 📦 Pack for 🕸web with Node.js ${{ matrix.node-version}}
@@ -70,19 +69,16 @@ jobs:
          gpg -d --passphrase '${{ secrets.KEYSTORE_PASSWORD }}' --batch freetube.keystore.asc >> freetube.keystore
 
     - name: Build APK with Cordova with Node.js ${{ matrix.node-version}}
-      if: startsWith(matrix.os, 'ubuntu') && startsWith(matrix.runtime, 'linux-x64')
       run: yarn build:cordova freetube-${{ steps.versionNumber.outputs.result }}.apk ./freetube.keystore ${{ secrets.KEYSTORE_PASSWORD }}
 
     - name: Upload Cordova APK Artifact
       uses: actions/upload-artifact@v3
-      if: startsWith(matrix.os, 'ubuntu') && startsWith(matrix.runtime, 'linux-x64')
       with:
         name: freetube-${{ steps.versionNumber.outputs.result }}-Android.apk
         path: dist/freetube-${{ steps.versionNumber.outputs.result }}.apk
 
     - name: Upload PWA Artifact
       uses: actions/upload-artifact@v3
-      if: startsWith(matrix.os, 'ubuntu') && startsWith(matrix.runtime, 'linux-x64')
       with:
         name: freetube-${{ steps.versionNumber.outputs.result }}-PWA
         path: dist/web
