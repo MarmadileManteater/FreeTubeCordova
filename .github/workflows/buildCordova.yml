@@ -25,7 +25,7 @@ jobs:
     - name: 🔍Lint code
       run: yarn lint
 
-    - name: Read & Modify of package.json
+    - name: 📚Read package.json
       id: pkg
       uses: jaywcjlove/github-action-package@v1.3.0
 
