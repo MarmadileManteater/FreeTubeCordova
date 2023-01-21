@@ -361,7 +361,13 @@ export default defineComponent({
         }
 
         invidiousAPICall(subscriptionsPayload).then(async (result) => {
-          resolve(await Promise.all(result.videos.map((video) => {
+          // For my own sanity, until all invidious servers are upgraded to the new version
+          let videos = result
+          // Check if the new version is in use before assuming that it is:
+          if ('videos' in result) {
+            videos = result.videos
+          }
+          resolve(await Promise.all(videos.map((video) => {
             video.publishedDate = new Date(video.published * 1000)
             return video
           })))
