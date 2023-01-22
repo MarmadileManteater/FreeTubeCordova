@@ -37,7 +37,7 @@ const exec = require('./helpers').execWithLiveOutput
   let buildArguments = ''
   if (keystorePassphrase !== null) {
     // the apk needs to be signed
-    buildArguments = `--buildConfig --warning-mode-all ${release ? '--release' : ''}`
+    buildArguments = `--stacktrace --buildConfig --warning-mode-all ${release ? '--release' : ''}`
     await move(keystorePath, path.join(distDirectory, 'freetubecordova.keystore'))
     await writeFile(path.join(distDirectory, 'build.json'), JSON.stringify({
       android: {
