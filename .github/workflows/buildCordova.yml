@@ -35,14 +35,14 @@ jobs:
       with:
         result-encoding: string
         script: |
-          return '${{ steps.pkg.outputs.version }}-development-${{ github.run_number }}'
+          return '${{ steps.pkg.outputs.version }}-nightly-${{ github.run_number }}'
     - name: Set App ID Variable
       id: appId
       uses: actions/github-script@v6
       with:
         result-encoding: string
         script: |
-          return '${{ steps.pkg.outputs.name }}.development'
+          return '${{ steps.pkg.outputs.name }}.nightly'
 
     - name: ⬆ Update package.json version
       uses: jossef/action-set-json-field@v2.1
@@ -64,7 +64,7 @@ jobs:
       with:
         file: package.json
         field: productName
-        value: ${{ steps.pkg.outputs.productName }} Development
+        value: ${{ steps.pkg.outputs.productName }} Nightly
 
     - name: 📦 Pack for 🕸web with Node.js
       run: yarn pack:web
