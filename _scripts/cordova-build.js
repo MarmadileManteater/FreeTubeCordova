@@ -39,24 +39,17 @@ const exec = require('./helpers').execWithLiveOutput
     // the apk needs to be signed
     buildArguments = `--stacktrace --buildConfig --warning-mode-all ${release ? '--release' : ''}`
     await move(keystorePath, path.join(distDirectory, 'freetubecordova.keystore'))
-    await writeFile(path.join(distDirectory, 'build.json'), JSON.stringify({
-      android: {
-        debug: {
-          keystore: './freetubecordova.keystore',
-          storePassword: keystorePassphrase,
-          alias: 'freetubecordova',
-          password: keystorePassphrase,
-          keystoreType: 'jks'
-        },
-        release: {
-          keystore: './freetubecordova.keystore',
-          storePassword: keystorePassphrase,
-          alias: 'freetubecordova',
-          password: keystorePassphrase,
-          keystoreType: 'jks'
-        }
-      }
-    }, null, 4))
+    const buildJSON = {
+      android: {}
+    }
+    buildJSON.android[release ? 'release' : 'debug'] = {
+      keystore: './freetubecordova.keystore',
+      storePassword: keystorePassphrase,
+      alias: 'freetubecordova',
+      password: keystorePassphrase,
+      keystoreType: 'jks'
+    }
+    await writeFile(path.join(distDirectory, 'build.json'), JSON.stringify(buildJSON, null, 4))
   }
   // 🏃‍♀️ Run the apk build
   log(`Building apk file for ${release ? 'release' : 'development'}`)
