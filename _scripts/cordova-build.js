@@ -59,7 +59,7 @@ const exec = require('./helpers').execWithLiveOutput
     }, null, 4))
   }
   // 🏃‍♀️ Run the apk build
-  log('Building apk file')
+  log(`Building apk file for ${release ? 'release' : 'development'}`)
   await exec(`cd ${distDirectory} && npx cordova build android ${buildArguments}`)
   // 📋 Copy the apk to the build dir
   log('Copying apk file to build directory')
