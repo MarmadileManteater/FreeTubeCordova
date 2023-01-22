@@ -76,7 +76,7 @@ jobs:
         path: dist/web
 
     - name: 🚧 Setup Android SDK Tools
-      uses: android-actions/setup-android@v2.0.9
+      uses: android-actions/setup-android@v2.0.10
 
     - name: 📦 Pack for 📱Android with Node.js & Cordova
       run: yarn pack:cordova
