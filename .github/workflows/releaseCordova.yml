@@ -90,7 +90,7 @@ jobs:
          gpg -d --passphrase '${{ secrets.KEYSTORE_PASSWORD }}' --batch freetube.keystore.asc >> freetube.keystore
 
     - name: 👷‍♀️ Build APK with Cordova with Node.js
-      run: yarn build:cordova freetube-${{ steps.versionNumber.outputs.result }}.apk ./freetube.keystore ${{ secrets.KEYSTORE_PASSWORD }} --release
+      run: yarn build:cordova freetube-${{ steps.versionNumber.outputs.result }}.apk ./freetube.keystore ${{ secrets.KEYSTORE_PASSWORD }}
 
     - name: 📡 Upload Cordova APK Artifact
       uses: actions/upload-artifact@v3
