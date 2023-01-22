@@ -5,7 +5,7 @@ name: Build Cordova
 
 on:
   push:
-    branches: [ new-cordova-build ]
+    branches: [ development ]
 
 jobs:
   build:
