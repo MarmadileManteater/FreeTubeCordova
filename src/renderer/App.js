@@ -226,13 +226,22 @@ export default defineComponent({
             .then((response) => response.json())
             .then((json) => {
               const tagName = json[0].tag_name
-              const versionNumber = tagName.split('-nightly-')[1]
+              const tagNameParts = tagName.split('.')
+              let versionNumber = tagNameParts[tagNameParts.length - 1]
+              // if the tag is a nightly release
+              if (tagName.indexOf('-nightly-') !== -1) {
+                versionNumber = tagName.split('-nightly-')[1]
+              }
               this.updateChangelog = marked.parse(json[0].body)
               this.changeLogTitle = json[0].name
 
               const message = this.$t('Version $ is now available!  Click for more details')
               this.updateBannerMessage = message.replace('$', versionNumber)
-              const appVersion = packageDetails.version.split('-nightly-')[1]
+              const versionParts = packageDetails.version.split('.')
+              let appVersion = versionParts[versionParts.length - 1]
+              if (appVersion.indexOf('-nightly-') !== -1) {
+                appVersion = appVersion.split('-nightly-')[1]
+              }
               if (parseInt(versionNumber) > parseInt(appVersion)) {
                 this.showUpdatesBanner = true
               }
