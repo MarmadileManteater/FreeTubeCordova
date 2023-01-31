@@ -17,6 +17,7 @@ import { sponsorBlockSkipSegments } from '../../helpers/sponsorblock'
 import { calculateColorLuminance, colors } from '../../helpers/colors'
 import { pathExists } from '../../helpers/filesystem'
 import { getPicturesPath, showSaveDialog, showToast } from '../../helpers/utils'
+import { proxyVideoThroughOS } from '../../helpers/api/cordova'
 
 export default defineComponent({
   name: 'FtVideoPlayer',
@@ -501,6 +502,17 @@ export default defineComponent({
         })
 
         this.player.on('ended', () => {
+          if (this.player.currentSrc().startsWith('blob:')) {
+            // check to see if
+            const source = this.activeSourceList.filter(({ qualityLabel }) => this.selectedDefaultQuality === qualityLabel)[0]
+            if (this.player.currentSrc() !== source.src) {
+              // blob URL changed, save the current time and reload the sources
+              const time = this.player.currentTime()
+              this.player.load()
+              // TODO 📝 set the time back
+              // I can't figure out how to do it without entering an infinite loop
+            }
+          }
           this.$emit('ended')
 
           if ('mediaSession' in navigator) {
@@ -860,6 +872,19 @@ export default defineComponent({
 
       if (this.selectedDefaultQuality === '') {
         this.selectedDefaultQuality = this.sourceList[this.sourceList.length - 1].qualityLabel
+      }
+      const source = this.activeSourceList.filter(({ qualityLabel }) => this.selectedDefaultQuality === qualityLabel)[0]
+      if (!('originalUrl' in source)) {
+        proxyVideoThroughOS(source.url, ({ blobUrl }) => {
+          console.warn(`blob url updated: ${blobUrl}`)
+          // update the source url every time a new part of the blob loads
+          if (!('originalUrl' in source)) {
+            source.originalUrl = source.url
+          }
+          source.url = blobUrl
+        }, (response) => {
+          console.error(response)
+        })
       }
     },
 
