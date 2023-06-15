@@ -97,7 +97,7 @@
     "core-js": "^3.27.2",
     "css-loader": "^6.8.1",
     "css-minimizer-webpack-plugin": "^5.0.0",
-    "electron": "^22.3.12",
+    "electron": "^25.1.1",
     "electron-builder": "^23.6.0",
     "eslint": "^8.42.0",
     "eslint-config-prettier": "^8.8.0",
