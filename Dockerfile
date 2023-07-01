@@ -10,7 +10,7 @@ COPY node_module[s] ./node_modules
 # git is needed for jinter
 RUN apk add git
 # don't rebuild if you don't have to
-RUN if [ ! -d 'node_modules' ]; then yarn ci; fi
+RUN if [ ! -d 'dist/web' ]; then yarn ci; fi
 
 ## Build Stage ##
 FROM node:18-alpine AS build
