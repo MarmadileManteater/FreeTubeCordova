@@ -94,7 +94,7 @@
     "babel-loader": "^9.1.2",
     "copy-webpack-plugin": "^11.0.0",
     "cordova": "^11.0.0",
-    "core-js": "^3.27.2",
+    "core-js": "^3.31.1",
     "css-loader": "^6.8.1",
     "css-minimizer-webpack-plugin": "^5.0.1",
     "electron": "^22.3.13",
