@@ -94,7 +94,7 @@
     "@double-great/stylelint-a11y": "^2.0.2",
     "babel-loader": "^9.1.3",
     "copy-webpack-plugin": "^11.0.0",
-    "cordova": "^11.0.0",
+    "cordova": "^12.0.0",
     "core-js": "^3.27.2",
     "css-loader": "^6.8.1",
     "css-minimizer-webpack-plugin": "^5.0.1",
