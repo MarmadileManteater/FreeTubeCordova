@@ -6,7 +6,6 @@ COPY package.json ./package.json
 COPY yarn.lock ./yarn.lock
 # copy `dist` if it exists already
 COPY dis[t]/web ./dist/
-COPY node_module[s] ./node_modules
 # git is needed for jinter
 RUN apk add git
 # don't rebuild if you don't have to
