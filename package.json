@@ -135,7 +135,7 @@
     "webpack": "^5.88.1",
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^4.15.1",
-    "xml2js": "^0.4.23",
+    "xml2js": "^0.6.2",
     "yaml-eslint-parser": "^1.2.2"
   }
 }
