@@ -6260,7 +6260,7 @@ jest-worker@^29.4.3:
   dependencies:
     acorn "^8.8.0"
 
-jintr@^1.0.0:
+jintr@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/jintr/-/jintr-1.1.0.tgz#223a3b07f5e03d410cec6e715c537c8ad1e714c3"
   integrity sha512-Tu9wk3BpN2v+kb8yT6YBtue+/nbjeLFv4vvVC4PJ7oCidHKbifWhvORrAbQfxVIQZG+67am/mDagpiGSVtvrZg==
@@ -10740,12 +10740,12 @@ yocto-queue@^1.0.0:
   resolved "https://registry.yarnpkg.com/yocto-queue/-/yocto-queue-1.0.0.tgz#7f816433fb2cbc511ec8bf7d263c3b58a1a3c251"
   integrity sha512-9bnSc/HEW2uRy67wc+T8UwauLuPJVn28jb+GtJY16iiKWyvmYJRXVT4UamsAEGQfPohgr2q4Tq0sQbQlxTfi1g==
 
-youtubei.js@^5.2.1:
-  version "5.3.0"
-  resolved "https://registry.yarnpkg.com/youtubei.js/-/youtubei.js-5.3.0.tgz#1d7dec450addf31079fd2a5d8ce2ea5d25539dc0"
-  integrity sha512-tgDxvosU+Gwa7ATfgIjXY9VLfdsay893BlatWUqEnlyKthY11thhm6B5vYKYIUKfVeoGYrVq3hSohkhu2vcrzA==
+youtubei.js@^5.8.0:
+  version "5.8.0"
+  resolved "https://registry.yarnpkg.com/youtubei.js/-/youtubei.js-5.8.0.tgz#4c6dc898b6a2c6cbf91f95932be18e981e394e2d"
+  integrity sha512-xMQxbhy0TMpLvJnGbLnqAE9RhiLCwBuVrsTyVd0ZFX6o98fmJmddcE1qeRIagNGNr16BmofqtsbGXIfpZprFhA==
   dependencies:
-    jintr "^1.0.0"
+    jintr "^1.1.0"
     linkedom "^0.14.12"
     tslib "^2.5.0"
     undici "^5.19.1"
