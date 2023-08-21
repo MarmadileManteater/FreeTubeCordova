@@ -14,10 +14,7 @@ FROM node:18-alpine AS build
 WORKDIR /app
 COPY . .
 COPY --from=dep /app/node_modules ./node_modules
-
-
-# don't rebuild if you don't have to
-RUN if [ ! -d 'dist/web' ]; then yarn pack:web; fi
+RUN yarn pack:web
 
 ## App Stage ##
 FROM nginx:latest as app
