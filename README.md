@@ -99,7 +99,7 @@ yarn pack:web
 ### Commands for the PWA Docker Image
 ```bash
 # 💨 Creates and runs the image locally. Add `--platform=linux/arm64` to docker build for ARM64 devices including Apple Silicon
-docker build -t freetubecordova . # Warning, might take 10 minutes.
+docker build -t freetubecordova . # Warning, yarn ci instruction may take a while on Apple Silicon
 docker run --name ftcordova -d -p 8080:80 freetubecordova
 
 # 🏃 Runs the image from Docker Hub.
