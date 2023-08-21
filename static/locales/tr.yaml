@@ -442,6 +442,7 @@ Settings:
       Prompt To Skip: Atlamak İçin Sor
       Do Nothing: Hiçbir Şey Yapma
     Category Color: Kategori Rengi
+    UseDeArrowTitles: DeArrow Video Başlıklarını Kullan
   External Player Settings:
     Custom External Player Arguments: Özel Harici Oynatıcı Argümanları
     Custom External Player Executable: Özel Harici Oynatıcı Çalıştırılabilir Dosyası
@@ -923,8 +924,7 @@ Tooltips:
       Yerel API yerleşik bir çıkarıcıdır. Invidious API'si, bağlanmak için bir Invidious
       sunucusu gerektirir.
     Region for Trending: Öne çıkanların bölgesi, hangi ülkenin öne çıkan videolarını
-      görüntülemek istediğinizi seçmenize olanak tanır. Görüntülenen ülkelerden bazıları
-      YouTube tarafından desteklenmemektedir.
+      görüntülemek istediğinizi seçmenize olanak tanır.
     External Link Handling: "FreeTube'da açılamayan bir bağlantı tıklandığında öntanımlı
       davranışı seçin.\nÖntanımlı olarak FreeTube, tıklanan bağlantıyı öntanımlı tarayıcınızda
       açacaktır.\n"
@@ -951,6 +951,9 @@ Tooltips:
     Hide Channels: Tüm videoların, oynatma listelerinin ve kanalın kendisinin arama
       veya öne çıkanlarda görünmesini engellemek için bir kanal adı veya kanal kimliği
       girin. Girilen kanal adı tam olarak eşleşmelidir ve büyük/küçük harfe duyarlıdır.
+  SponsorBlock Settings:
+    UseDeArrowTitles: Video başlıklarını DeArrow'dan kullanıcıların gönderdiği başlıklarla
+      değiştir.
 Playing Next Video Interval: Sonraki video hemen oynatılıyor. İptal etmek için tıklayın.
   | Sonraki video {nextVideoInterval} saniye içinde oynatılıyor. İptal etmek için
   tıklayın. | Sonraki video {nextVideoInterval} saniye içinde oynatılıyor. İptal etmek

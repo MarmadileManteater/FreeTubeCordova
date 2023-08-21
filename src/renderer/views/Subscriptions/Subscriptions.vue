@@ -50,6 +50,7 @@
       <ft-element-list
         v-else
         :data="activeVideoList"
+        :use-channels-hidden-preference="false"
       />
       <ft-flex-box>
         <ft-button
@@ -68,7 +69,7 @@
       :title="$t('Subscriptions.Refresh Subscriptions')"
       :size="12"
       theme="primary"
-      @click="getSubscriptions"
+      @click="loadVideosForSubscriptionsFromRemote"
     />
   </div>
 </template>

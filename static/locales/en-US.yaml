@@ -410,6 +410,7 @@ Settings:
     Enable SponsorBlock: Enable SponsorBlock
     'SponsorBlock API Url (Default is https://sponsor.ajay.app)': SponsorBlock API Url (Default is https://sponsor.ajay.app)
     Notify when sponsor segment is skipped: Notify when sponsor segment is skipped
+    UseDeArrowTitles: Use DeArrow Video Titles
     Skip Options:
       Skip Option: Skip Option
       Auto Skip: Auto Skip
@@ -801,8 +802,7 @@ Tooltips:
     Invidious Instance: The Invidious instance that FreeTube will connect to for API
       calls.
     Region for Trending: The region of trends allows you to pick which country's trending
-      videos you want to have displayed. Not all countries displayed are actually
-      supported by YouTube.
+      videos you want to have displayed.
     External Link Handling: |
       Choose the default behavior when a link, which cannot be opened in FreeTube, is clicked.
       By default FreeTube will open the clicked link in your default browser.
@@ -854,6 +854,8 @@ Tooltips:
       Disables the "FreeTube is running" background notificiation. Beware, disabling this notification may cause Android to close the app when it is in the background.
     Show Thumbnail in Media Controls:
       If you are experiencing issues with the media controls info getting out of sync, disabling this may resolve them.
+  SponsorBlock Settings:
+    UseDeArrowTitles: Replace video titles with user-submitted titles from DeArrow.
 # Toast Messages
 Local API Error (Click to copy): Local API Error (Click to copy)
 Invidious API Error (Click to copy): Invidious API Error (Click to copy)

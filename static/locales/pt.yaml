@@ -391,6 +391,7 @@ Settings:
       Prompt To Skip: Perguntar se quero ignorar
       Do Nothing: Nada fazer
     Category Color: Cor da categoria
+    UseDeArrowTitles: Utilizar títulos de vídeo DeArrow
   Proxy Settings:
     Error getting network information. Is your proxy configured properly?: Erro ao
       obter informações da rede. O seu proxy está configurado corretamente?
@@ -940,8 +941,7 @@ Tooltips:
       os formatos DASH H.264.
   General Settings:
     Region for Trending: A região de tendências permite-lhe escolher de que país virão
-      os vídeos na secção das tendências. Nem todos os países mostrados funcionam
-      corretamente.
+      os vídeos na secção das tendências.
     Invidious Instance: O servidor Invidious ao qual o FreeTube se irá ligar para
       fazer chamadas através da API.
     Thumbnail Preference: Todas as miniaturas dos vídeos no FreeTube serão substituídas
@@ -963,6 +963,9 @@ Tooltips:
       de reprodução e o próprio canal, de forma a não aparecer em pesquisas ou tendências.
       O nome do canal inserido deve ser exatamente igual ao nome do canal e é sensível
       a maiúsculas e minúsculas.
+  SponsorBlock Settings:
+    UseDeArrowTitles: Substituir títulos de vídeo por títulos enviados pelo utilizador
+      a partir do DeArrow.
 Search Bar:
   Clear Input: Limpar entrada
 Are you sure you want to open this link?: Tem a certeza de que deseja abrir a ligação?

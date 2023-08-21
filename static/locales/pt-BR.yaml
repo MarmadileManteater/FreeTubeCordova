@@ -447,6 +447,7 @@ Settings:
       Auto Skip: Pular automaticamente
       Skip Option: Opção de pular
     Category Color: Cor da categoria
+    UseDeArrowTitles: Utilizar títulos de vídeo DeArrow
   External Player Settings:
     Custom External Player Arguments: Argumentos de player externo personalizados
     External Player: Player externo
@@ -923,8 +924,7 @@ Tooltips:
       os formatos DASH H.264.
   General Settings:
     Region for Trending: A região de tendências lhe permite de escolher quais vídeos
-      de tendências do país você quer exibir. Nem todos os países exibidos são realmente
-      suportados pelo YouTube.
+      de tendências do país você quer exibir.
     Invidious Instance: A instância Invidious à qual o FreeTube se conectará para
       chamadas de API.
     Thumbnail Preference: Todas as miniaturas do FreeTube serão substituídas por um
@@ -962,6 +962,9 @@ Tooltips:
     Hide Channels: Digite um nome ou ID de canal para ocultar todos os vídeos, listas
       de reprodução e o próprio canal dos resultados da busca ou nas tendências. O
       nome do canal digitado deve coincidir exatamente, observando maiúsculas e minúsculas.
+  SponsorBlock Settings:
+    UseDeArrowTitles: Substituir títulos de vídeo por títulos enviados pelo usuário
+      a partir do DeArrow.
 More: Mais
 Playing Next Video Interval: Reproduzindo o próximo vídeo imediatamente. Clique para
   cancelar. | Reproduzindo o próximo vídeo em {nextVideoInterval} segundo(s). Clique

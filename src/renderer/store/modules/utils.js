@@ -27,6 +27,7 @@ const state = {
     movies: null
   },
   cachedPlaylist: null,
+  deArrowCache: {},
   showProgressBar: false,
   progressBarPercentage: 0,
   regionNames: [],
@@ -55,6 +56,10 @@ const getters = {
 
   getSessionSearchHistory () {
     return state.sessionSearchHistory
+  },
+
+  getDeArrowCache: (state) => (videoId) => {
+    return state.deArrowCache[videoId]
   },
 
   getPopularCache () {
@@ -245,15 +250,12 @@ const actions = {
     // Exclude __dirname from path if not in electron
     const fileLocation = `${process.env.IS_ELECTRON ? process.env.NODE_ENV === 'development' ? '.' : __dirname : ''}/static/geolocations/`
     if (process.env.IS_ELECTRON) {
-      localePathExists = await pathExists(`${fileLocation}${locale}`)
+      localePathExists = await pathExists(`${fileLocation}${locale}.json`)
     } else {
       localePathExists = process.env.GEOLOCATION_NAMES.includes(locale)
     }
-    const pathName = `${fileLocation}${localePathExists ? locale : 'en-US'}/countries.json`
-    const fileData = process.env.IS_ELECTRON ? JSON.parse(await fs.readFile(pathName)) : await (await fetch(createWebURL(pathName))).json()
-
-    const countries = fileData.map((entry) => { return { id: entry.id, name: entry.name, code: entry.alpha2 } })
-    countries.sort((a, b) => { return a.id - b.id })
+    const pathName = `${fileLocation}${localePathExists ? locale : 'en-US'}.json`
+    const countries = process.env.IS_ELECTRON ? JSON.parse(await fs.readFile(pathName)) : await (await fetch(createWebURL(pathName))).json()
 
     const regionNames = countries.map((entry) => { return entry.name })
     const regionValues = countries.map((entry) => { return entry.code })
@@ -568,21 +570,14 @@ const actions = {
           showExternalPlayerUnsupportedActionToast(externalPlayer, 'looping playlists')
         }
       }
-      if (cmdArgs.supportsYtdlProtocol) {
-        args.push(`${cmdArgs.playlistUrl}ytdl://${payload.playlistId}`)
-      } else {
-        args.push(`${cmdArgs.playlistUrl}https://youtube.com/playlist?list=${payload.playlistId}`)
-      }
+
+      args.push(`${cmdArgs.playlistUrl}https://youtube.com/playlist?list=${payload.playlistId}`)
     } else {
       if (payload.playlistId != null && payload.playlistId !== '' && !ignoreWarnings) {
         showExternalPlayerUnsupportedActionToast(externalPlayer, 'opening playlists')
       }
       if (payload.videoId != null) {
-        if (cmdArgs.supportsYtdlProtocol) {
-          args.push(`${cmdArgs.videoUrl}ytdl://${payload.videoId}`)
-        } else {
-          args.push(`${cmdArgs.videoUrl}https://www.youtube.com/watch?v=${payload.videoId}`)
-        }
+        args.push(`${cmdArgs.videoUrl}https://www.youtube.com/watch?v=${payload.videoId}`)
       }
     }
 
@@ -612,6 +607,18 @@ const mutations = {
 
   setSessionSearchHistory (state, history) {
     state.sessionSearchHistory = history
+  },
+
+  setDeArrowCache (state, cache) {
+    state.deArrowCache = cache
+  },
+
+  addVideoToDeArrowCache (state, payload) {
+    const sameVideo = state.deArrowCache[payload.videoId]
+
+    if (!sameVideo) {
+      state.deArrowCache[payload.videoId] = payload
+    }
   },
 
   addToSessionSearchHistory (state, payload) {

@@ -10,6 +10,7 @@ import {
   toLocalePublicationString,
   toDistractionFreeTitle
 } from '../../helpers/utils'
+import { deArrowData } from '../../helpers/sponsorblock'
 
 export default defineComponent({
   name: 'FtListVideo',
@@ -58,8 +59,8 @@ export default defineComponent({
     return {
       id: '',
       title: '',
-      channelName: '',
-      channelId: '',
+      channelName: null,
+      channelId: null,
       viewCount: 0,
       parsedViewCount: '',
       uploadedTime: '',
@@ -190,30 +191,34 @@ export default defineComponent({
           {
             label: this.$t('Video.Open in Invidious'),
             value: 'openInvidious'
-          },
-          {
-            type: 'divider'
-          },
-          {
-            label: this.$t('Video.Copy YouTube Channel Link'),
-            value: 'copyYoutubeChannel'
-          },
-          {
-            label: this.$t('Video.Copy Invidious Channel Link'),
-            value: 'copyInvidiousChannel'
-          },
-          {
-            type: 'divider'
-          },
-          {
-            label: this.$t('Video.Open Channel in YouTube'),
-            value: 'openYoutubeChannel'
-          },
-          {
-            label: this.$t('Video.Open Channel in Invidious'),
-            value: 'openInvidiousChannel'
           }
         )
+        if (this.channelId !== null) {
+          options.push(
+            {
+              type: 'divider'
+            },
+            {
+              label: this.$t('Video.Copy YouTube Channel Link'),
+              value: 'copyYoutubeChannel'
+            },
+            {
+              label: this.$t('Video.Copy Invidious Channel Link'),
+              value: 'copyInvidiousChannel'
+            },
+            {
+              type: 'divider'
+            },
+            {
+              label: this.$t('Video.Open Channel in YouTube'),
+              value: 'openYoutubeChannel'
+            },
+            {
+              label: this.$t('Video.Open Channel in Invidious'),
+              value: 'openInvidiousChannel'
+            }
+          )
+        }
       }
 
       return options
@@ -316,6 +321,14 @@ export default defineComponent({
     currentLocale: function () {
       return this.$i18n.locale.replace('_', '-')
     },
+
+    useDeArrowTitles: function () {
+      return this.$store.getters.getUseDeArrowTitles
+    },
+
+    deArrowCache: function () {
+      return this.$store.getters.getDeArrowCache(this.id)
+    }
   },
   watch: {
     historyIndex() {
@@ -327,6 +340,25 @@ export default defineComponent({
     this.checkIfWatched()
   },
   methods: {
+    getDeArrowDataEntry: async function() {
+      // Read from local cache or remote
+      // Write to cache if read from remote
+      if (!this.useDeArrowTitles) { return null }
+
+      if (this.deArrowCache) { return this.deArrowCache }
+
+      const videoId = this.id
+      const data = await deArrowData(this.id)
+      const cacheData = { videoId, title: null }
+      if (Array.isArray(data?.titles) && data.titles.length > 0 && (data.titles[0].locked || data.titles[0].votes > 0)) {
+        cacheData.title = data.titles[0].title
+      }
+
+      // Save data to cache whether data available or not to prevent duplicate requests
+      this.$store.commit('addVideoToDeArrowCache', cacheData)
+      return cacheData
+    },
+
     handleExternalPlayer: function () {
       this.$emit('pause-player')
 
@@ -397,13 +429,13 @@ export default defineComponent({
       }
     },
 
-    parseVideoData: function () {
+    parseVideoData: async function () {
       this.id = this.data.videoId
-      this.title = this.data.title
+      this.title = (await this.getDeArrowDataEntry())?.title ?? this.data.title
       // this.thumbnail = this.data.videoThumbnails[4].url
 
-      this.channelName = this.data.author
-      this.channelId = this.data.authorId
+      this.channelName = this.data.author ?? null
+      this.channelId = this.data.authorId ?? null
       this.duration = formatDurationAsTimestamp(this.data.lengthSeconds)
       this.description = this.data.description
       this.isLive = this.data.liveNow || this.data.lengthSeconds === 'undefined'

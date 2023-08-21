@@ -201,7 +201,7 @@ export function showToast(message, time = null, action = null) {
    * @param {string} messageOnSuccess the message to be displayed as a toast when the copy succeeds (optional)
    * @param {string} messageOnError the message to be displayed as a toast when the copy fails (optional)
    */
-export async function copyToClipboard(content, { messageOnSuccess = null, messageOnError = null }) {
+export async function copyToClipboard(content, { messageOnSuccess = null, messageOnError = null } = {}) {
   let clipboardAPI = navigator.clipboard.writeText.bind(navigator.clipboard)
   if (process.env.IS_CORDOVA) {
     // Convert the callbacks to promise notation
@@ -429,7 +429,7 @@ export function createWebURL(path) {
 
 // strip html tags but keep <br>, <b>, </b> <s>, </s>, <i>, </i>
 export function stripHTML(value) {
-  return value.replaceAll(/(<(?!br|\/?[bis]|img>)([^>]+)>)/gi, '')
+  return value.replaceAll(/(<(?!br|\/?[abis]|img>)([^>]+)>)/gi, '')
 }
 
 /**
@@ -487,22 +487,22 @@ export function replaceFilenameForbiddenChars(filenameOriginal) {
   switch (process.platform) {
     case 'win32':
       forbiddenChars = {
-        '<': '<', // U+FF1C
-        '>': '>', // U+FF1E
-        ':': ':', // U+FF1A
-        '"': '"', // U+FF02
-        '/': '/', // U+FF0F
-        '\\': '\'', // U+FF3C
-        '|': '|', // U+FF5C
-        '?': '?', // U+FF1F
-        '*': '*' // U+FF0A
+        '<': '＜', // U+FF1C
+        '>': '＞', // U+FF1E
+        ':': '：', // U+FF1A
+        '"': '＂', // U+FF02
+        '/': '／', // U+FF0F
+        '\\': '＼', // U+FF3C
+        '|': '｜', // U+FF5C
+        '?': '？', // U+FF1F
+        '*': '＊' // U+FF0A
       }
       break
     case 'darwin':
-      forbiddenChars = { '/': '/', ':': ':' }
+      forbiddenChars = { '/': '／', ':': '：' }
       break
     case 'linux':
-      forbiddenChars = { '/': '/' }
+      forbiddenChars = { '/': '／' }
       break
     default:
       break

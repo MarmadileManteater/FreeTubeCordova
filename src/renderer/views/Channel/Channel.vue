@@ -49,7 +49,7 @@
               </h1>
 
               <p
-                v-if="subCount !== null"
+                v-if="subCount !== null && !hideChannelSubscriptions"
                 class="channelSubCount"
               >
                 {{ formattedSubCount }}
@@ -90,9 +90,9 @@
               class="tab"
               :class="(currentTab==='videos')?'selectedTab':''"
               role="tab"
-              aria-selected="true"
+              :aria-selected="String(currentTab === 'videos')"
               aria-controls="videoPanel"
-              tabindex="0"
+              :tabindex="(currentTab === 'videos' || currentTab === 'search') ? 0 : -1"
               @click="changeTab('videos')"
               @keydown.left.right.enter.space="changeTab('videos', $event)"
             >
@@ -104,9 +104,9 @@
               class="tab"
               :class="(currentTab==='shorts')?'selectedTab':''"
               role="tab"
-              aria-selected="true"
+              :aria-selected="String(currentTab === 'shorts')"
               aria-controls="shortPanel"
-              tabindex="0"
+              :tabindex="currentTab === 'shorts' ? 0 : -1"
               @click="changeTab('shorts')"
               @keydown.left.right.enter.space="changeTab('shorts', $event)"
             >
@@ -118,9 +118,9 @@
               class="tab"
               :class="(currentTab==='live')?'selectedTab':''"
               role="tab"
-              aria-selected="true"
+              :aria-selected="String(currentTab === 'live')"
               aria-controls="livePanel"
-              tabindex="0"
+              :tabindex="currentTab === 'live' ? 0 : -1"
               @click="changeTab('live')"
               @keydown.left.right.enter.space="changeTab('live', $event)"
             >
@@ -131,9 +131,9 @@
               id="playlistsTab"
               class="tab"
               role="tab"
-              aria-selected="false"
+              :aria-selected="String(currentTab === 'playlists')"
               aria-controls="playlistPanel"
-              tabindex="-1"
+              :tabindex="currentTab === 'playlists' ? 0 : -1"
               :class="(currentTab==='playlists')?'selectedTab':''"
               @click="changeTab('playlists')"
               @keydown.left.right.enter.space="changeTab('playlists', $event)"
@@ -145,9 +145,9 @@
               id="communityTab"
               class="tab"
               role="tab"
-              aria-selected="false"
+              :aria-selected="String(currentTab === 'community')"
               aria-controls="communityPanel"
-              tabindex="-1"
+              :tabindex="currentTab === 'community' ? 0 : -1"
               :class="(currentTab==='community')?'selectedTab':''"
               @click="changeTab('community')"
               @keydown.left.right.enter.space="changeTab('community', $event)"
@@ -158,9 +158,9 @@
               id="aboutTab"
               class="tab"
               role="tab"
-              aria-selected="false"
+              :aria-selected="String(currentTab === 'about')"
               aria-controls="aboutPanel"
-              tabindex="-1"
+              :tabindex="currentTab === 'about' ? 0 : -1"
               :class="(currentTab==='about')?'selectedTab':''"
               @click="changeTab('about')"
               @keydown.left.right.enter.space="changeTab('about', $event)"
@@ -197,9 +197,9 @@
         v-if="showVideoSortBy"
         v-show="currentTab === 'videos' && latestVideos.length > 0"
         class="sortSelect"
-        :value="videoShortLiveSelectValues[0]"
-        :select-names="videoShortLiveSelectNames"
-        :select-values="videoShortLiveSelectValues"
+        :value="videoLiveSelectValues[0]"
+        :select-names="videoLiveSelectNames"
+        :select-values="videoLiveSelectValues"
         :placeholder="$t('Search Filters.Sort By.Sort By')"
         @change="videoSortBy = $event"
       />
@@ -207,9 +207,9 @@
         v-if="!hideChannelShorts && showShortSortBy"
         v-show="currentTab === 'shorts' && latestShorts.length > 0"
         class="sortSelect"
-        :value="videoShortLiveSelectValues[0]"
-        :select-names="videoShortLiveSelectNames"
-        :select-values="videoShortLiveSelectValues"
+        :value="shortSelectValues[0]"
+        :select-names="shortSelectNames"
+        :select-values="shortSelectValues"
         :placeholder="$t('Search Filters.Sort By.Sort By')"
         @change="shortSortBy = $event"
       />
@@ -217,9 +217,9 @@
         v-if="!hideLiveStreams && showLiveSortBy"
         v-show="currentTab === 'live' && latestLive.length > 0"
         class="sortSelect"
-        :value="videoShortLiveSelectValues[0]"
-        :select-names="videoShortLiveSelectNames"
-        :select-values="videoShortLiveSelectValues"
+        :value="videoLiveSelectValues[0]"
+        :select-names="videoLiveSelectNames"
+        :select-values="videoLiveSelectValues"
         :placeholder="$t('Search Filters.Sort By.Sort By')"
         @change="liveSortBy = $event"
       />
@@ -244,6 +244,7 @@
           v-show="currentTab === 'videos'"
           id="videoPanel"
           :data="latestVideos"
+          :use-channels-hidden-preference="false"
           role="tabpanel"
           aria-labelledby="videosTab"
         />
@@ -258,6 +259,7 @@
           v-if="!hideChannelShorts && currentTab === 'shorts'"
           id="shortPanel"
           :data="latestShorts"
+          :use-channels-hidden-preference="false"
           role="tabpanel"
           aria-labelledby="shortsTab"
         />
@@ -273,6 +275,7 @@
           v-show="currentTab === 'live'"
           id="livePanel"
           :data="latestLive"
+          :use-channels-hidden-preference="false"
           role="tabpanel"
           aria-labelledby="liveTab"
         />
@@ -287,6 +290,7 @@
           v-if="!hideChannelPlaylists && currentTab === 'playlists'"
           id="playlistPanel"
           :data="latestPlaylists"
+          :use-channels-hidden-preference="false"
           role="tabpanel"
           aria-labelledby="playlistsTab"
         />
@@ -301,6 +305,7 @@
           v-if="!hideChannelCommunity && currentTab === 'community'"
           id="communityPanel"
           :data="latestCommunityPosts"
+          :use-channels-hidden-preference="false"
           role="tabpanel"
           aria-labelledby="communityTab"
           display="list"
@@ -315,6 +320,7 @@
         <ft-element-list
           v-show="currentTab === 'search'"
           :data="searchResults"
+          :use-channels-hidden-preference="false"
         />
         <ft-flex-box
           v-if="currentTab === 'search' && searchResults.length === 0"

@@ -16,9 +16,13 @@
     <preference name="AndroidWindowSplashScreenBackground" value="#212121" />
     <preference name="AndroidWindowSplashScreenAnimatedIcon" value="res/icon/android/iconColor_256_padded.png" />
     <preference name="AutoHideSplashScreen" value="false" />
+    <edit-config file="app/src/main/AndroidManifest.xml" mode="merge" target="/manifest/application" xmlns:android="http://schemas.android.com/apk/res/android">
+      <application android:usesCleartextTraffic="true" />
+    </edit-config>
   </platform>
   <preference name="AndroidPersistentFileLocation" value="Compatibility"/>
   <preference name="AllowInlineMediaPlayback" value="true"/>
+  <preference name="scheme" value="http" />
   <universal-links>
     <host name="youtu.be" scheme="https" event="youtube_shortended" />
     <host name="youtube.com" scheme="https" event="youtube" />

@@ -436,6 +436,7 @@ Settings:
       Prompt To Skip: Zeptat se na přeskočení
       Show In Seek Bar: Zobrazit v liště
     Category Color: Barva kategorie
+    UseDeArrowTitles: Použít názvy videí z DeArrow
   External Player Settings:
     Custom External Player Arguments: Argumenty vlastního externího přehrávače
     Custom External Player Executable: Spustitelný vlastní externí přehrávač
@@ -852,8 +853,7 @@ Tooltips:
     Invidious Instance: 'Instance Invidious, ke které se FreeTube připojí za účelem
       volání API.'
     Region for Trending: 'Oblast pro trendy vám umožní vybrat si zemi, ze které si
-      přejete zobrazovat videa v trendech. Ne všechny zobrazené země jsou ale službou
-      YouTube opravdu podporovány.'
+      přejete zobrazovat videa v trendech.'
     External Link Handling: "Zvolte výchozí chování při kliknutí na odkaz, který nelze
       otevřít ve FreeTube.\nVe výchozím nastavení otevře FreeTube odkaz ve vašem výchozím
       prohlížeči.\n"
@@ -906,8 +906,11 @@ Tooltips:
       mezipaměť pro obrázky v paměti. Povede to ke zvýšenému využití RAM.
   Distraction Free Settings:
     Hide Channels: Zadejte název nebo ID kanálu pro skrytí všech videí, playlistů
-      a samotného kanálu před zobrazením ve vyhledávání nebo trendech. Zadaný název
-      kanálu se musí zcela shodovat a rozlišují se v něm velká a malá písmena.
+      a samotného kanálu před zobrazením ve vyhledávání, trendech, nejpopulárnějších
+      a doporučených. Zadaný název kanálu se musí zcela shodovat a rozlišují se v
+      něm velká a malá písmena.
+  SponsorBlock Settings:
+    UseDeArrowTitles: Nahradit názvy videí vlastními názvy od uživatelů DeArrow.
 Local API Error (Click to copy): 'Chyba lokálního API (kliknutím zkopírujete)'
 Invidious API Error (Click to copy): 'Chyba Invidious API (kliknutím zkopírujete)'
 Falling back to Invidious API: 'Přepínám na Invidious API'

@@ -78,6 +78,11 @@ jobs:
     - name: 🚧 Setup Android SDK Tools
       uses: android-actions/setup-android@v2.0.9
 
+    - name: ⬇ Download dependency `cordova-plugin-run-in-background`
+      run: |
+        git clone https://bitbucket.org/TheBosZ/cordova-plugin-run-in-background.git
+        sed -i 's@git+https://bitbucket.org/TheBosZ/cordova-plugin-run-in-background.git@../../cordova-plugin-run-in-background@g' ./src/cordova/package.js
+
     - name: 📦 Pack for 📱Android with Node.js & Cordova
       run: yarn pack:cordova
 

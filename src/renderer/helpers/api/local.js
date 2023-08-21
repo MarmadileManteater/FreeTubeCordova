@@ -87,10 +87,11 @@ export function cordovaFetch(input, init = {}) {
  * @param {boolean} options.withPlayer set to true to get an Innertube instance that can decode the streaming URLs
  * @param {string|undefined} options.location the geolocation to pass to YouTube get different content
  * @param {boolean} options.safetyMode whether to hide mature content
- * @param {string} options.clientType use an alterate client
+ * @param {import('youtubei.js').ClientType} options.clientType use an alterate client
+ * @param {boolean} options.generateSessionLocally generate the session locally or let YouTube generate it (local is faster, remote is more accurate)
  * @returns the Innertube instance
  */
-async function createInnertube(options = { withPlayer: false, location: undefined, safetyMode: false, clientType: undefined }) {
+async function createInnertube(options = { withPlayer: false, location: undefined, safetyMode: false, clientType: undefined, generateSessionLocally: true }) {
   let cache
   if (options.withPlayer) {
     const userData = await getUserDataPath()
@@ -117,7 +118,7 @@ async function createInnertube(options = { withPlayer: false, location: undefine
       }
     },
     cache,
-    generate_session_locally: true
+    generate_session_locally: !!options.generateSessionLocally
   })
 }
 
@@ -207,14 +208,14 @@ export async function getLocalVideoInfo(id, attemptBypass = false) {
   let player
 
   if (attemptBypass) {
-    const innertube = await createInnertube({ withPlayer: true, clientType: ClientType.TV_EMBEDDED })
+    const innertube = await createInnertube({ withPlayer: true, clientType: ClientType.TV_EMBEDDED, generateSessionLocally: false })
     player = innertube.actions.session.player
 
     // the second request that getInfo makes 404s with the bypass, so we use getBasicInfo instead
     // that's fine as we have most of the information from the original getInfo request
     info = await innertube.getBasicInfo(id, 'TV_EMBEDDED')
   } else {
-    const innertube = await createInnertube({ withPlayer: true })
+    const innertube = await createInnertube({ withPlayer: true, generateSessionLocally: false })
     player = innertube.actions.session.player
 
     info = await innertube.getInfo(id)
@@ -233,17 +234,24 @@ export async function getLocalComments(id, sortByNewest = false) {
   return innertube.getComments(id, sortByNewest ? 'NEWEST_FIRST' : 'TOP_COMMENTS')
 }
 
+// I know `type & type` is typescript syntax and not valid jsdoc but I couldn't get @extends or @augments to work
+
+/**
+ * @typedef {object} _LocalFormat
+ * @property {string} freeTubeUrl deciphered streaming URL, stored in a custom property so the DASH manifest generation doesn't break
+ *
+ * @typedef {Misc.Format & _LocalFormat} LocalFormat
+ */
+
 /**
  * @param {Misc.Format[]} formats
  * @param {import('youtubei.js').Player} player
  */
 function decipherFormats(formats, player) {
   for (const format of formats) {
-    format.url = format.decipher(player)
-
-    // set these to undefined so that toDash doesn't try to decipher them again, throwing an error
-    format.cipher = undefined
-    format.signature_cipher = undefined
+    // toDash deciphers the format again, so if we overwrite the original URL,
+    // it breaks because the n param would get deciphered twice and then be incorrect
+    format.freeTubeUrl = format.decipher(player)
   }
 }
 
@@ -420,6 +428,8 @@ function parseShortDuration(accessibilityLabel, videoId) {
 export function parseLocalListPlaylist(playlist, author = undefined) {
   let channelName
   let channelId = null
+  /** @type {import('youtubei.js').YTNodes.PlaylistVideoThumbnail} */
+  const thumbnailRenderer = playlist.thumbnail_renderer
 
   if (playlist.author) {
     if (playlist.author instanceof Misc.Text) {
@@ -441,7 +451,7 @@ export function parseLocalListPlaylist(playlist, author = undefined) {
     type: 'playlist',
     dataSource: 'local',
     title: playlist.title.text,
-    thumbnail: playlist.thumbnails[0].url,
+    thumbnail: thumbnailRenderer ? thumbnailRenderer.thumbnail[0].url : playlist.thumbnails[0].url,
     channelName,
     channelId,
     playlistId: playlist.id,
@@ -468,23 +478,79 @@ function handleSearchResponse(response) {
 
   return {
     results,
-    continuationData: response.has_continuation ? response : null
+    // check the length of the results, as there can be continuations for things that we've filtered out, which we don't want
+    continuationData: response.has_continuation && results.length > 0 ? response : null
   }
 }
 
 /**
- * @param {import('youtubei.js').YTNodes.PlaylistVideo} video
+ * @param {import('youtubei.js').YTNodes.PlaylistVideo|import('youtubei.js').YTNodes.ReelItem} video
  */
 export function parseLocalPlaylistVideo(video) {
-  return {
-    videoId: video.id,
-    title: video.title.text,
-    author: video.author.name,
-    authorId: video.author.id,
-    lengthSeconds: isNaN(video.duration.seconds) ? '' : video.duration.seconds,
-    liveNow: video.is_live,
-    isUpcoming: video.is_upcoming,
-    premiereDate: video.upcoming
+  if (video.type === 'ReelItem') {
+    /** @type {import('youtubei.js').YTNodes.ReelItem} */
+    const short = video
+
+    // unfortunately the only place with the duration is the accesibility string
+    const duration = parseShortDuration(video.accessibility_label, short.id)
+
+    return {
+      type: 'video',
+      videoId: short.id,
+      title: short.title.text,
+      viewCount: parseLocalSubscriberCount(short.views.text),
+      lengthSeconds: isNaN(duration) ? '' : duration
+    }
+  } else {
+    /** @type {import('youtubei.js').YTNodes.PlaylistVideo} */
+    const video_ = video
+
+    let viewCount = null
+
+    // the accessiblity label contains the full view count
+    // the video info only contains the short view count
+    if (video_.accessibility_label) {
+      const match = video_.accessibility_label.match(/([\d,.]+|no) views?$/i)
+
+      if (match) {
+        const count = match[1]
+
+        // as it's rare that a video has no views,
+        // checking the length allows us to avoid running toLowerCase unless we have to
+        if (count.length === 2 && count.toLowerCase() === 'no') {
+          viewCount = 0
+        } else {
+          const views = extractNumberFromString(count)
+
+          if (!isNaN(views)) {
+            viewCount = views
+          }
+        }
+      }
+    }
+
+    let publishedText = null
+
+    // normal videos have 3 text runs with the last one containing the published date
+    // live videos have 2 text runs with the number of people watching
+    // upcoming either videos don't have any info text or the number of people waiting,
+    // but we have the premiere date for those, so we don't need the published date
+    if (video_.video_info.runs && video_.video_info.runs.length === 3) {
+      publishedText = video_.video_info.runs[2].text
+    }
+
+    return {
+      videoId: video_.id,
+      title: video_.title.text,
+      author: video_.author.name,
+      authorId: video_.author.id,
+      viewCount,
+      publishedText,
+      lengthSeconds: isNaN(video_.duration.seconds) ? '' : video_.duration.seconds,
+      liveNow: video_.is_live,
+      isUpcoming: video_.is_upcoming,
+      premiereDate: video_.upcoming
+    }
   }
 }
 
@@ -729,7 +795,7 @@ export function parseLocalTextRuns(runs, emojiSize = 16, options = { looseChanne
 }
 
 /**
- * @param {Misc.Format} format
+ * @param {LocalFormat} format
  */
 export function mapLocalFormat(format) {
   return {
@@ -740,7 +806,7 @@ export function mapLocalFormat(format) {
     mimeType: format.mime_type,
     height: format.height,
     width: format.width,
-    url: format.url
+    url: format.freeTubeUrl
   }
 }
 

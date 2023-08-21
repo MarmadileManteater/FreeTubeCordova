@@ -14,7 +14,7 @@ module.exports = {
     restore: 'npx cordova platform add android'
   },
   devDependencies: {
-    'cordova-android': '^11.0.0',
+    'cordova-android': '^12.0.0',
     'cordova-clipboard': '^1.3.0',
     'cordova-plugin-background-mode': 'git+https://bitbucket.org/TheBosZ/cordova-plugin-run-in-background.git',
     'cordova-plugin-android-permissions': '^1.1.4',

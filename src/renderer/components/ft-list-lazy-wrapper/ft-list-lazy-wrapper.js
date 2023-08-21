@@ -33,6 +33,10 @@ export default defineComponent({
       type: Boolean,
       default: false
     },
+    useChannelsHiddenPreference: {
+      type: Boolean,
+      default: true,
+    },
   },
   data: function () {
     return {
@@ -44,17 +48,14 @@ export default defineComponent({
       return this.$store.getters.getHideLiveStreams
     },
     channelsHidden: function() {
+      // Some component users like channel view will have this disabled
+      if (!this.useChannelsHiddenPreference) { return [] }
+
       return JSON.parse(this.$store.getters.getChannelsHidden)
     },
     hideUpcomingPremieres: function () {
       return this.$store.getters.getHideUpcomingPremieres
-    }
-  },
-  methods: {
-    onVisibilityChanged: function (visible) {
-      this.visible = visible
     },
-
     /**
      *  Show or Hide results in the list
      *
@@ -65,15 +66,18 @@ export default defineComponent({
       if (!data.type) {
         return false
       }
-      if (data.type === 'video') {
+      if (data.type === 'video' || data.type === 'shortVideo') {
         if (this.hideLiveStreams && (data.liveNow || data.lengthSeconds == null)) {
           // hide livestreams
           return false
         }
-
         if (this.hideUpcomingPremieres &&
             // Observed for premieres in Local API Channels.
-            (data.durationText === 'PREMIERE' ||
+            (data.premiereDate != null ||
+              // Invidious API
+              // `premiereTimestamp` only available on premiered videos
+              // https://docs.invidious.io/api/common_types/#videoobject
+              data.premiereTimestamp != null ||
              // viewCount is our only method of detecting premieres in RSS
              // data without sending an additional request.
              // If we ever get a better flag, use it here instead.
@@ -86,17 +90,40 @@ export default defineComponent({
           return false
         }
       } else if (data.type === 'channel') {
-        if (this.channelsHidden.includes(data.channelID) || this.channelsHidden.includes(data.name)) {
+        const attrsToCheck = [
+          // Local API
+          data.id,
+          data.name,
+          // Invidious API
+          // https://docs.invidious.io/api/common_types/#channelobject
+          data.author,
+          data.authorId,
+        ]
+        if (attrsToCheck.some(a => a != null && this.channelsHidden.includes(a))) {
           // hide channels by author
           return false
         }
       } else if (data.type === 'playlist') {
-        if (this.channelsHidden.includes(data.authorId) || this.channelsHidden.includes(data.author)) {
+        const attrsToCheck = [
+          // Local API
+          data.channelId,
+          data.channelName,
+          // Invidious API
+          // https://docs.invidious.io/api/common_types/#playlistobject
+          data.author,
+          data.authorId,
+        ]
+        if (attrsToCheck.some(a => a != null && this.channelsHidden.includes(a))) {
           // hide playlists by author
           return false
         }
       }
       return true
+    }
+  },
+  methods: {
+    onVisibilityChanged: function (visible) {
+      this.visible = visible
     }
 
   }

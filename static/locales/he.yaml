@@ -438,6 +438,7 @@ Settings:
       Do Nothing: לא לעשות כלום
       Prompt To Skip: לשאול אם לדלג
     Category Color: צבע קטגוריה
+    UseDeArrowTitles: להשתמש בכותרות סרטונים דרך DeArrow
   Download Settings:
     Download Settings: הגדרות הורדה
     Ask Download Path: לשאול מה נתיב ההורדות
@@ -720,7 +721,7 @@ Video:
     recap: סיכום
   External Player:
     video: סרטון
-    playlist: פלייליסט
+    playlist: רשימת נגינה
     OpenInTemplate: פתיחה בתוך {externalPlayer}
     OpeningTemplate: '{videoOrPlaylist} נפתח ב־{externalPlayer}…'
     UnsupportedActionTemplate: 'ב־{externalPlayer} אין תמיכה בפעולה: {action}'
@@ -778,7 +779,7 @@ Playlist:
 # On Video Watch Page
 #* Published
 #& Views
-  Playlist: פלייליסט
+  Playlist: רשימת נגינה
 Toggle Theatre Mode: 'הפעלו / בטלו מצב קולנוע'
 Change Format:
   Change Media Formats: 'שינוי תצורות הסרטונים'
@@ -859,14 +860,14 @@ Tooltips:
       האפשרות פעילה.
     Preferred API Backend: נא לבחור את המנגנון לשימוש FreeTube כדי לקבל נתונים. ה־API
       המקומי הוא מחלץ מובנה. ה־API של Invidious דורש התחברות לשרת Invidious.
-    Region for Trending: מגמות אזוריות מאפשר לך לבחור סרטונים חמים של איזו מדינה מעניין
-      אותך לראות. לא כל המדינות שמוצגות אכן נתמכות על ידי YouTube.
     Invidious Instance: העותק של Invidious שאליו FreeTube יתחבר לקבלת פניות API.
     Thumbnail Preference: כל התמונות הממוזערות ברחבי FreeTube יוחלפו בפריים מתוך הסרטון
       במקום התמונה הממוזערת כברירת המחדל.
     External Link Handling: "נא לבחור את התנהגות ברירת המחדל כשנלחץ קישור שלא ניתן
       לפתוח ב־FreeTube.\nכברירת מחדל FreeTube יפתח את הקישור שנלחץ בדפדפן ברירת המחדל
       שלך.\n"
+    Region for Trending: מגמות אזוריות מאפשרות לך לבחור סרטונים חמים של איזו מדינה
+      מעניין אותך לראות.
   Player Settings:
     Force Local Backend for Legacy Formats: עובד רק כאשר ה־API של Invidious הוא ברירת
       המחדל שלך. כאשר האפשרות פעילה, ה־API המקומי יופעל וישתמש בתצורות המיושנות שהוחזרו
@@ -914,6 +915,8 @@ Tooltips:
     Hide Channels: יש למלא את שם או מזהה הערוץ כדי להסתיר את כל הסרטונים, רשימות הנגינה
       ואת הערוץ עצמו כך שלא יופיע בחיפוש או במובילים. שם הערוץ שמילאת צריך להיות תואם
       במלואו ותואם מבחינת רישיות (אותיות גדולות/קטנות).
+  SponsorBlock Settings:
+    UseDeArrowTitles: החלפת כותרות הסרטונים עם כותרות ששלחו משתמשים ב־DeArrow.
 More: עוד
 Open New Window: פתיחת חלון חדש
 Search Bar:
