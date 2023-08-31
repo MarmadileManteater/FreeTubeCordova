@@ -4,17 +4,21 @@ FROM node:18-alpine AS dep
 WORKDIR /app
 COPY package.json ./package.json
 COPY yarn.lock ./yarn.lock
+# copy `dist` if it exists already
+COPY dis[t]/web ./dist/
 # git is needed for jinter
 RUN apk add git
-# There are no conditional copy instructions in Docker so it is not possible to copy ./dist/web if it already exist on host
-RUN yarn ci
+# don't rebuild if you don't have to
+RUN if [ ! -d 'dist/web' ]; then yarn ci; fi
 
 ## Build Stage ##
 FROM node:18-alpine AS build
 WORKDIR /app
 COPY . .
-COPY --from=dep /app/node_modules ./node_modules
-RUN yarn pack:web
+COPY --from=dep /app/dis[t]/web ./dist/web
+COPY --from=dep /app/node_module[s] ./node_modules
+# don't rebuild if you don't have to
+RUN if [ ! -d 'dist/web' ]; then yarn pack:web; fi
 
 ## App Stage ##
 FROM nginx:latest as app
