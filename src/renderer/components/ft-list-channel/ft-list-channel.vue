@@ -10,10 +10,13 @@
     <div class="channelThumbnail">
       <router-link
         :to="`/channel/${id}`"
+        tabindex="-1"
+        aria-hidden="true"
       >
         <img
           :src="thumbnail"
           class="channelImage"
+          alt=""
         >
       </router-link>
     </div>
@@ -22,7 +25,9 @@
         class="title"
         :to="`/channel/${id}`"
       >
-        {{ channelName }}
+        <h3 class="h3Title">
+          {{ channelName }}
+        </h3>
       </router-link>
       <div class="infoLine">
         <span
@@ -48,9 +53,8 @@
       <p
         v-if="listType !== 'grid'"
         class="description"
-      >
-        {{ description }}
-      </p>
+        v-html="description"
+      />
     </div>
   </div>
 </template>

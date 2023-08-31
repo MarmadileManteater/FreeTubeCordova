@@ -80,6 +80,7 @@ export default defineComponent({
       liveChat: null,
       isLiveContent: false,
       isUpcoming: false,
+      isPostLiveDvr: false,
       upcomingTimestamp: null,
       upcomingTimeLeft: null,
       activeFormat: 'legacy',
@@ -318,9 +319,6 @@ export default defineComponent({
     changeTimestamp: function (timestamp) {
       this.$refs.videoPlayer.player.currentTime(timestamp)
     },
-    toggleTheatreMode: function () {
-      this.useTheatreMode = !this.useTheatreMode
-    },
 
     getVideoInformationLocal: async function () {
       if (this.firstLoad) {
@@ -417,8 +415,9 @@ export default defineComponent({
         this.isLive = !!result.basic_info.is_live
         this.isUpcoming = !!result.basic_info.is_upcoming
         this.isLiveContent = !!result.basic_info.is_live_content
+        this.isPostLiveDvr = !!result.basic_info.is_post_live_dvr
 
-        const subCount = parseLocalSubscriberCount(result.secondary_info.owner.subscriber_count.text)
+        const subCount = !result.secondary_info.owner.subscriber_count.isEmpty() ? parseLocalSubscriberCount(result.secondary_info.owner.subscriber_count.text) : NaN
 
         if (!isNaN(subCount)) {
           this.channelSubscriptionCountText = formatNumber(subCount, subCount >= 10000 ? { notation: 'compact' } : undefined)
@@ -482,7 +481,7 @@ export default defineComponent({
           result = bypassedResult
         }
 
-        if (this.isLive && !this.isUpcoming) {
+        if ((this.isLive || this.isPostLiveDvr) && !this.isUpcoming) {
           try {
             let hlsUrl = result.streaming_data.hls_manifest_url
             if (this.proxyVideos || !process.env.IS_ELECTRON) {
@@ -520,6 +519,8 @@ export default defineComponent({
           this.showDashPlayer = false
           this.activeFormat = 'legacy'
           this.activeSourceList = this.videoSourceList
+          this.audioSourceList = null
+          this.dashSrc = null
         } else if (this.isUpcoming) {
           const upcomingTimestamp = result.basic_info.start_timestamp
 
@@ -664,7 +665,14 @@ export default defineComponent({
               /** @type {import('youtubei.js').Misc.Format[][]} */
               const sourceLists = []
 
-              audioFormats.forEach(format => {
+              for (const format of audioFormats) {
+                // Some videos with multiple audio tracks, have a broken one, that doesn't have any audio track information
+                // It seems to be the same as default audio track but broken
+                // At the time of writing, this video has a broken audio track: https://youtu.be/UJeSWbR6W04
+                if (!format.audio_track) {
+                  continue
+                }
+
                 const index = ids.indexOf(format.audio_track.id)
                 if (index === -1) {
                   ids.push(format.audio_track.id)
@@ -696,7 +704,7 @@ export default defineComponent({
                 } else {
                   sourceLists[index].push(format)
                 }
-              })
+              }
 
               for (let i = 0; i < audioTracks.length; i++) {
                 audioTracks[i].sourceList = this.createLocalAudioSourceList(sourceLists[i])
@@ -778,7 +786,7 @@ export default defineComponent({
 
           this.videoTitle = result.title
           this.videoViewCount = result.viewCount
-          this.channelSubscriptionCountText = result.subCountText || 'FT-0'
+          this.channelSubscriptionCountText = isNaN(result.subCountText) ? '' : result.subCountText
           if (this.hideVideoLikesAndDislikes) {
             this.videoLikeCount = null
             this.videoDislikeCount = null
@@ -1176,12 +1184,26 @@ export default defineComponent({
         })
     },
 
+    handleFormatChange: function (format) {
+      switch (format) {
+        case 'dash':
+          this.enableDashFormat()
+          break
+        case 'legacy':
+          this.enableLegacyFormat()
+          break
+        case 'audio':
+          this.enableAudioFormat()
+          break
+      }
+    },
+
     enableDashFormat: function () {
-      if (this.activeFormat === 'dash' || this.isLive) {
+      if (this.activeFormat === 'dash') {
         return
       }
 
-      if (this.dashSrc === null) {
+      if (this.dashSrc === null || this.isLive || this.isPostLiveDvr) {
         showToast(this.$t('Change Format.Dash formats are not available for this video'))
         return
       }

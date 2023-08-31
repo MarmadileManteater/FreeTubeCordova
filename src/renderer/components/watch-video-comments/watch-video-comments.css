@@ -49,8 +49,24 @@
   float: left;
   width: 60px;
   height: 60px;
-  border-radius: 200px 200px 200px 200px;
-  -webkit-border-radius: 200px 200px 200px 200px;
+  border-radius: 200px;
+  -webkit-border-radius: 200px;
+}
+
+.commentThumbnailHidden {
+  float: left;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 60px;
+  height: 60px;
+  font-size: 20px;
+  line-height: 1em;
+  text-transform: capitalize;
+  color: rgb(0 0 0);
+  background-color: rgb(235 160 172);
+  border-radius: 50%;
+  -webkit-border-radius: 50%;
 }
 
 .commentAuthorWrapper {

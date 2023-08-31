@@ -48,7 +48,8 @@ export default defineComponent({
         '',
         'start',
         'middle',
-        'end'
+        'end',
+        'hidden'
       ],
       externalLinkHandlingValues: [
         '',
@@ -137,7 +138,8 @@ export default defineComponent({
         this.$t('Settings.General Settings.Thumbnail Preference.Default'),
         this.$t('Settings.General Settings.Thumbnail Preference.Beginning'),
         this.$t('Settings.General Settings.Thumbnail Preference.Middle'),
-        this.$t('Settings.General Settings.Thumbnail Preference.End')
+        this.$t('Settings.General Settings.Thumbnail Preference.End'),
+        this.$t('Settings.General Settings.Thumbnail Preference.Hidden')
       ]
     },
 
@@ -171,7 +173,11 @@ export default defineComponent({
   },
   methods: {
     handleInvidiousInstanceInput: function (input) {
-      const instance = input.replace(/\/$/, '')
+      let instance = input
+      // If NOT something like https:// (1-2 slashes), remove trailing slash
+      if (!/^(https?):(\/){1,2}$/.test(input)) {
+        instance = input.replace(/\/$/, '')
+      }
       this.setCurrentInvidiousInstanceBounce(instance)
     },
 
