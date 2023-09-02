@@ -79,38 +79,34 @@ The first build with a green check mark is the latest build. You will need to ha
 ## How to build and test
 ### Commands for the Android APK
 ```bash
-# ?? Packs the project using `webpack.cordova.config.js`
+# 📦 Packs the project using `webpack.cordova.config.js`
 yarn pack:cordova
-# ?? Builds the debug APK and launches it on a connected device
+# 🏗 Builds the debug APK and launches it on a connected device
 yarn run:cordova
-# ?? Builds the development APK
+# 🚧 Builds the development APK
 yarn build:cordova
-# ?? Builds the release APK
+# 🏦 Builds the release APK
 yarn build:cordova --release
 ```
 ### Commands for the PWA (progressive web app)
 ```bash
-# ?? Debugs the project using `webpack.web.config.js`
+# 🐛 Debugs the project using `webpack.web.config.js`
 yarn dev:web
-# ?? Packs the project using `webpack.web.config.js` 
+# 📦 Packs the project using `webpack.web.config.js` 
 yarn pack:web
 ```
 
 ### Commands for the PWA Docker Image
 ```bash
-<<<<<<< HEAD
+
 # 💨 Creates and runs the image locally. Add `--platform=linux/arm64` to docker build for ARM64 devices including Apple Silicon
 docker build -t freetubecordova . # Warning, might take a while on Apple Silicon
-=======
-# ?? Creates and runs the image locally. Add `--platform=linux/arm64` to docker build for ARM64 devices including Apple Silicon
-docker build -t freetubecordova . # Warning, might take 10 minutes.
->>>>>>> development
 docker run --name ftcordova -d -p 8080:80 freetubecordova
 
-# ?? Runs the image from Docker Hub.
+# 🏃 Runs the image from Docker Hub.
 docker run --name ftcordova -d -p 8080:80 owentruong/freetubecordova:latest
 
-# ????? Runs the image from Docker Hub (ARM64)
+# 🏃‍♂️ Runs the image from Docker Hub (ARM64)
 docker run --platform=linux/arm64 --name ftcordova -d -p 8080:80 owentruong/freetubecordova:latest-arm64
 ```
 ## Contributing
