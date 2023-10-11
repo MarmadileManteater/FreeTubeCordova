@@ -76,7 +76,7 @@ jobs:
         path: dist/web
 
     - name: 🚧 Setup Android SDK Tools
-      uses: android-actions/setup-android@v2.0.9
+      uses: android-actions/setup-android@v3.0.0
 
     - name: ⬇ Download dependency `cordova-plugin-run-in-background`
       run: |
