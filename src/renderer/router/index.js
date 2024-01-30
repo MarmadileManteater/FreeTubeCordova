@@ -150,6 +150,33 @@ const router = new Router({
 
 const originalPush = router.push.bind(router)
 
+const routes = [{ path: '/' }]
+let historyIndex = 0
+if (process.env.IS_ANDROID) {
+  // android webview sacrifices history for tricking the webview into thinkings its youtube
+  router.back = () => {
+    historyIndex--
+    originalPush(routes[historyIndex])
+    return router.canGoBackward()
+  }
+
+  router.canGoBackward = () => {
+    return historyIndex - 1 >= 0
+  }
+
+  router.forward = () => {
+    historyIndex++
+    originalPush(routes[historyIndex])
+    return router.canGoForward()
+  }
+
+  router.canGoForward = () => {
+    return historyIndex + 1 < routes.length
+  }
+
+  window.history.goBack = router.back
+}
+
 router.push = (location) => {
   // only navigates if the location is not identical to the current location
 
@@ -176,6 +203,15 @@ router.push = (location) => {
   const queriesAreDiff = newQueryUSP.toString() !== currentQueryUSP.toString()
 
   if (pathsAreDiff || queriesAreDiff) {
+    if (process.env.IS_ANDROID) {
+      // if the route history is currently not all the way in the present
+      if (historyIndex !== routes.length - 1) {
+        // remove all future history
+        routes.splice(historyIndex + 1, routes.length - historyIndex)
+      }
+      routes.push(location)
+      historyIndex++
+    }
     return originalPush(location)
   }
 }

@@ -7,6 +7,11 @@ import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebChromeClient
+import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
+import android.webkit.WebSettings
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import android.widget.FrameLayout
 import androidx.activity.addCallback
 import androidx.appcompat.app.AppCompatActivity
@@ -25,6 +30,7 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
   private lateinit var keepAliveIntent: Intent
   private var fullscreenView: View? = null
   lateinit var webView: BackgroundPlayWebView
+
   @Suppress("DEPRECATION")
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -51,17 +57,18 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
     // bind the back button to the web-view history
     onBackPressedDispatcher.addCallback {
       if (webView.canGoBack()) {
-        webView.goBack()
+        webView.loadUrl("javascript: window.history.goBack()")
       } else {
         this@MainActivity.moveTaskToBack(true)
       }
     }
 
     webView.settings.javaScriptEnabled = true
+    webView.settings.cacheMode = WebSettings.LOAD_NO_CACHE
 
     // this is the 🥃 special sauce that makes local api streaming a possibility
-    webView.settings.allowUniversalAccessFromFileURLs = true
-    webView.settings.allowFileAccessFromFileURLs = true
+    // webView.settings.allowUniversalAccessFromFileURLs = true
+    // webView.settings.allowFileAccessFromFileURLs = true
 
     val jsInterface = FreeTubeJavaScriptInterface(this)
     webView.addJavascriptInterface(jsInterface, "Android")
@@ -84,7 +91,38 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
         this@MainActivity.binding.root.fitsSystemWindows = true
       }
     }
-    webView.loadUrl("file:///android_asset/index.html")
+    // webView.loadUrl("file:///android_asset/index.html")
+    val htmlFile = assets.open("index.html").bufferedReader().use { it.readText() }
+    webView.webViewClient = object: WebViewClient() {
+      override fun shouldInterceptRequest(
+        view: WebView?,
+        request: WebResourceRequest?
+      ): WebResourceResponse? {
+        // we are pretending to be youtube.com, so we need to intercept requests for our local resources
+        if (request!!.url.toString().startsWith("https://www.youtube.com/")) {
+          try {
+            val mimeType = if (request!!.url.toString().endsWith(".css")) {
+              "text/css"
+            } else if (request!!.url.toString().endsWith(".js")) {
+              "application/javascript"
+            } else {
+              "text/plain"
+            }
+            val asset = assets.open(request!!.url.path!!.substring(1))
+            return WebResourceResponse(
+              mimeType,
+              "utf-8",
+              asset
+            )
+          } catch (e: Exception) {
+            println(e.message)
+          }
+        }
+        return super.shouldInterceptRequest(view, request)
+      }
+    }
+
+    webView.loadDataWithBaseURL("https://www.youtube.com/", htmlFile, "text/html", "utf-8", "file://android_asset/index.html")
     Handler(Looper.getMainLooper()).postDelayed({
       webView.loadUrl(
         "javascript: window.mediaSessionListeners = {};" +

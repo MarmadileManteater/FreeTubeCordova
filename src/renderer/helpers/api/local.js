@@ -10,6 +10,7 @@ import {
   getUserDataPath,
   toLocalePublicationString
 } from '../utils'
+import android from 'android'
 
 const TRACKING_PARAM_NAMES = [
   'utm_source',
@@ -53,7 +54,25 @@ async function createInnertube(options = { withPlayer: false, location: undefine
     client_type: options.clientType,
 
     // use browser fetch
-    fetch: (input, init) => fetch(input, init),
+    fetch: (input, init) => {
+      if (process.env.IS_ANDROID) {
+        const serializeHeaders = (headers) => Object.fromEntries(Array.from(headers.keys()).map((key) => [key, headers.get(key)]))
+        if (process.env.IS_ANDROID) {
+          // this url isn't allowed when fetching from YT, and the only way out is through (the javascript interface)
+          if (input.url?.startsWith('https://suggestqueries.google.com/')) {
+            const stringResponse = android.googleSuggestions(input.url, input.method, JSON.stringify({ ...serializeHeaders(input.headers), ...serializeHeaders(init.headers) }))
+            return {
+              text() {
+                return stringResponse
+              },
+              ok: true,
+              status: 200
+            }
+          }
+        }
+      }
+      return fetch(input, init)
+    },
     cache,
     generate_session_locally: !!options.generateSessionLocally
   })

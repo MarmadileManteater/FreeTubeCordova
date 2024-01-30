@@ -301,37 +301,58 @@ export default defineComponent({
     },
 
     navigateHistory: function () {
-      if (!this.isForwardOrBack) {
-        this.historyIndex = window.history.length
-        this.isArrowBackwardDisabled = false
-        this.isArrowForwardDisabled = true
+      if (!process.env.IS_ANDROID) {
+        if (!this.isForwardOrBack) {
+          this.historyIndex = window.history.length
+          this.isArrowBackwardDisabled = false
+          this.isArrowForwardDisabled = true
+        } else {
+          this.isForwardOrBack = false
+        }
       } else {
-        this.isForwardOrBack = false
+        this.isArrowForwardDisabled = !this.$router.canGoForward()
+        this.isArrowBackwardDisabled = !this.$router.canGoBackward()
       }
     },
 
     historyBack: function () {
-      this.isForwardOrBack = true
-      window.history.back()
+      if (!process.env.IS_ANDROID) {
+        this.isForwardOrBack = true
+        window.history.back()
 
-      if (this.historyIndex > 1) {
-        this.historyIndex--
-        this.isArrowForwardDisabled = false
-        if (this.historyIndex === 1) {
+        if (this.historyIndex > 1) {
+          this.historyIndex--
+          this.isArrowForwardDisabled = false
+          if (this.historyIndex === 1) {
+            this.isArrowBackwardDisabled = true
+          }
+        }
+      } else {
+        if (this.$router.back()) {
+          this.isArrowForwardDisabled = false
+        } else {
           this.isArrowBackwardDisabled = true
         }
       }
     },
 
     historyForward: function () {
-      this.isForwardOrBack = true
-      window.history.forward()
+      if (!process.env.IS_ANDROID) {
+        this.isForwardOrBack = true
+        window.history.forward()
 
-      if (this.historyIndex < window.history.length) {
-        this.historyIndex++
-        this.isArrowBackwardDisabled = false
+        if (this.historyIndex < window.history.length) {
+          this.historyIndex++
+          this.isArrowBackwardDisabled = false
 
-        if (this.historyIndex === window.history.length) {
+          if (this.historyIndex === window.history.length) {
+            this.isArrowForwardDisabled = true
+          }
+        }
+      } else {
+        if (this.$router.forward()) {
+          this.isArrowBackwardDisabled = false
+        } else {
           this.isArrowForwardDisabled = true
         }
       }

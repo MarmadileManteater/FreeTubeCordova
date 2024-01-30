@@ -13,6 +13,9 @@ import android.webkit.JavascriptInterface
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationManagerCompat
+import org.json.JSONObject
+import org.json.JSONTokener
+import java.net.HttpURLConnection
 import java.net.URL
 class FreeTubeJavaScriptInterface {
   private var context: MainActivity
@@ -184,5 +187,22 @@ class FreeTubeJavaScriptInterface {
   @JavascriptInterface
   fun updateMediaSessionData(trackName: String, artist: String, duration: Long, art: String? = null) {
     setMetadata(mediaSession!!, trackName, artist, duration, art)
+  }
+
+  @JavascriptInterface
+  fun googleSuggestions(url: String, method: String, headers: String): String {
+    val jsonObject = JSONTokener(headers).nextValue() as JSONObject
+    val headersMap = mutableMapOf<String, String>()
+    for (key in jsonObject.keys()) {
+      headersMap[key] = jsonObject.getString(key)
+    }
+    // this needs to be requested at the os level
+    val connection = URL(url).openConnection() as HttpURLConnection
+    for (header in headersMap) {
+      connection.setRequestProperty(header.key, header.value)
+    }
+    connection.requestMethod = method
+    connection.connect()
+    return connection.inputStream.bufferedReader().use { it.readText() }
   }
 }
