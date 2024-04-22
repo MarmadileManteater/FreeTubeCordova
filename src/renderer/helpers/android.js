@@ -328,3 +328,84 @@ export function updateSystemTheme(theme) {
     android.themeSystemUi(bottom, top, false)
   }
 }
+
+export const EXPECTED_DATA_DIRS = ['authors', 'videos']
+
+/**
+ *
+ * @param {DirectoryHandle} directoryHandle
+ * @param {import('youtubei.js/dist/src/parser/misc').Format} videoFormat
+ * @param {import('youtubei.js/dist/src/parser/misc').Format} audioFormat
+ * @param {*} title
+ * @param {*} videoId
+ * @param {*} description
+ * @param {*} likes
+ * @param {*} viewCount
+ * @param {*} published
+ * @returns {Promise<string>}
+ */
+export async function downloadVideoAndAudio(directoryHandle, videoFormat, audioFormat, videoId, update = () => {}) {
+  const files = directoryHandle.listFiles()
+  /** @type {DirectoryHandle} */
+  let videoFolder
+  const prexistingFolders = files.filter(file => file.isDirectory && file.fileName === videoId)
+  if (prexistingFolders.length === 0) {
+    videoFolder = directoryHandle.createDirectory(videoId)
+  } else {
+    videoFolder = prexistingFolders[0]
+  }
+  const videoMime = videoFormat.mime_type.split('video/')[1].split(';')[0]
+  const audioMime = audioFormat.mime_type.split('audio/')[1].split(';')[0]
+  const videoFileName = `video.${videoMime}`
+  let alreadyExistingFiles = videoFolder.listFiles().filter((file) => file.fileName === videoFileName)
+  if (alreadyExistingFiles.length > 0) {
+    android.deleteFileInTree(alreadyExistingFiles[0].uri)
+  }
+  const videoFile = videoFolder.createFile(videoFileName)
+  await window.awaitAsyncResult(android.downloadChunkedStream(videoFormat.freeTubeUrl, videoFile), {
+    log: [(log) => {
+      const json = JSON.parse(log)
+      update({
+        stage: 'downloading video format',
+        label: videoFormat.quality_label,
+        ...json
+      })
+    }]
+  })
+  const audioFileName = `audio.${audioMime}`
+  alreadyExistingFiles = videoFolder.listFiles().filter((file) => file.fileName === audioFileName)
+  if (alreadyExistingFiles.length > 0) {
+    android.deleteFileInTree(alreadyExistingFiles[0].uri)
+  }
+  const audioFile = videoFolder.createFile(audioFileName)
+  await window.awaitAsyncResult(android.downloadChunkedStream(audioFormat.freeTubeUrl, audioFile), {
+    log: [(log) => {
+      const json = JSON.parse(log)
+      update({
+        stage: 'downloading audio format',
+        label: audioFormat.quality_label,
+        ...json
+      })
+    }]
+  })
+  const outputFile = videoFolder.createFile(`output.${videoMime}`)
+  const vSafParam = android.getASafUrl(videoFile, 'r')
+  const aSafParam = android.getASafUrl(audioFile, 'r')
+  const oSafParam = android.getASafUrl(outputFile, 'wt')
+  await window.awaitAsyncResult(android.ffmpeg(`-i ${vSafParam} -i ${aSafParam} -c copy ${oSafParam}`),
+    {
+      log: [(message) => {
+        update({
+          stage: 'muxing streams with ffmpeg',
+          message
+        })
+      }],
+      stats: [(stats) => {
+        update({
+          stage: 'stats from ffmpeg',
+          ...stats
+        })
+      }]
+    })
+  return outputFile
+}

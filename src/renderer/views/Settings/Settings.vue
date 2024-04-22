@@ -30,8 +30,8 @@
       <hr>
       <proxy-settings v-if="usingElectron" />
       <hr v-if="usingElectron">
-      <download-settings v-if="usingElectron" />
-      <hr v-if="usingElectron">
+      <download-settings v-if="usingElectron || usingAndroid" />
+      <hr v-if="usingElectron || usingAndroid">
       <parental-control-settings />
       <hr>
       <sponsor-block-settings />

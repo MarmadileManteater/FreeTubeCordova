@@ -1,3 +1,10 @@
 .folderDisplay {
   inline-size: 50vh;
 }
+
+.data-directory {
+  word-wrap: break-word;
+  font-family: monospace;
+  max-inline-size: 70vw;
+  margin-block-start: -10px;
+}

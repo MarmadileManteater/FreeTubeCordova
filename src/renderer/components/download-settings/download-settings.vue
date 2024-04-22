@@ -12,7 +12,7 @@
       />
     </ft-flex-box>
     <template
-      v-if="downloadBehavior === 'download'"
+      v-if="downloadBehavior === 'download' && usingElectron"
     >
       <ft-flex-box
         class="settingsFlexStart500px"
@@ -42,6 +42,25 @@
           />
         </ft-flex-box>
       </template>
+    </template>
+    <template
+      v-if="downloadBehavior === 'download' && usingAndroid"
+    >
+      <br>
+      <ft-flex-box>
+        <ft-button
+          :label="$t('Download Settings.Select Downloads Directory')"
+          @click="selectDownloadsDirectory"
+        />
+      </ft-flex-box>
+      <ft-flex-box>
+        <p>
+          {{ $t("Download Settings.Downloads Are Currently Stored In") }}
+        </p>
+        <p class="data-directory">
+          {{ downloadsDirectory }}
+        </p>
+      </ft-flex-box>
     </template>
   </ft-settings-section>
 </template>

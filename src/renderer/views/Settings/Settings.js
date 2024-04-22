@@ -44,6 +44,9 @@ export default defineComponent({
     }
   },
   computed: {
+    usingAndroid: function () {
+      return process.env.IS_ANDROID
+    },
     settingsPassword: function () {
       return this.$store.getters.getSettingsPassword
     },

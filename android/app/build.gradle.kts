@@ -96,5 +96,6 @@ dependencies {
 
     implementation("com.google.android.material:material:1.11.0")
     implementation("androidx.media3:media3-ui:1.2.1")
-
+    implementation("com.arthenica:ffmpeg-kit-full:6.0-2")
+  implementation("androidx.media3:media3-common:1.3.0")
 }

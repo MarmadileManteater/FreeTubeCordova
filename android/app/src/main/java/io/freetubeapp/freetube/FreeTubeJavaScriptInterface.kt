@@ -22,8 +22,12 @@ import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.view.WindowCompat
 import androidx.documentfile.provider.DocumentFile
+import com.arthenica.ffmpegkit.FFmpegKit
+import com.arthenica.ffmpegkit.FFmpegKitConfig
+import com.arthenica.ffmpegkit.ReturnCode
 import java.io.File
 import java.io.FileInputStream
+import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLDecoder
 import java.util.UUID.*
@@ -43,6 +47,7 @@ class FreeTubeJavaScriptInterface {
     private const val CHANNEL_ID = "media_controls"
     private val NOTIFICATION_ID = (2..1000).random()
     private val NOTIFICATION_TAG = String.format("%s", randomUUID())
+    private val CHUNK_SIZE = 10 * 1024 * 1024
   }
 
   constructor(main: MainActivity) {
@@ -424,6 +429,33 @@ class FreeTubeJavaScriptInterface {
     }
     return promise
   }
+  
+  fun writeBytesToFile(basedir: String, filename: String, data: ByteArray, truncate: Boolean = true): Boolean {
+    try {
+      if (basedir.startsWith("content://")) {
+        val mode = if (truncate) {
+          "wt"
+        } else {
+          "wa"
+        }
+        // urls created by save dialog
+        val stream = context.contentResolver.openOutputStream(Uri.parse(basedir), mode)
+        stream!!.write(data)
+        stream!!.flush()
+        stream!!.close()
+        return true
+      }
+      val path = getDirectory(basedir)
+      var file = File(path, filename)
+      if (!file.exists()) {
+        file.createNewFile()
+      }
+      file.writeBytes(data)
+      return true
+    } catch (ex: Exception) {
+      return false
+    }
+  }
 
   /**
    * requests a save dialog, resolves a js promise when done, resolves with `USER_CANCELED` if the user cancels
@@ -651,6 +683,93 @@ class FreeTubeJavaScriptInterface {
   fun isAppPaused(): Boolean {
     return context.paused
   }
+  
+  @JavascriptInterface
+  fun ffmpeg(command: String): String {
+    val promise = jsPromise()
+    addNamedCallbackToPromise(promise, "log")
+    addNamedCallbackToPromise(promise, "stats")
+    FFmpegKit.executeAsync(command, {
+      session
+      ->
+      context.runOnUiThread {
+        if (ReturnCode.isSuccess(session!!.returnCode) || ReturnCode.isCancel(session!!.returnCode)) {
+          resolve(promise, session.output)
+        } else {
+          reject(promise, session.output)
+        }
+      }
+    }, {
+      log
+      ->
+      context.runOnUiThread {
+        context.webView.loadUrl("javascript: window['$promise'].callbacks.notify('log', ${context.btoa(log.message)})")
+      }
+    }, {
+      statistics
+      ->
+      context.runOnUiThread {
+        context.webView.loadUrl("javascript: window['$promise'].callbacks.notify('stats', { \"videoFrameNumber\": ${statistics.videoFrameNumber}, \"time\": ${statistics.time}, \"fps\": ${statistics.videoFps}, \"bitrate\": ${statistics.bitrate}, \"size\": ${statistics.size}, \"speed\": ${statistics.speed}, \"sessionId\": ${statistics.sessionId}, \"videoQuality\": ${statistics.videoQuality} })")
+      }
+    })
+    return promise
+  }
+  @JavascriptInterface
+  fun getASafUrl(url: String, mode: String): String {
+    return FFmpegKitConfig.getSafParameter(context, Uri.parse(url), mode)
+  }
+
+  /**
+   * downloads a stream in 10 Mib chunks to avoid ratelimiting
+   */
+  @SuppressLint("NewApi")
+  @JavascriptInterface
+  fun downloadChunkedStream(url: String, filename: String): String {
+    val promise = jsPromise()
+    addNamedCallbackToPromise(promise, "log")
+    context.threadPoolExecutor.execute {
+      val stream = context.contentResolver.openOutputStream(Uri.parse(filename), "wt")
+      try {
+        val uri = URL(url)
+        val queryEntries = uri.query.split("&").map {
+          it.split("=")
+        }
+        var clen: Long = 0
+        for (entry in queryEntries) {
+          if (entry[0] == "clen") {
+            clen = entry[1].toLong()
+            break
+          }
+        }
+        for (i in 0..clen / CHUNK_SIZE) {
+          val endRange = (i + 1) * CHUNK_SIZE
+          val range = "${i * CHUNK_SIZE}-${endRange}"
+          val currentRequest = URL("${url}&range=${range}")
+          val con = currentRequest.openConnection() as HttpURLConnection
+          con.requestMethod = "POST"
+          con.connect()
+          @Suppress("Since15")
+          stream!!.write(con.inputStream.readNBytes(CHUNK_SIZE))
+          stream!!.flush()
+          context.webView.post{
+            notifyNamedCallback(promise, "log", "{ \"progress\": ${i * CHUNK_SIZE}, \"contentLength\": $clen }")
+          }
+        }
+
+        context.webView.post{
+          resolve(promise, "")
+        }
+      } catch (exception: Exception) {
+        context.webView.post{
+          context.consoleError(exception.stackTraceToString())
+          reject(promise, exception.stackTraceToString())
+        }
+      }
+      stream!!.close()
+    }
+    return promise
+  }
+
 
   private fun addNamedCallbackToPromise(promise: String, name: String) {
     context.runOnUiThread {

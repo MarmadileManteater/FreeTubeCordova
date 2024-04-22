@@ -7,6 +7,7 @@ import FtButton from '../ft-button/ft-button.vue'
 import FtInput from '../ft-input/ft-input.vue'
 import { mapActions } from 'vuex'
 import { IpcChannels } from '../../../constants'
+import { EXPECTED_DATA_DIRS, readFile, requestDirectory, writeFile } from '../../helpers/android'
 
 export default defineComponent({
   name: 'DownloadSettings',
@@ -19,14 +20,28 @@ export default defineComponent({
     'ft-input': FtInput
   },
   data: function () {
+    let downloadsDirectory = ''
+    if (process.env.IS_ANDROID) {
+      const json = readFile('data://', 'downloads-directory.json')
+      if (json !== '') {
+        downloadsDirectory = JSON.parse(json).uri
+      }
+    }
     return {
       downloadBehaviorValues: [
         'download',
         'open'
-      ]
+      ],
+      downloadsDirectory
     }
   },
   computed: {
+    usingElectron: function () {
+      return process.env.IS_ELECTRON
+    },
+    usingAndroid: function () {
+      return process.env.IS_ANDROID
+    },
     downloadPath: function() {
       return this.$store.getters.getDownloadFolderPath
     },
@@ -44,6 +59,27 @@ export default defineComponent({
     }
   },
   methods: {
+    selectDownloadsDirectory: async function () {
+      const directoryUris = []
+      const downloadsDirectory = await requestDirectory()
+      const files = downloadsDirectory.listFiles()
+      const dirs = files.filter((file) => file.isDirectory && EXPECTED_DATA_DIRS.indexOf(file.fileName) !== -1)
+      if (dirs.length !== EXPECTED_DATA_DIRS.length) {
+        // something is missing
+        const filesItHas = dirs.map(({ fileName }) => fileName)
+        directoryUris.push(...dirs.map(({ uri }) => uri))
+        const missingFiles = EXPECTED_DATA_DIRS.filter((name) => filesItHas.indexOf(name) === -1)
+        for (const file of missingFiles) {
+          const dir = downloadsDirectory.createDirectory(file)
+          directoryUris.push(dir.uri)
+        }
+      }
+      writeFile('data://', 'downloads-directory.json', JSON.stringify({
+        uri: downloadsDirectory.uri,
+        directories: directoryUris
+      }))
+      this.downloadsDirectory = downloadsDirectory.uri
+    },
     handleDownloadingSettingChange: function (value) {
       this.updateDownloadAskPath(value)
     },
