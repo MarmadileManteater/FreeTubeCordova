@@ -22,10 +22,11 @@ export default defineComponent({
   data: function () {
     let downloadsDirectory = ''
     if (process.env.IS_ANDROID) {
-      const json = readFile('data://', 'downloads-directory.json')
-      if (json !== '') {
-        downloadsDirectory = JSON.parse(json).uri
-      }
+      readFile('data://', 'downloads-directory.json').then(json => {
+        if (json !== '') {
+          downloadsDirectory = JSON.parse(json).uri
+        }
+      })
     }
     return {
       downloadBehaviorValues: [
