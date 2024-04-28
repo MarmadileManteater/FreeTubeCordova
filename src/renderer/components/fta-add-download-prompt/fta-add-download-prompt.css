@@ -1,0 +1,31 @@
+
+.dialog-wrapper:has(dialog[open]) {
+  position: fixed;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  inline-size: 100vw;
+  block-size: 100vh;
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #000000bf;
+}
+
+dialog {
+  font-family: Roboto, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  color: var(--primary-text-color);
+  background-color: var(--bg-color);
+  border: 0;
+}
+
+@media screen and (width <= 680px) {
+  dialog {
+    inline-size: 100vw;
+    block-size: 100vh;
+  }
+
+  body:has(dialog[open]) {
+    overflow: hidden;
+  }
+}
