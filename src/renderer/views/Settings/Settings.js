@@ -82,7 +82,8 @@ export default defineComponent({
         {
           type: 'download-settings',
           title: this.$t('Settings.Download Settings.Download Settings'),
-          usingElectron: true
+          usingElectron: true,
+          usingAndroid: true
         },
         {
           type: 'parental-control-settings',
@@ -123,7 +124,9 @@ export default defineComponent({
 
     settingsSectionComponents: function () {
       let settingsSections
-      if (!process.env.IS_ELECTRON) {
+      if (process.env.IS_ANDROID) {
+        settingsSections = this.settingsComponentsData.filter(({ usingElectron, usingAndroid }) => !usingElectron || usingAndroid)
+      } else if (!process.env.IS_ELECTRON) {
         settingsSections = this.settingsComponentsData.filter((settingsComponent) => !settingsComponent.usingElectron)
       } else {
         settingsSections = this.settingsComponentsData
