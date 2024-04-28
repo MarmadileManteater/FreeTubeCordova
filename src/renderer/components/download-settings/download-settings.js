@@ -20,11 +20,10 @@ export default defineComponent({
     'ft-input': FtInput
   },
   data: function () {
-    let downloadsDirectory = ''
     if (process.env.IS_ANDROID) {
       readFile('data://', 'downloads-directory.json').then(json => {
         if (json !== '') {
-          downloadsDirectory = JSON.parse(json).uri
+          this.downloadsDirectory = JSON.parse(json).uri
         }
       })
     }
@@ -33,7 +32,7 @@ export default defineComponent({
         'download',
         'open'
       ],
-      downloadsDirectory
+      downloadsDirectory: ''
     }
   },
   computed: {
@@ -75,7 +74,7 @@ export default defineComponent({
           directoryUris.push(dir.uri)
         }
       }
-      writeFile('data://', 'downloads-directory.json', JSON.stringify({
+      await writeFile('data://', 'downloads-directory.json', JSON.stringify({
         uri: downloadsDirectory.uri,
         directories: directoryUris
       }))
