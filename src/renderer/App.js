@@ -18,7 +18,7 @@ import { openExternalLink, openInternalPath, showToast } from './helpers/utils'
 import { translateWindowTitle } from './helpers/strings'
 import 'core-js'
 import android from 'android'
-import { updateSystemTheme, updateTheme } from './helpers/android'
+import { updateAndroidTheme } from './helpers/android'
 
 let ipcRenderer = null
 
@@ -239,7 +239,7 @@ export default defineComponent({
         this.updateTheme(theme)
         setTimeout(() => {
           // 0 ms timeout to allow the css to update
-          updateSystemTheme(theme.baseTheme)
+          updateAndroidTheme(this.$store.getters.getBarColor)
         })
       } else {
         this.updateTheme(theme)

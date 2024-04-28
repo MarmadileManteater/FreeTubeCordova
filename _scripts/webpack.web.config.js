@@ -192,6 +192,14 @@ config.plugins.push(
   new CopyWebpackPlugin({
       patterns: [
         {
+          from: path.join(__dirname, '../_icons/192x192.png'),
+          to: path.join(__dirname, '../dist/web/static/_icons/192x192.png'),
+        },
+        {
+          from: path.join(__dirname, '../_icons/512x512.png'),
+          to: path.join(__dirname, '../dist/web/static/_icons/512x512.png'),
+        },
+        {
           from: path.join(__dirname, '../static/pwabuilder-sw.js'),
           to: path.join(__dirname, '../dist/web/pwabuilder-sw.js'),
         },

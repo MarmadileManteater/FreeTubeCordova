@@ -29,7 +29,8 @@ export default defineComponent({
       isArrowBackwardDisabled: true,
       isArrowForwardDisabled: true,
       searchSuggestionsDataList: [],
-      lastSuggestionQuery: ''
+      lastSuggestionQuery: '',
+      usingElectron: process.env.IS_ELECTRON
     }
   },
   computed: {

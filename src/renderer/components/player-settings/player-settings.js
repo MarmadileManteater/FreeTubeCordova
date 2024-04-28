@@ -27,6 +27,7 @@ export default defineComponent({
   data: function () {
     return {
       usingElectron: process.env.IS_ELECTRON,
+      usingBrowser: !process.env.IS_ELECTRON && !process.env.IS_ANDROID,
       formatValues: [
         'dash',
         'legacy',

@@ -34,39 +34,31 @@ export async function loadLocale(locale) {
     return
   }
 
+  let path
+
   // locales are only compressed in our production Electron builds
   if (process.env.IS_ELECTRON && process.env.NODE_ENV !== 'development') {
-    const { promisify } = require('util')
-    const { brotliDecompress } = require('zlib')
-    const brotliDecompressAsync = promisify(brotliDecompress)
-    try {
-      // decompress brotli compressed json file and then load it
-      const url = createWebURL(`/static/locales/${locale}.json.br`)
-      const compressed = await (await fetch(url)).arrayBuffer()
-
-      const decompressed = await brotliDecompressAsync(compressed)
-      const data = JSON.parse(decompressed.toString())
-      i18n.setLocaleMessage(locale, data)
-    } catch (err) {
-      console.error(locale, err)
-    }
+    path = `/static/locales/${locale}.json.br`
   } else {
-    const url = createWebURL(`/static/locales/${locale}.json`)
-    const response = await fetch(url)
-    const data = await response.json()
-    if (process.env.IS_ANDROID) {
-      try {
-        const androidUrl = createWebURL(`/static/locales-android/${locale}.json`)
-        const response = await fetch(androidUrl)
-        const androidSpecificData = await response.json()
-        Object.assign(data, androidSpecificData)
-      } catch (ex) {
-        console.warn(ex)
-        // pass
-      }
-    }
-    i18n.setLocaleMessage(locale, data)
+    path = `/static/locales/${locale}.json`
   }
+
+  const url = createWebURL(path)
+
+  const response = await fetch(url)
+  const data = await response.json()
+  if (process.env.IS_ANDROID) {
+    try {
+      const androidUrl = createWebURL(`/static/locales-android/${locale}.json`)
+      const response = await fetch(androidUrl)
+      const androidSpecificData = await response.json()
+      Object.assign(data, androidSpecificData)
+    } catch (ex) {
+      console.warn(ex)
+      // pass
+    }
+  }
+  i18n.setLocaleMessage(locale, data)
 }
 
 export default i18n

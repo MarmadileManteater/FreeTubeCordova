@@ -7,6 +7,7 @@ import FtSlider from '../ft-slider/ft-slider.vue'
 import FtFlexBox from '../ft-flex-box/ft-flex-box.vue'
 import FtPrompt from '../ft-prompt/ft-prompt.vue'
 import { colors, getColorTranslations } from '../../helpers/colors'
+import { updateAndroidTheme } from '../../helpers/android'
 
 export default defineComponent({
   name: 'ThemeSettings',
@@ -119,6 +120,13 @@ export default defineComponent({
 
     areColorThemesEnabled: function() {
       return this.baseTheme !== 'hotPink'
+    }
+  },
+  watch: {
+    barColor(val) {
+      if (process.env.IS_ANDROID) {
+        updateAndroidTheme(val)
+      }
     }
   },
   mounted: function () {

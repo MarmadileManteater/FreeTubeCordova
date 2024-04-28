@@ -44,15 +44,17 @@
         @click="toggleSearchContainer"
         @keydown.enter.prevent="toggleSearchContainer"
       />
-      <font-awesome-icon
-        class="navNewWindowIcon navIcon"
-        :icon="['fas', 'clone']"
-        :title="newWindowText"
-        role="button"
-        tabindex="0"
-        @click="createNewWindow"
-        @keydown.enter.prevent="createNewWindow"
-      />
+      <template v-if="usingElectron">
+        <font-awesome-icon
+          class="navNewWindowIcon navIcon"
+          :icon="['fas', 'clone']"
+          :title="newWindowText"
+          role="button"
+          tabindex="0"
+          @click="createNewWindow"
+          @keydown.enter.prevent="createNewWindow"
+        />
+      </template>
       <div
         v-if="!hideHeaderLogo"
         class="logo"

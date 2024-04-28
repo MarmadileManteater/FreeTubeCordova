@@ -305,28 +305,23 @@ export async function initalizeDatabasesInDirectory(directoryHandle) {
   return filteredFiles
 }
 
-export function updateSystemTheme(theme) {
-  const dark = [
-    'dark',
-    'black',
-    'dracula',
-    'catppuccinMocha',
-    'nordic',
-    'hotPink'
-  ]
-  const light = [
-    'light',
-    'pastelPink'
-  ]
+function isColourDark(colour) {
+  if (colour.length < 7) {
+    const char = colour.substring(1, 2)
+    colour = `${colour.substring(0, 1)}${char}${char}${char}${char}${char}${char}`
+  }
+  const diffFromWhite = Math.abs(parseInt('FFFFFF', 16) - parseInt(colour.substring(1, colour.length), 16))
+  const diffFromBlack = Math.abs(parseInt('000000', 16) - parseInt(colour.substring(1, colour.length), 16))
+  return diffFromBlack > diffFromWhite
+}
+
+export function updateAndroidTheme(usesMain = false) {
   const bodyStyle = getComputedStyle(document.body)
-  const top = bodyStyle.getPropertyValue('--card-bg-color')
+  const isDark = isColourDark(bodyStyle.getPropertyValue('--primary-text-color'))
+  const isDarkTop = usesMain ? isColourDark(bodyStyle.getPropertyValue('--text-with-main-color')) : isDark
+  const top = !usesMain ? bodyStyle.getPropertyValue('--card-bg-color') : bodyStyle.getPropertyValue('--primary-color')
   const bottom = bodyStyle.getPropertyValue('--side-nav-color')
-  if (dark.indexOf(theme) !== -1) {
-    android.themeSystemUi(bottom, top, true)
-  }
-  if (light.indexOf(theme) !== -1) {
-    android.themeSystemUi(bottom, top, false)
-  }
+  android.themeSystemUi(bottom, top, isDarkTop, isDark)
 }
 
 export const EXPECTED_DATA_DIRS = ['authors', 'videos']

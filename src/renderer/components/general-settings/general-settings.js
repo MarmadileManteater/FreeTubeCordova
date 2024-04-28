@@ -57,7 +57,8 @@ export default defineComponent({
         'userPlaylists',
         'history',
         'settings'
-      ]
+      ],
+      usingBrowser: !process.env.IS_ELECTRON && !process.env.IS_ANDROID
     }
   },
   computed: {

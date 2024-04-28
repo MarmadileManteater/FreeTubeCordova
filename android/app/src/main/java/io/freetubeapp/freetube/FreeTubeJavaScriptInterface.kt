@@ -639,12 +639,12 @@ class FreeTubeJavaScriptInterface {
    *
    */
   @JavascriptInterface
-  fun themeSystemUi(topHex: String, bottomHex: String, darkMode: Boolean = true) {
+  fun themeSystemUi(topHex: String, bottomHex: String, topDarkMode: Boolean = true, bottomDarkMode: Boolean  = true) {
     context.runOnUiThread {
       val windowInsetsController =
         WindowCompat.getInsetsController(context.window, context.window.decorView)
-      windowInsetsController.isAppearanceLightNavigationBars = !darkMode
-      windowInsetsController.isAppearanceLightStatusBars = !darkMode
+      windowInsetsController.isAppearanceLightNavigationBars = !bottomDarkMode
+      windowInsetsController.isAppearanceLightStatusBars = !topDarkMode
       fun hexToColour(hex: String) : Int {
         return if (hex.length === 7) {
           Color.rgb(

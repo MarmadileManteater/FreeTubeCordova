@@ -17,6 +17,7 @@
           :compact="true"
           :default-value="proxyVideos"
           :tooltip="$t('Tooltips.Player Settings.Proxy Videos Through Invidious')"
+          :disabled="usingBrowser"
           @change="updateProxyVideos"
         />
         <ft-toggle-switch
@@ -139,6 +140,7 @@
         :value="videoPlaybackRateInterval"
         :select-names="playbackRateIntervalValues"
         :select-values="playbackRateIntervalValues"
+        :icon="['fas', 'gauge']"
         @change="updateVideoPlaybackRateInterval"
       />
     </ft-flex-box>
@@ -149,6 +151,7 @@
         :select-names="formatNames"
         :select-values="formatValues"
         :tooltip="$t('Tooltips.Player Settings.Default Video Format')"
+        :icon="['fas', 'file-video']"
         @change="updateDefaultVideoFormat"
       />
       <ft-select
@@ -156,6 +159,7 @@
         :value="defaultQuality"
         :select-names="qualityNames"
         :select-values="qualityValues"
+        :icon="['fas', 'photo-film']"
         @change="updateDefaultQuality"
       />
       <ft-toggle-switch
@@ -184,6 +188,7 @@
           :value="screenshotFormat"
           :select-names="screenshotFormatNames"
           :select-values="screenshotFormatValues"
+          :icon="['fas', 'file-image']"
           @change="handleUpdateScreenshotFormat"
         />
         <ft-slider
