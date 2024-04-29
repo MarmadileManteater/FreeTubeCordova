@@ -35,7 +35,7 @@ import {
   youtubeImageUrlToInvidious
 } from '../../helpers/api/invidious'
 import {
-  createMediaSession
+  createMediaSession, getDownloadFormats
 } from '../../helpers/android'
 import android from 'android'
 
@@ -650,26 +650,27 @@ export default defineComponent({
 
             /** @type {import('../../helpers/api/local').LocalFormat[]} */
             const formats = [...result.streaming_data.formats, ...result.streaming_data.adaptive_formats]
-            this.downloadLinks = formats.map((format) => {
-              const qualityLabel = format.quality_label ?? format.bitrate
-              const fps = format.fps ? `${format.fps}fps` : 'kbps'
-              const type = format.mime_type.split(';')[0]
-              let label = `${qualityLabel} ${fps} - ${type}`
+            this.downloadLinks = process.env.IS_ANDROID
+              ? getDownloadFormats([...result.streaming_data.adaptive_formats])
+              : formats.map((format) => {
+                const qualityLabel = format.quality_label ?? format.bitrate
+                const fps = format.fps ? `${format.fps}fps` : 'kbps'
+                const type = format.mime_type.split(';')[0]
+                let label = `${qualityLabel} ${fps} - ${type}`
 
-              if (format.has_audio !== format.has_video) {
-                if (format.has_video) {
-                  label += ` ${this.$t('Video.video only')}`
-                } else {
-                  label += ` ${this.$t('Video.audio only')}`
+                if (format.has_audio !== format.has_video) {
+                  if (format.has_video) {
+                    label += ` ${this.$t('Video.video only')}`
+                  } else {
+                    label += ` ${this.$t('Video.audio only')}`
+                  }
                 }
-              }
 
-              return {
-                url: format.freeTubeUrl,
-                label: label
-              }
-            })
-
+                return {
+                  url: format.freeTubeUrl,
+                  label: label
+                }
+              })
             if (result.captions) {
               const captionTracks = result.captions.caption_tracks.map((caption) => {
                 return {
@@ -905,35 +906,37 @@ export default defineComponent({
             this.videoLengthSeconds = result.lengthSeconds
             this.videoSourceList = result.formatStreams.reverse()
 
-            this.downloadLinks = result.adaptiveFormats.concat(this.videoSourceList).map((format) => {
-              const qualityLabel = format.qualityLabel || format.bitrate
-              const itag = parseInt(format.itag)
-              const fps = format.fps ? (format.fps + 'fps') : 'kbps'
-              const type = format.type.split(';')[0]
-              let label = `${qualityLabel} ${fps} - ${type}`
+            this.downloadLinks = process.env.IS_ANDROID
+              ? getDownloadFormats(this.adaptiveFormats)
+              : result.adaptiveFormats.concat(this.videoSourceList).map((format) => {
+                const qualityLabel = format.qualityLabel || format.bitrate
+                const itag = parseInt(format.itag)
+                const fps = format.fps ? (format.fps + 'fps') : 'kbps'
+                const type = format.type.split(';')[0]
+                let label = `${qualityLabel} ${fps} - ${type}`
 
-              if (itag !== 18 && itag !== 22) {
-                if (type.includes('video')) {
-                  label += ` ${this.$t('Video.video only')}`
-                } else {
-                  label += ` ${this.$t('Video.audio only')}`
+                if (itag !== 18 && itag !== 22) {
+                  if (type.includes('video')) {
+                    label += ` ${this.$t('Video.video only')}`
+                  } else {
+                    label += ` ${this.$t('Video.audio only')}`
+                  }
                 }
-              }
-              const object = {
-                url: format.url,
-                label: label
-              }
+                const object = {
+                  url: format.url,
+                  label: label
+                }
 
-              return object
-            }).reverse().concat(result.captions.map((caption) => {
-              const label = `${caption.label} (${caption.languageCode}) - text/vtt`
-              const object = {
-                url: caption.url,
-                label: label
-              }
+                return object
+              }).reverse().concat(result.captions.map((caption) => {
+                const label = `${caption.label} (${caption.languageCode}) - text/vtt`
+                const object = {
+                  url: caption.url,
+                  label: label
+                }
 
-              return object
-            }))
+                return object
+              }))
 
             this.audioTracks = []
             this.dashSrc = await this.createInvidiousDashManifest()
