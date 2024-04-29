@@ -17,3 +17,8 @@ Data Settings:
 Download Settings:
   Select Downloads Directory: Select Downloads Directory
   Downloads Are Currently Stored In: Downloads Are Currently Stored In
+Download Prompt:
+  Download: Download a video
+  Formats: Formats
+  Audio: Audio
+  Video: Video

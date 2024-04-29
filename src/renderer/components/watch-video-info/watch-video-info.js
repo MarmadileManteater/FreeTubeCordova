@@ -4,6 +4,7 @@ import FtCard from '../ft-card/ft-card.vue'
 import FtIconButton from '../ft-icon-button/ft-icon-button.vue'
 import FtShareButton from '../ft-share-button/ft-share-button.vue'
 import FtSubscribeButton from '../ft-subscribe-button/ft-subscribe-button.vue'
+import FtaAddDownloadPrompt from '../fta-add-download-prompt/fta-add-download-prompt.vue'
 import { formatNumber, openExternalLink, showToast } from '../../helpers/utils'
 
 export default defineComponent({
@@ -12,7 +13,8 @@ export default defineComponent({
     'ft-card': FtCard,
     'ft-icon-button': FtIconButton,
     'ft-share-button': FtShareButton,
-    'ft-subscribe-button': FtSubscribeButton
+    'ft-subscribe-button': FtSubscribeButton,
+    'fta-add-download-prompt': FtaAddDownloadPrompt
   },
   props: {
     id: {
@@ -105,6 +107,11 @@ export default defineComponent({
     }
   },
   emits: ['change-format', 'pause-player', 'set-info-area-sticky', 'scroll-to-info-area'],
+  data: function () {
+    return {
+      isDownloadPromptShown: false
+    }
+  },
   computed: {
     usingElectron: function () {
       return process.env.IS_ELECTRON
@@ -133,7 +140,19 @@ export default defineComponent({
       return !this.$store.getters.getHidePlaylists
     },
 
+    suggestedDownloadTitle: function () {
+      const reservedChars = '|\\?*<":>+[]/\'.,'.split('')
+      let title = this.title
+      for (const char of reservedChars) {
+        title = title.replaceAll(char, '')
+      }
+      return title
+    },
+
     downloadLinkOptions: function () {
+      if (process.env.IS_ANDROID) {
+        return []
+      }
       return this.downloadLinks.map((download) => {
         return {
           label: download.label,
@@ -304,8 +323,14 @@ export default defineComponent({
       }
       this.openInExternalPlayer(payload)
     },
-
+    hideDownloadPrompt: function () {
+      this.isDownloadPromptShown = false
+    },
     handleDownload: function (index) {
+      if (process.env.IS_ANDROID) {
+        this.isDownloadPromptShown = true
+        return // DEBUG
+      }
       const selectedDownloadLinkOption = this.downloadLinkOptions[index]
       const url = selectedDownloadLinkOption.value
       const linkName = selectedDownloadLinkOption.label

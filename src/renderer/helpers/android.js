@@ -404,3 +404,92 @@ export async function downloadVideoAndAudio(directoryHandle, videoFormat, audioF
     })
   return outputFile
 }
+
+function getTypeAndContainer(format) {
+  if ('mime_type' in format) {
+    const [type, container] = format.mime_type.split(';')[0].split('/')
+
+    return {
+      type,
+      container
+    }
+  } else {
+    let type
+    if ('audioChannels' in format) {
+      // must be audio
+      type = 'audio'
+    } else {
+      type = 'video'
+    }
+    let { container } = format
+    if (container === 'm4a') {
+      // for easier pairing of mp4 and m4a
+      container = 'mp4'
+    }
+    return {
+      type,
+      container
+    }
+  }
+}
+
+/**
+ * @typedef {import('./api/local').LocalFormat} LocalFormat
+ */
+
+/**
+ * @typedef AudioVideo
+ * @property {LocalFormat} audio
+ * @property {LocalFormat?} video
+ * @property {'mp4'|'webm'} container
+ */
+
+/**
+ * @param {Array<LocalFormat>} formats
+ * @returns {Array<AudioVideo>}
+ */
+export function getDownloadFormats(formats) {
+  /** @type {Array<AudioVideo>} */
+  const pairings = []
+  const audioFormats = []
+  const videoFormats = []
+  // #region Seperate audio and video formats
+  for (const format of formats) {
+    const { type, container } = getTypeAndContainer(format)
+    if (type === 'audio') {
+      audioFormats.push(format)
+      pairings.push({
+        audio: format,
+        container: container
+      })
+    } else if (type === 'video') {
+      videoFormats.push(format)
+    }
+    // append info for later reuse
+    format.__type = type
+    format.__container = container
+  }
+  // #endregion
+  const usedLabels = []
+  for (const video of videoFormats) {
+    const { container } = getTypeAndContainer(video)
+    /** @type {AudioVideo} */
+    const pairing = {
+      video,
+      container,
+      qualityLabel: video?.quality_label || video?.qualityLabel
+    }
+    for (const audio of audioFormats) {
+      const { __container } = audio
+      if (__container === pairing.container) {
+        pairing.audio = audio
+        break
+      }
+    }
+    if (usedLabels.indexOf(pairing.qualityLabel) === -1) {
+      usedLabels.push(pairing.qualityLabel)
+      pairings.push(pairing)
+    }
+  }
+  return pairings
+}

@@ -117,6 +117,12 @@
           :dropdown-options="downloadLinkOptions"
           @click="handleDownload"
         />
+        <fta-add-download-prompt
+          :sources-for-download="downloadLinks"
+          :shown="isDownloadPromptShown"
+          :hide="hideDownloadPrompt"
+          :suggested-title="suggestedDownloadTitle"
+        />
         <ft-icon-button
           v-if="!isUpcoming"
           :title="$t('Change Format.Change Media Formats')"

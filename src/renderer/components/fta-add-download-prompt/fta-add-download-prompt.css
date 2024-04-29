@@ -1,4 +1,8 @@
 
+.br {
+  margin-inline-end: 20px;
+}
+
 .dialog-wrapper:has(dialog[open]) {
   position: fixed;
   inset-block-start: 0;
@@ -12,17 +16,31 @@
   background-color: #000000bf;
 }
 
-dialog {
+dialog[open] {
   font-family: Roboto, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   color: var(--primary-text-color);
   background-color: var(--bg-color);
   border: 0;
+  display: flex;
+  flex-direction: column;
 }
 
-@media screen and (width <= 680px) {
+.buttons {
+  margin-block-start: auto;
+  display: flex;
+  justify-content: space-between;
+}
+
+input {
+  text-overflow: ellipsis;
+}
+
+@media screen and (width <= 800px) {
   dialog {
-    inline-size: 100vw;
     block-size: 100vh;
+    inline-size: 100vw;
+    padding: 2em;
+    box-sizing: border-box;
   }
 
   body:has(dialog[open]) {
