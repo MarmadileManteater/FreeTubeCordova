@@ -34,10 +34,34 @@ export default defineComponent({
   },
   data: function () {
     return {
-      formatSelected: -1
+      selected: -1
     }
   },
   computed: {
+    formatSelected: {
+      get: function () {
+        if (this.selected === -1) {
+          const quality = this.defaultQuality
+          const sources = this.audioVideoSources
+          for (let i = 0; i < sources.length; i++) {
+            if (quality === parseInt(sources[i].qualityLabel.split('p')[0])) {
+              return i
+            }
+          }
+          return -1
+        } else {
+          return this.selected
+        }
+      },
+      set: function (val) {
+        this.selected = val
+      }
+    },
+    defaultQuality: function () {
+      const valueFromStore = this.$store.getters.getDefaultQuality
+      if (valueFromStore === 'auto') { return valueFromStore }
+      return parseInt(valueFromStore)
+    },
     audioVideoSources: function () {
       return this.sourcesForDownload.filter((source) => source.audio !== undefined).sort((a, b) => {
         // #region if one has a video and the other doesn't, bubble up the video
@@ -84,7 +108,7 @@ export default defineComponent({
      */
     placeholderTitle: function () {
       if (this.formatSelected !== -1) {
-        return `${this.suggestedTitle}.${this.sourcesForDownload[this.formatSelected].container}`
+        return `${this.suggestedTitle}.${this.audioVideoSources[this.formatSelected].container}`
       } else {
         return ''
       }
