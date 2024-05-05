@@ -305,7 +305,7 @@ export async function initalizeDatabasesInDirectory(directoryHandle) {
   return filteredFiles
 }
 
-function isColourDark(colour) {
+export function isColourDark(colour) {
   if (colour.length < 7) {
     const char = colour.substring(1, 2)
     colour = `${colour.substring(0, 1)}${char}${char}${char}${char}${char}${char}`
@@ -321,7 +321,7 @@ export function updateAndroidTheme(usesMain = false) {
   const isDarkTop = usesMain ? isColourDark(bodyStyle.getPropertyValue('--text-with-main-color')) : isDark
   const top = !usesMain ? bodyStyle.getPropertyValue('--card-bg-color') : bodyStyle.getPropertyValue('--primary-color')
   const bottom = bodyStyle.getPropertyValue('--side-nav-color')
-  android.themeSystemUi(bottom, top, isDarkTop, isDark)
+  android.themeSystemUi(bottom, top, isDark, isDarkTop)
 }
 
 export const EXPECTED_DATA_DIRS = ['authors', 'videos']

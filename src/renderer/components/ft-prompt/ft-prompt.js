@@ -1,9 +1,10 @@
-import { defineComponent } from 'vue'
+import { defineComponent, nextTick } from 'vue'
 import { mapActions } from 'vuex'
 import FtCard from '../../components/ft-card/ft-card.vue'
 import FtFlexBox from '../../components/ft-flex-box/ft-flex-box.vue'
 import FtButton from '../../components/ft-button/ft-button.vue'
 import { sanitizeForHtmlId } from '../../helpers/accessibility'
+import android from 'android'
 
 export default defineComponent({
   name: 'FtPrompt',
@@ -15,7 +16,7 @@ export default defineComponent({
   props: {
     label: {
       type: String,
-      default: ''
+      required: true
     },
     extraLabels: {
       type: Array,
@@ -29,11 +30,19 @@ export default defineComponent({
       type: Array,
       default: () => { return [] }
     },
-    showClose: {
+    autosize: {
       type: Boolean,
       default: false
     },
-    autosize: {
+    isFirstOptionDestructive: {
+      type: Boolean,
+      default: false
+    },
+    theme: {
+      type: String,
+      default: 'base'
+    },
+    fullscreen: {
       type: Boolean,
       default: false
     }
@@ -48,25 +57,55 @@ export default defineComponent({
   computed: {
     sanitizedLabel: function() {
       return sanitizeForHtmlId(this.label)
+    },
+  },
+  mounted: function () {
+    this.lastActiveElement = document.activeElement
+    this.$nextTick(() => {
+      document.addEventListener('keydown', this.closeEventFunction, true)
+      document.querySelector('.prompt').addEventListener('keydown', this.arrowKeys, true)
+      this.promptButtons = Array.from(
+        document.querySelector('.prompt .promptCard .ft-flex-box').childNodes
+      ).filter((e) => {
+        return e.id && e.id.startsWith('prompt')
+      })
+      this.focusItem(0)
+    })
+    if (process.env.IS_ANDROID) {
+      android.enterPromptMode()
+      window.addEventListener('exit-prompt', this.exitPrompt)
     }
   },
   beforeDestroy: function () {
     document.removeEventListener('keydown', this.closeEventFunction, true)
-    this.lastActiveElement?.focus()
-  },
-  mounted: function () {
-    this.lastActiveElement = document.activeElement
-
-    document.addEventListener('keydown', this.closeEventFunction, true)
-    document.querySelector('.prompt').addEventListener('keydown', this.arrowKeys, true)
-    this.promptButtons = Array.from(
-      document.querySelector('.prompt .promptCard .ft-flex-box').childNodes
-    ).filter((e) => {
-      return e.id && e.id.startsWith('prompt')
-    })
-    this.focusItem(0)
+    nextTick(() => this.lastActiveElement?.focus())
+    if (process.env.IS_ANDROID) {
+      android.exitPromptMode()
+      window.removeEventListener('exit-prompt', this.exitPrompt)
+    }
   },
   methods: {
+    exitPrompt: function () {
+      this.$emit('click', null)
+    },
+    optionButtonTextColor: function(index) {
+      if (index === 0 && this.isFirstOptionDestructive) {
+        return 'var(--destructive-text-color)'
+      } else if (index < this.optionNames.length - 1) {
+        return 'var(--text-with-accent-color)'
+      } else {
+        return null
+      }
+    },
+    optionButtonBackgroundColor: function(index) {
+      if (index === 0 && this.isFirstOptionDestructive) {
+        return 'var(--destructive-color)'
+      } else if (index < this.optionNames.length - 1) {
+        return 'var(--accent-color)'
+      } else {
+        return null
+      }
+    },
     click: function (value) {
       this.$emit('click', value)
     },

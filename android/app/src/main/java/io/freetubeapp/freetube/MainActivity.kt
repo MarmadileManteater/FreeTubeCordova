@@ -47,7 +47,7 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
   var showSplashScreen: Boolean = true
   var darkMode: Boolean = false
   var paused: Boolean = false
-
+  var isInAPrompt: Boolean = false
   /*
    * Gets the number of available cores
    * (not always the same as the maximum number of cores)
@@ -138,10 +138,17 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
 
     // bind the back button to the web-view history
     onBackPressedDispatcher.addCallback {
-      if (webView.canGoBack()) {
-        webView.goBack()
+      if (isInAPrompt) {
+        webView.post {
+          webView.loadUrl("javascript: window.dispatchEvent(new Event(\"exit-prompt\"))")
+          jsInterface.exitPromptMode()
+        }
       } else {
-        this@MainActivity.moveTaskToBack(true)
+        if (webView.canGoBack()) {
+          webView.goBack()
+        } else {
+          this@MainActivity.moveTaskToBack(true)
+        }
       }
     }
 

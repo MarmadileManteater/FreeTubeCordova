@@ -4,6 +4,7 @@ import { IpcChannels } from '../../constants'
 import FtToastEvents from '../components/ft-toast/ft-toast-events'
 import i18n from '../i18n/index'
 import router from '../router/index'
+import { nextTick } from 'vue'
 import { readFile, requestOpenDialog, requestSaveDialog, writeFile } from './android'
 
 // allowed characters in channel handle: A-Z, a-z, 0-9, -, _, .
@@ -878,5 +879,15 @@ export async function fetchWithTimeout(timeoutMs, input, init) {
     } else {
       throw err
     }
+  }
+}
+
+export function ctrlFHandler(event, inputElement) {
+  switch (event.key) {
+    case 'F':
+    case 'f':
+      if (((process.platform !== 'darwin' && event.ctrlKey) || (process.platform === 'darwin' && event.metaKey))) {
+        nextTick(() => inputElement?.focus())
+      }
   }
 }
