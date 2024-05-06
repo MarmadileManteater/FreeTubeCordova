@@ -36,9 +36,13 @@ export default defineComponent({
     ...(process.env.IS_ELECTRON
       ? {
           'proxy-settings': ProxySettings,
-          'download-settings': DownloadSettings,
           'external-player-settings': ExternalPlayerSettings,
           'experimental-settings': ExperimentalSettings
+        }
+      : {}),
+    ...(process.env.IS_ANDROID || process.env.IS_ELECTRON
+      ? {
+          'download-settings': DownloadSettings
         }
       : {})
   },
@@ -87,7 +91,11 @@ export default defineComponent({
               {
                 type: 'proxy-settings',
                 title: this.$t('Settings.Proxy Settings.Proxy Settings')
-              },
+              }
+            ]
+          : []),
+        ...(process.env.IS_ANDROID || process.env.IS_ELECTRON
+          ? [
               {
                 type: 'download-settings',
                 title: this.$t('Settings.Download Settings.Download Settings')
