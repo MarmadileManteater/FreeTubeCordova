@@ -1,16 +1,18 @@
 import { defineComponent } from 'vue'
-import { Portal } from '@linusborg/vue-simple-portal'
 import FtSelect from '../ft-select/ft-select.vue'
 import FtInput from '../ft-input/ft-input.vue'
 import FtButton from '../ft-button/ft-button.vue'
+import FtPrompt from '../ft-prompt/ft-prompt.vue'
+import FtFlexBox from '../ft-flex-box/ft-flex-box.vue'
 
 export default defineComponent({
   name: 'FtaAddDownloadPrompt',
   components: {
-    portal: Portal,
     'ft-select': FtSelect,
     'ft-input': FtInput,
-    'ft-button': FtButton
+    'ft-button': FtButton,
+    'ft-prompt': FtPrompt,
+    'ft-flex-box': FtFlexBox
   },
   props: {
     sourcesForDownload: {
@@ -114,36 +116,11 @@ export default defineComponent({
       }
     }
   },
-  watch: {
-    shown(newVal) {
-      // focusing an element changes scroll position,
-      // so the position is restored right after the element is focused
-      const top = window.scrollY
-      if (newVal) {
-        this.$refs.wrapper.focus()
-      }
-      // scroll to top when the dialog is closed
-      window.scrollTo({
-        top
-      })
-    }
-  },
   methods: {
     addToDownload() {
     },
     updateFormatSelected(selected) {
       this.formatSelected = parseInt(selected)
-    },
-    onWrapperClick(e) {
-      if (e.target === this.$refs.wrapper) {
-        this.hide()
-      }
-    },
-    keydown(e) {
-      if (e.key === 'Escape') {
-        this.hide()
-      }
-    },
-
+    }
   }
 })

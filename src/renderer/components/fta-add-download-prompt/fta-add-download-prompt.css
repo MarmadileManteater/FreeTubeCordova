@@ -1,30 +1,4 @@
 
-.br {
-  margin-inline-end: 20px;
-}
-
-.dialog-wrapper:has(dialog[open]) {
-  position: fixed;
-  inset-block-start: 0;
-  inset-inline-start: 0;
-  inline-size: 100vw;
-  block-size: 100vh;
-  z-index: 100;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: #000000bf;
-}
-
-dialog[open] {
-  font-family: Roboto, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-  color: var(--primary-text-color);
-  background-color: var(--bg-color);
-  border: 0;
-  display: flex;
-  flex-direction: column;
-}
-
 .buttons {
   margin-block-start: auto;
   display: flex;
@@ -35,15 +9,16 @@ input {
   text-overflow: ellipsis;
 }
 
-@media screen and (width <= 800px) {
-  dialog {
-    block-size: 100vh;
-    inline-size: 100vw;
-    padding: 2em;
-    box-sizing: border-box;
-  }
+.ft-input-component {
+  inline-size: 100%;
+}
 
-  body:has(dialog[open]) {
-    overflow: hidden;
-  }
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  block-size: 100%;
+}
+
+.select, .ft-input-component {
+  margin-block-end: 1em;
 }
