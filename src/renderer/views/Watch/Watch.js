@@ -650,7 +650,7 @@ export default defineComponent({
 
             /** @type {import('../../helpers/api/local').LocalFormat[]} */
             const formats = [...result.streaming_data.formats, ...result.streaming_data.adaptive_formats]
-            this.downloadLinks = process.env.IS_ANDROID
+            this.downloadLinks = process.env.IS_ANDROID && this.$store.getters.getDownloadBehavior !== 'open'
               ? getDownloadFormats([...result.streaming_data.adaptive_formats])
               : formats.map((format) => {
                 const qualityLabel = format.quality_label ?? format.bitrate
@@ -906,7 +906,7 @@ export default defineComponent({
             this.videoLengthSeconds = result.lengthSeconds
             this.videoSourceList = result.formatStreams.reverse()
 
-            this.downloadLinks = process.env.IS_ANDROID
+            this.downloadLinks = process.env.IS_ANDROID && this.$store.getters.getDownloadBehavior !== 'open'
               ? getDownloadFormats(this.adaptiveFormats)
               : result.adaptiveFormats.concat(this.videoSourceList).map((format) => {
                 const qualityLabel = format.qualityLabel || format.bitrate

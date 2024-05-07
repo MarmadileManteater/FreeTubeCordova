@@ -150,7 +150,7 @@ export default defineComponent({
     },
 
     downloadLinkOptions: function () {
-      if (process.env.IS_ANDROID) {
+      if (process.env.IS_ANDROID && this.$store.getters.getDownloadBehavior !== 'open') {
         return []
       }
       return this.downloadLinks.map((download) => {
@@ -327,9 +327,10 @@ export default defineComponent({
       this.isDownloadPromptShown = false
     },
     handleDownload: function (index) {
-      if (process.env.IS_ANDROID) {
+      // android downloads need a whole prompt to fit all the inputs that are necessaryF
+      if (process.env.IS_ANDROID && this.$store.getters.getDownloadBehavior !== 'open') {
         this.isDownloadPromptShown = true
-        return // DEBUG
+        return
       }
       const selectedDownloadLinkOption = this.downloadLinkOptions[index]
       const url = selectedDownloadLinkOption.value
