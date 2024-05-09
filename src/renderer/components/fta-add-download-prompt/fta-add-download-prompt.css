@@ -11,6 +11,7 @@ input {
 
 .ft-input-component {
   inline-size: 100%;
+  margin-block-start: 1em;
 }
 
 .wrapper {

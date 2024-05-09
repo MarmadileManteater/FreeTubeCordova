@@ -36,7 +36,9 @@ export default defineComponent({
   },
   data: function () {
     return {
-      selected: -1
+      selected: -1,
+      captionSelected: -1,
+      audioTrackSelected: -1
     }
   },
   computed: {
@@ -46,8 +48,10 @@ export default defineComponent({
           const quality = this.defaultQuality
           const sources = this.audioVideoSources
           for (let i = 0; i < sources.length; i++) {
-            if (quality === parseInt(sources[i].qualityLabel.split('p')[0])) {
-              return i
+            if (sources[i].video) {
+              if (quality === parseInt(sources[i].qualityLabel.split('p')[0])) {
+                return i
+              }
             }
           }
           return -1
@@ -79,6 +83,14 @@ export default defineComponent({
           return parseInt(b.qualityLabel.split('p')[0]) - parseInt(a.qualityLabel.split('p')[0])
         }
         if (!a.video && !b.video) {
+          // bubble up original audio tracks
+          // TODO: organise audio by language
+          if (a.audio?.is_original && !b.audio?.is_original) {
+            return -1
+          }
+          if (b.audio?.is_original && !a.audio?.is_original) {
+            return 1
+          }
           return b.audio?.bitrate - a.audio?.bitrate
         }
         // #endregion
@@ -94,7 +106,7 @@ export default defineComponent({
     sourceNames: function () {
       return this.audioVideoSources.map(
         (source) => {
-          return `${source.video?.qualityLabel || source.video?.quality_label || `${source.audio?.bitrate} kbps`} - ${source.video ? this.$t('Download Prompt.Video') : this.$t('Download Prompt.Audio')}`
+          return `${source.video?.qualityLabel || source.video?.quality_label || `${source.audio?.language ? `${source.audio?.language} ` : ''}${source.audio?.bitrate} kbps`} - ${source.video ? this.$t('Download Prompt.Video') : this.$t('Download Prompt.Audio')}`
         })
     },
     /**
@@ -103,6 +115,39 @@ export default defineComponent({
      */
     sourceIds: function () {
       return [...Array(this.audioVideoSources.length).keys()]
+    },
+    captions: function () {
+      return this.sourcesForDownload.filter((source) => source.audio === undefined)
+    },
+    captionNames: function () {
+      return ['', ...this.captions.map(caption => caption.label)]
+    },
+    captionIds: function() {
+      return [-1, ...Array(this.captions.length).keys()]
+    },
+    hasMultipleAudioTracks: function () {
+      if (!this.audioVideoSources[this.formatSelected]?.video) {
+        return false
+      }
+      return this.audioVideoSources[this.formatSelected].languageTracks.length > 0
+    },
+    audioTracks: function () {
+      if (!this.hasMultipleAudioTracks) {
+        return []
+      }
+      return this.audioVideoSources[this.formatSelected].languageTracks
+    },
+    audioTrackNames: function () {
+      if (!this.hasMultipleAudioTracks) {
+        return []
+      }
+      return [`${this.audioVideoSources[this.formatSelected].audio.language} - ${this.audioVideoSources[this.formatSelected].audio.bitrate} kbps`, ...this.audioTracks.map(track => `${track.language} - ${track.bitrate} kbps`)]
+    },
+    audioTrackIds: function () {
+      if (!this.hasMultipleAudioTracks) {
+        return []
+      }
+      return [-1, ...Array(this.audioVideoSources[this.formatSelected].languageTracks.length).keys()]
     },
     /**
      * the placeholder title for the file
@@ -121,6 +166,12 @@ export default defineComponent({
     },
     updateFormatSelected(selected) {
       this.formatSelected = parseInt(selected)
+    },
+    updateCaptionSelected(selected) {
+      this.captionSelected = parseInt(selected)
+    },
+    updateAudioTrackSelected(selected) {
+      this.audioTrackSelected = parseInt(selected)
     }
   }
 })

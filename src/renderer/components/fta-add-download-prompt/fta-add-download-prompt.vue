@@ -19,6 +19,23 @@
           :icon="['fas', 'download']"
           @change="updateFormatSelected"
         />
+        <ft-select
+          :placeholder="$t('Download Prompt.Captions')"
+          :value="captionSelected"
+          :select-names="captionNames"
+          :select-values="captionIds"
+          :icon="['fas', 'closed-captioning']"
+          @change="updateCaptionSelected"
+        />
+        <ft-select
+          v-if="hasMultipleAudioTracks"
+          :placeholder="$t('Download Prompt.Audio Language')"
+          :value="audioTrackSelected"
+          :select-names="audioTrackNames"
+          :select-values="audioTrackIds"
+          :icon="['fas', 'globe']"
+          @change="updateAudioTrackSelected"
+        />
         <ft-input
           :label="'File name'"
           :show-label="true"

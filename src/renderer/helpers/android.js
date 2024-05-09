@@ -405,7 +405,7 @@ export async function downloadVideoAndAudio(directoryHandle, videoFormat, audioF
   return outputFile
 }
 
-function getTypeAndContainer(format) {
+function getFormatInfo(format) {
   if ('mime_type' in format) {
     const [type, container] = format.mime_type.split(';')[0].split('/')
 
@@ -455,7 +455,7 @@ export function getDownloadFormats(formats) {
   const videoFormats = []
   // #region Seperate audio and video formats
   for (const format of formats) {
-    const { type, container } = getTypeAndContainer(format)
+    const { type, container } = getFormatInfo(format)
     if (type === 'audio') {
       audioFormats.push(format)
       pairings.push({
@@ -472,18 +472,25 @@ export function getDownloadFormats(formats) {
   // #endregion
   const usedLabels = []
   for (const video of videoFormats) {
-    const { container } = getTypeAndContainer(video)
+    const { container } = getFormatInfo(video)
     /** @type {AudioVideo} */
     const pairing = {
       video,
       container,
-      qualityLabel: video?.quality_label || video?.qualityLabel
+      qualityLabel: video?.quality_label || video?.qualityLabel,
+      languageTracks: []
     }
     for (const audio of audioFormats) {
       const { __container } = audio
-      if (__container === pairing.container) {
+      if (!pairing.audio && __container === pairing.container && (audio.is_original || audio.audioChannels)) {
         pairing.audio = audio
-        break
+        if (audio.audioChannels) {
+          // if iv
+          break
+        }
+      }
+      if (__container === pairing.container && !audio.is_original) {
+        pairing.languageTracks.push(audio)
       }
     }
     if (usedLabels.indexOf(pairing.qualityLabel) === -1) {
