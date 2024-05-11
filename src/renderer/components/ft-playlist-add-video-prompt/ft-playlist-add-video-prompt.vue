@@ -15,6 +15,13 @@
     <div
       class="searchInputsRow"
     >
+      <ft-icon-button
+        :title="$t('User Playlists.Create New Playlist')"
+        :icon="['fas', 'plus']"
+        theme="secondary"
+        class="newPlaylistIconButton"
+        @click="openCreatePlaylistPrompt"
+      />
       <ft-input
         ref="searchBar"
         :placeholder="$t('User Playlists.AddVideoPrompt.Search in Playlists')"
@@ -64,6 +71,7 @@
     <div class="actions-container">
       <ft-flex-box>
         <ft-button
+          class="newPlaylistButton"
           :label="$t('User Playlists.Create New Playlist')"
           @click="openCreatePlaylistPrompt"
         />

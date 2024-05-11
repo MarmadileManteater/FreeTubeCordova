@@ -97,7 +97,10 @@ export default defineComponent({
       this.$emit('click', null)
     },
     handleHide: function (event) {
-      if (event.target.getAttribute('role') === 'button' || event.target.className === 'prompt') {
+      const hasButtonRole = event.target.getAttribute('role') === 'button'
+      const isIconButton = event.target.getAttribute('class').indexOf('iconButton') !== -1
+      const isPromptBackground = event.target.className === 'prompt'
+      if ((hasButtonRole && !isIconButton) || isPromptBackground) {
         this.hide()
       }
     },

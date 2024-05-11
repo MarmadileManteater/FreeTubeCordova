@@ -22,6 +22,29 @@
   }
 }
 
+.newPlaylistIconButton {
+  display: none;
+}
+
+@media only screen and (width <= 460px) {
+  .searchInputsRow {
+    display: flex;
+  }
+
+  :deep(.ft-input-component) {
+    inline-size: 100%;
+  }
+
+  .newPlaylistButton {
+    display: none
+  }
+
+  .newPlaylistIconButton {
+    margin-block-start: 3px;
+    display: block;
+  }
+}
+
 .optionsRow {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

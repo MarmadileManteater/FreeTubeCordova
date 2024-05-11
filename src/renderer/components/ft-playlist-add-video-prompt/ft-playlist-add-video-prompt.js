@@ -8,6 +8,7 @@ import FtPlaylistSelector from '../ft-playlist-selector/ft-playlist-selector.vue
 import FtInput from '../../components/ft-input/ft-input.vue'
 import FtSelect from '../../components/ft-select/ft-select.vue'
 import FtToggleSwitch from '../../components/ft-toggle-switch/ft-toggle-switch.vue'
+import FtIconButton from '../ft-icon-button/ft-icon-button.vue'
 import {
   showToast,
   ctrlFHandler,
@@ -35,6 +36,7 @@ export default defineComponent({
     'ft-input': FtInput,
     'ft-select': FtSelect,
     'ft-toggle-switch': FtToggleSwitch,
+    'ft-icon-button': FtIconButton
   },
   data: function () {
     return {
