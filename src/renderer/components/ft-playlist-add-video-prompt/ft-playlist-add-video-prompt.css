@@ -26,7 +26,7 @@
   display: none;
 }
 
-@media only screen and (width <= 460px) {
+@media only screen and (width <= 480px) {
   .searchInputsRow {
     display: flex;
   }
