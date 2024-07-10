@@ -199,8 +199,6 @@ export default defineComponent({
             const uri = decodeURIComponent(intent)
             await this.handleYoutubeLink(uri)
           }
-          // hides the splash screen
-          android.hideSplashScreen()
           window.addEventListener('enabled-light-mode', () => {
             this.checkThemeSettings()
           })

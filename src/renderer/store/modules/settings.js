@@ -3,6 +3,7 @@ import allLocales from '../../../../static/locales/activeLocales.json'
 import { MAIN_PROFILE_ID, IpcChannels, SyncEvents } from '../../../constants'
 import { DBSettingHandlers } from '../../../datastores/handlers/index'
 import { getSystemLocale, showToast } from '../../helpers/utils'
+import android from 'android'
 
 /*
  * Due to the complexity of the settings module in FreeTube, a more
@@ -384,6 +385,8 @@ const stateWithSideEffects = {
       await Promise.allSettled(loadPromises)
 
       i18n.locale = targetLocale
+      // hides the splash screen
+      android.hideSplashScreen()
       await dispatch('getRegionData', {
         locale: targetLocale
       })
