@@ -40,6 +40,9 @@
   overflow-y: scroll;
   block-size: 40vh;
   display: block;
+  padding-inline: 16px;
+  margin-block: 16px;
+  overflow-wrap: break-word;
 }
 
 .fade-enter-active, .fade-leave-active {
@@ -58,14 +61,22 @@
 
   .banner {
     inline-size: 90%;
-    margin-block: 20px 0;
+    margin-block: 60px 0;
   }
 
-  .flexBox {
+  .flexBox:not(:has(.banner-wrapper)) {
     margin-block: 60px -75px;
   }
 
   .flexBox:has(.floatingRefreshSection) {
     margin-block: 100px;
+  }
+
+  .flexBox:has(.floatingRefreshSection):has(.banner-wrapper) {
+    margin-block: 60px;
+  }
+
+  .changeLogText {
+    block-size: 65vh;
   }
 }

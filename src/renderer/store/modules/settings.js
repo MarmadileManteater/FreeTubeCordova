@@ -227,6 +227,7 @@ const state = {
   hideVideoLikesAndDislikes: false,
   hideVideoViews: false,
   hideWatchedSubs: false,
+  unsubscriptionPopupStatus: false,
   hideLabelsSideBar: false,
   hideChapters: false,
   showDistractionFreeTitles: false,
@@ -530,6 +531,14 @@ const customActions = {
 
           case SyncEvents.GENERAL.UPSERT:
             commit('upsertProfileToList', data)
+            break
+
+          case SyncEvents.PROFILES.ADD_CHANNEL:
+            commit('addChannelToProfiles', data)
+            break
+
+          case SyncEvents.PROFILES.REMOVE_CHANNEL:
+            commit('removeChannelFromProfiles', data)
             break
 
           case SyncEvents.GENERAL.DELETE:

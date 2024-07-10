@@ -6,7 +6,6 @@ const VueLoaderPlugin = require('vue-loader/lib/plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin')
 const ProcessLocalesPlugin = require('./ProcessLocalesPlugin')
-const WatchExternalFilesPlugin = require('webpack-watch-external-files-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 
 const isDevMode = process.env.NODE_ENV === 'development'
@@ -15,6 +14,7 @@ const { version: swiperVersion } = JSON.parse(readFileSync(path.join(__dirname, 
 
 const processLocalesPlugin = new ProcessLocalesPlugin({
   compress: !isDevMode,
+  hotReload: isDevMode,
   inputDir: path.join(__dirname, '../static/locales'),
   outputDir: 'static/locales',
 })
@@ -150,8 +150,9 @@ const config = {
   resolve: {
     alias: {
       vue$: 'vue/dist/vue.runtime.esm.js',
+      'portal-vue$': 'portal-vue/dist/portal-vue.esm.js',
 
-      'DB_HANDLERS_ELECTRON_RENDERER_OR_WEB$': path.resolve(__dirname, '../src/datastores/handlers/electron.js'),
+      DB_HANDLERS_ELECTRON_RENDERER_OR_WEB$: path.resolve(__dirname, '../src/datastores/handlers/electron.js'),
 
       'youtubei.js$': 'youtubei.js/web',
 
@@ -163,18 +164,6 @@ const config = {
     extensions: ['.js', '.vue']
   },
   target: 'electron-renderer',
-}
-
-if (isDevMode) {
-  const activeLocales = JSON.parse(readFileSync(path.join(__dirname, '../static/locales/activeLocales.json')))
-
-  config.plugins.push(
-    new WatchExternalFilesPlugin({
-      files: [
-        `./static/locales/{${activeLocales.join(',')}}.yaml`,
-      ],
-    }),
-  )
 }
 
 module.exports = config

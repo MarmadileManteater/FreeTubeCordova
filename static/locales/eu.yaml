@@ -88,6 +88,18 @@ Search Filters:
   Fetch more results: 'Emaitza gehiago ekarri'
   There are no more results for this search: 'Ez da emaitza gehiagorik bilaketa honentzat'
 # Sidebar
+  Features:
+    Features: Funtzioak
+    HD: HD
+    Subtitles: Azpitituluak
+    Creative Commons: Creative Commons
+    3D: 3D
+    Live: Zuzenean
+    4K: 4K
+    360 Video: 360 bideoa
+    Location: Kokapena
+    HDR: HDR
+    VR180: VR180
 Subscriptions:
     # On Subscriptions Page
   Subscriptions: 'Harpidetzak'
@@ -203,9 +215,13 @@ User Playlists:
       Playlist {playlistName} has been deleted.: '{playlistName} erreprodukzio-zerrenda
         ezabatu da.'
       This playlist does not exist: Erreprodukzio-zerrenda hau ez da existitzen
+      This playlist is already being used for quick bookmark.: Erreprodukzio-zerrenda
+        hau laster-markak egiteko erabiltzen ari da dagoeneko.
+      Playlist {playlistName} is the new quick bookmark playlist.: '{playlistName}
+        erreprodukzio-zerrenda laster-marken erreprodukzio-zerrenda azkarra da.'
     Search for Videos: Bilatu bideoak
   AddVideoPrompt:
-    Added {count} Times: Gehitu da {count} Time | {count} aldiz gehitu da
+    Added {count} Times: Gehitu da | {count} aldiz gehitu da
     Toast:
       "{videoCount} video(s) added to 1 playlist": Bideo 1 gehitu da erreprodukzio-zerrenda
         batera | {videoCount} bideo gehitu dira erreprodukzio-zerrenda batera
@@ -220,10 +236,27 @@ User Playlists:
     N playlists selected: '{playlistCount} hautatuta'
     Search in Playlists: Bilatu erreprodukzio-zerrendetan
     Save: Gorde
+    Allow Adding Duplicate Video(s): Baimendu bideo bikoiztuak gehitzea
+    "{videoCount}/{totalVideoCount} Videos Will Be Added": '{videoCount}/{totalVideoCount}
+      bideo gehituko dira'
+    "{videoCount}/{totalVideoCount} Videos Already Added": '{videoCount}/{totalVideoCount}
+      gehitu dira'
   Are you sure you want to remove all watched videos from this playlist? This cannot be undone: Ziur
     ikusitako bideo guztiak erreprodukzio-zerrenda honetatik kendu nahi dituzula?
     Hau ezin da desegin.
   Playlists with Matching Videos: Bat datozen bideoak dituzten erreprodukzio-zerrendak
+  Remove Duplicate Videos: Kendu bideo bikoiztuak
+  Are you sure you want to remove {playlistItemCount} duplicate videos from this playlist? This cannot be undone: Ziur
+    bikoiztutako bideo bat erreprodukzio-zerrenda honetatik kendu nahi duzula? Hau
+    ezin da desegin. | Ziur {playlistItemCount} bideo bikoiztu erreprodukzio-zerrenda
+    honetatik kendu nahi dituzula? Hau ezin da desegin.
+  Quick Bookmark Enabled: Laster-marka azkarra gaituta
+  Are you sure you want to remove {playlistItemCount} watched videos from this playlist? This cannot be undone: Ziur
+    ikusitako bideo bat erreprodukzio-zerrenda honetatik kendu nahi duzula? Hau ezin
+    da desegin. | Ziur ikusitako {playlistItemCount} bideo erreprodukzio-zerrenda
+    honetatik kendu nahi dituzula? Hau ezin da desegin.
+  Cannot delete the quick bookmark target playlist.: Ezin da laster-marken helburuko
+    erreprodukzio zerrenda azkarra ezabatu.
 History:
   # On History Page
   History: 'Historikoa'
@@ -280,6 +313,9 @@ Settings:
     Current instance will be randomized on startup: Uneko instantzia ausaz banatuko
       da abiaraztean
     Clear Default Instance: Garbitu lehenetsitako instantzia
+    Auto Load Next Page:
+      Tooltip: Kargatu orrialde eta iruzkin gehigarriak automatikoki.
+      Label: Kargatu automatikoki hurrengo orria
   Theme Settings:
     Theme Settings: 'Gaien ezarpenak'
     Match Top Bar with Main Color: 'Lotu goiko barra kolore nagusiarekin'
@@ -297,6 +333,8 @@ Settings:
       Nordic: nordikoa
       Pastel Pink: Pastel arrosa
       Hot Pink: Arrosa beroa
+      Solarized Dark: Solarizatu iluna
+      Solarized Light: Solarizatu argia
     Main Color Theme:
       Main Color Theme: 'Oinarrizko koloreen gaia'
       Red: 'Gorria'
@@ -336,6 +374,14 @@ Settings:
       Catppuccin Mocha Green: Catppuccin Motxa Berdea
       Catppuccin Mocha Teal: Catppuccin Motxa Zertzeta
       Catppuccin Mocha Sky: Catppuccin Motxa Zerua
+      Solarized Yellow: Hori solarizatua
+      Solarized Orange: Laranja solarizatua
+      Solarized Red: Gorri solarizatua
+      Solarized Magenta: Magenta solarizatua
+      Solarized Blue: Urdin solarizatua
+      Solarized Cyan: Zian solarizatua
+      Solarized Violet: Violeta solarizatua
+      Solarized Green: Berde solarizatua
     Secondary Color Theme: 'Gaiaren bigarren mailako kolorea'
         #* Main Color Theme
     Hide Side Bar Labels: Ezkutatu alboko barraren etiketak
@@ -424,6 +470,7 @@ Settings:
     Fetch Automatically: Eskuratu jarioa automatikoki
     Only Show Latest Video for Each Channel: Erakutsi soilik kanal bakoitzeko azken
       bideoa
+    Confirm Before Unsubscribing: Saihestu ustekabeko harpidetza kentzea
   Distraction Free Settings:
     Distraction Free Settings: 'Oharkabetasunak ekiditeko ezarpenak'
     Hide Video Views: 'Bideoen ikustaldi kopurua ezkutatu'
@@ -605,6 +652,7 @@ Settings:
     Remove Password: Pasahitza ezabatu
     Set Password: Ezarri pasahitza
   Expand All Settings Sections: Zabaldu ezarpen guztien atalak
+  Sort Settings Sections (A-Z): Ordenatu ezarpenen atalak (A-Z)
 About:
   #On About page
   About: 'Honi buruz'
@@ -635,6 +683,8 @@ About:
   Donate: 'Donazioa egin'
 
   Discussions: Eztabaidak
+  Licensed under the: Lizentziapean
+  AGPLv3: AGPLv3
 Profile:
   Profile Select: 'Hautatu profila'
   Profile Filter: 'Profilaren iragazkiak'
@@ -904,6 +954,15 @@ Playlist:
 #* Published
 #& Views
   Playlist: Erreprodukzio-zerrenda
+  Sort By:
+    Sort By: Honen arabera ordenatu
+    DateAddedNewest: Azken gehitua lehenengo
+    Custom: Pertsonalizatua
+    DateAddedOldest: Lehenago gehitutakoak lehenengo
+    VideoTitleAscending: Izenburua (A-Z)
+    VideoTitleDescending: Izenburua (Z-A)
+    AuthorAscending: Egilea (A-Z)
+    AuthorDescending: Egilea (Z-A)
 Toggle Theatre Mode: 'Aldatu Antzerki modura'
 Change Format:
   Change Media Formats: 'Bideoen formatuak aldatu'
@@ -1141,3 +1200,20 @@ Ok: Ados
 Channel Hidden: '{channel} gehitu da kanalaren iragazkian'
 Display Label: '{label}: {value}'
 checkmark: ✓
+Search character limit: Bilaketa-kontsultak {searchCharacterLimit} karaktereen muga
+  gainditzen du
+Feed:
+  Feed Last Updated: '{feedName} jarioaren azken eguneraketa: {date}'
+  Refresh Feed: Eguneratu {subscriptionName}
+Moments Ago: duela momentu batzuk
+Yes, Delete: Bai, ezabatu
+Cancel: Utzi
+Yes, Open Link: Bai, ireki esteka
+Yes, Restart: Bai, berrabiarazi
+Search Listing:
+  Label:
+    4K: 4K
+    Subtitles: Azpitituluak
+    Closed Captions: Azpititulu deskriptiboak
+'Blocked opening potentially unsafe URL': 'Insegurua izan daitekeen URLa irekitzea
+  blokeatu da: "{url}".'

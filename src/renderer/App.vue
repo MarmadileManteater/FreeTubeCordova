@@ -5,16 +5,20 @@
     class="app"
     :class="{
       hideOutlines: outlinesHidden,
-      isLocaleRightToLeft: isLocaleRightToLeft
+      isLocaleRightToLeft: isLocaleRightToLeft,
+      isSideNavOpen: isSideNavOpen,
+      hideLabelsSideBar: hideLabelsSideBar && !isSideNavOpen
     }"
   >
     <portal-target
       name="promptPortal"
+      multiple
       @change="handlePromptPortalUpdate"
     />
     <ft-prompt
       v-if="showReleaseNotes"
       :label="changeLogTitle"
+      theme="readable-width"
       @click="showReleaseNotes = !showReleaseNotes"
     >
       <span
