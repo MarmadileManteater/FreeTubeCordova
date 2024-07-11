@@ -90,7 +90,7 @@
         <ft-icon-button
           v-if="isQuickBookmarkEnabled"
           :title="quickBookmarkIconText"
-          :icon="isInQuickBookmarkPlaylist ? ['fas', 'check'] : ['fas', 'star']"
+          :icon="isInQuickBookmarkPlaylist ? ['fas', 'check'] : ['fas', 'bookmark']"
           class="quickBookmarkVideoIcon"
           :class="{
             bookmarked: isInQuickBookmarkPlaylist,
@@ -99,7 +99,7 @@
           @click="toggleQuickBookmarked"
         />
         <ft-icon-button
-          v-if="externalPlayer !== ''"
+          v-if="externalPlayer !== '' && usingElectron"
           :title="$t('Video.External Player.OpenInTemplate', { externalPlayer })"
           :icon="['fas', 'external-link-alt']"
           class="option"
@@ -124,7 +124,7 @@
           theme="secondary"
           :icon="['fas', 'file-video']"
           :dropdown-options="formatTypeOptions"
-          @click="$emit('change-format', $event)"
+          @click="changeFormat($event)"
         />
         <ft-share-button
           v-if="!hideSharingActions"

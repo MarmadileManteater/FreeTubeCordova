@@ -27,6 +27,7 @@ export default defineComponent({
   data: function () {
     return {
       usingElectron: process.env.IS_ELECTRON,
+      usingBrowser: !process.env.IS_ELECTRON && !process.env.IS_ANDROID,
       formatValues: [
         'dash',
         'legacy',
@@ -197,10 +198,6 @@ export default defineComponent({
       return this.$store.getters.getScreenshotFilenamePattern
     },
 
-    commentAutoLoadEnabled: function () {
-      return this.$store.getters.getCommentAutoLoadEnabled
-    },
-
     hideComments: function () {
       return this.$store.getters.getHideComments
     },
@@ -209,11 +206,6 @@ export default defineComponent({
     screenshotFolder: function() {
       this.getScreenshotFolderPlaceholder()
     },
-    hideComments: function(newValue) {
-      if (newValue) {
-        this.updateCommentAutoLoadEnabled(false)
-      }
-    }
   },
   mounted: function() {
     this.getScreenshotFolderPlaceholder()
@@ -283,7 +275,7 @@ export default defineComponent({
         this.screenshotFilenameExample = `${res}.${this.screenshotFormat}`
         return true
       }).catch(err => {
-        this.screenshotFilenameExample = `❗ ${this.$t(`Settings.Player Settings.Screenshot.Error.${err.message}`)}`
+        this.screenshotFilenameExample = `❗ ${err.message}`
         return false
       })
     },
@@ -317,7 +309,6 @@ export default defineComponent({
       'updateScreenshotFolderPath',
       'updateScreenshotFilenamePattern',
       'parseScreenshotCustomFileName',
-      'updateCommentAutoLoadEnabled',
     ])
   }
 })

@@ -15,7 +15,15 @@
           :default-value="backendFallback"
           :compact="true"
           :tooltip="$t('Tooltips.General Settings.Fallback to Non-Preferred Backend on Failure')"
+          :disabled="usingBrowser"
           @change="updateBackendFallback"
+        />
+        <ft-toggle-switch
+          :label="$t('Settings.General Settings.Auto Load Next Page.Label')"
+          :default-value="generalAutoLoadMorePaginatedItemsEnabled"
+          :compact="true"
+          :tooltip="$t('Settings.General Settings.Auto Load Next Page.Tooltip')"
+          @change="updateGeneralAutoLoadMorePaginatedItemsEnabled"
         />
       </div>
       <div class="switchColumn">
@@ -40,6 +48,7 @@
         :select-names="backendNames"
         :select-values="backendValues"
         :tooltip="$t('Tooltips.General Settings.Preferred API Backend')"
+        :icon="['fas', 'server']"
         @change="handlePreferredApiBackend"
       />
       <ft-select
@@ -47,6 +56,7 @@
         :value="landingPage"
         :select-names="defaultPageNames"
         :select-values="defaultPageValues"
+        :icon="['fas', 'location-dot']"
         @change="updateLandingPage"
       />
       <ft-select
@@ -54,6 +64,7 @@
         :value="listType"
         :select-names="viewTypeNames"
         :select-values="viewTypeValues"
+        :icon="listType === 'grid' ? ['fas', 'grip'] : ['fas', 'list']"
         @change="updateListType"
       />
       <ft-select
@@ -62,6 +73,7 @@
         :select-names="thumbnailTypeNames"
         :select-values="thumbnailTypeValues"
         :tooltip="$t('Tooltips.General Settings.Thumbnail Preference')"
+        :icon="['fas', 'images']"
         @change="handleThumbnailPreferenceChange"
       />
       <ft-select
@@ -69,6 +81,7 @@
         :value="currentLocale"
         :select-names="localeNames"
         :select-values="localeOptions"
+        :icon="['fas', 'language']"
         @change="updateCurrentLocale"
       />
       <ft-select
@@ -76,6 +89,7 @@
         :value="region"
         :select-names="regionNames"
         :select-values="regionValues"
+        :icon="['fas', 'globe']"
         :tooltip="$t('Tooltips.General Settings.Region for Trending')"
         @change="updateRegion"
       />
@@ -84,6 +98,7 @@
         :value="externalLinkHandling"
         :select-names="externalLinkHandlingNames"
         :select-values="externalLinkHandlingValues"
+        :icon="['fas', 'external-link-alt']"
         :tooltip="$t('Tooltips.General Settings.External Link Handling')"
         @change="updateExternalLinkHandling"
       />

@@ -8,16 +8,19 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Intent
 import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.media.MediaMetadata
 import android.media.session.MediaSession
 import android.media.session.PlaybackState
 import android.media.session.PlaybackState.STATE_PAUSED
 import android.net.Uri
 import android.os.Build
+import android.view.WindowManager
 import android.webkit.JavascriptInterface
 import androidx.activity.result.ActivityResult
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.view.WindowCompat
 import androidx.documentfile.provider.DocumentFile
 import java.io.File
 import java.io.FileInputStream
@@ -32,6 +35,7 @@ class FreeTubeJavaScriptInterface {
   private var lastPosition: Long
   private var lastState: Int
   private var lastNotification: Notification? = null
+  private var keepScreenOn: Boolean = false
   var syncMessages: MutableMap<String, String> = HashMap()
 
   companion object {
@@ -578,6 +582,88 @@ class FreeTubeJavaScriptInterface {
     syncMessages.remove(promise)
     return value!!
   }
+
+  @JavascriptInterface
+  fun enableKeepScreenOn() {
+    if (!keepScreenOn) {
+      keepScreenOn = true
+      context.runOnUiThread {
+        context.window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+      }
+    }
+  }
+
+  @JavascriptInterface
+  fun disableKeepScreenOn() {
+    if (keepScreenOn) {
+      keepScreenOn = false
+      context.runOnUiThread {
+        context.window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+      }
+    }
+  }
+  private fun hexToColour(hex: String) : Int {
+    return if (hex.length === 7) {
+      Color.rgb(
+        Integer.valueOf(hex.substring(1, 3), 16),
+        Integer.valueOf(hex.substring(3, 5), 16),
+        Integer.valueOf(hex.substring(5, 7), 16)
+      )
+    } else if (hex.length === 4) {
+      val r = hex.substring(1, 2)
+      val g = hex.substring(2, 3)
+      val b = hex.substring(3, 4)
+      Color.rgb(
+        Integer.valueOf("$r$r", 16),
+        Integer.valueOf("$g$g", 16),
+        Integer.valueOf("$b$b", 16)
+      )
+    } else {
+      Color.TRANSPARENT
+    }
+  }
+
+  /**
+   *
+   */
+  @JavascriptInterface
+  fun themeSystemUi(navigationHex: String, statusHex: String, navigationDarkMode: Boolean  = true,  statusDarkMode: Boolean = true) {
+    context.runOnUiThread {
+      val windowInsetsController =
+        WindowCompat.getInsetsController(context.window, context.window.decorView)
+      windowInsetsController.isAppearanceLightNavigationBars = !navigationDarkMode
+      windowInsetsController.isAppearanceLightStatusBars = !statusDarkMode
+      context.window.navigationBarColor = hexToColour(navigationHex)
+      context.window.statusBarColor = hexToColour(statusHex)
+    }
+  }
+
+  @JavascriptInterface
+  fun getSystemTheme(): String {
+    if (context.darkMode) {
+      return "dark"
+    } else {
+      return "light"
+    }
+  }
+
+  @JavascriptInterface
+  fun isAppPaused(): Boolean {
+    return context.paused
+  }
+
+  @JavascriptInterface
+  fun enterPromptMode() {
+    context.webView.isVerticalScrollBarEnabled = false
+    context.isInAPrompt = true
+  }
+
+  @JavascriptInterface
+  fun exitPromptMode() {
+    context.webView.isVerticalScrollBarEnabled = true
+    context.isInAPrompt = false
+  }
+
   private fun addNamedCallbackToPromise(promise: String, name: String) {
     context.runOnUiThread {
       context.webView.loadUrl("javascript: window['${promise}'].callbacks = window['${promise}'].callbacks || {};  window['${promise}'].callbacks.notify = (key, message) => window['${promise}'].callbacks[key].forEach(callback => callback(message)); window['${promise}'].callbacks['${name}'] = window['${promise}'].callbacks['${name}'] || []")

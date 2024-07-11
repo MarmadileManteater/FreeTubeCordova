@@ -25,7 +25,7 @@
       </ft-flex-box>
       <ft-flex-box>
         <p>
-          {{ $t("Data Settings.Data Is Currently Stored In") }}:
+          {{ $t('Data Settings.Data Is Currently Stored In') }}
         </p>
         <p class="data-directory">
           {{ dataDirectory }}
@@ -97,7 +97,6 @@
       :label="$t('Settings.Data Settings.Select Export Type')"
       :option-names="exportSubscriptionsPromptNames"
       :option-values="subscriptionsPromptValues"
-      :show-close="true"
       @click="exportSubscriptions"
     />
   </ft-settings-section>

@@ -44,15 +44,17 @@
         @click="toggleSearchContainer"
         @keydown.enter.prevent="toggleSearchContainer"
       />
-      <font-awesome-icon
-        class="navNewWindowIcon navIcon"
-        :icon="['fas', 'clone']"
-        :title="newWindowText"
-        role="button"
-        tabindex="0"
-        @click="createNewWindow"
-        @keydown.enter.prevent="createNewWindow"
-      />
+      <template v-if="usingElectron">
+        <font-awesome-icon
+          class="navNewWindowIcon navIcon"
+          :icon="['fas', 'clone']"
+          :title="newWindowText"
+          role="button"
+          tabindex="0"
+          @click="createNewWindow"
+          @keydown.enter.prevent="createNewWindow"
+        />
+      </template>
       <div
         v-if="!hideHeaderLogo"
         class="logo"
@@ -94,18 +96,13 @@
           class="navFilterIcon navIcon"
           :class="{ filterChanged: searchFilterValueChanged }"
           :icon="['fas', 'filter']"
+          :title="$t('Search Filters.Search Filters')"
           role="button"
           tabindex="0"
-          @click="showFilters = !showFilters"
-          @keydown.enter.prevent="showFilters = !showFilters"
+          @click="showSearchFilters"
+          @keydown.enter.prevent="showSearchFilters"
         />
       </div>
-      <ft-search-filters
-        v-if="!hideSearchBar"
-        v-show="showFilters"
-        class="searchFilters"
-        @filterValueUpdated="handleSearchFilterValueChanged"
-      />
     </div>
     <ft-profile-selector class="side profiles" />
   </div>

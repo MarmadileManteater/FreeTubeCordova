@@ -16,6 +16,7 @@ export default defineComponent({
       required: true
     }
   },
+  emits: ['timestamp-event'],
   data: function () {
     return {
       showChapters: false,
@@ -62,7 +63,7 @@ export default defineComponent({
       }
     }
   },
-  mounted: function () {
+  created: function () {
     this.currentIndex = this.currentChapterIndex
   },
   methods: {

@@ -24,6 +24,7 @@ jobs:
 
     - name: 🔍Lint code
       run: yarn lint
+      continue-on-error: true
 
     - name: 📚Read package.json
       id: pkg

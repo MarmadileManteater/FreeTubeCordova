@@ -25,7 +25,6 @@ const config = {
     filename: '[name].js',
   },
   externals: {
-    electron: '{}',
     android: 'Android'
   },
   module: {
@@ -117,6 +116,7 @@ const config = {
       'process.env.IS_ELECTRON': false,
       'process.env.IS_ELECTRON_MAIN': false,
       'process.env.IS_ANDROID': true,
+      'process.env.SUPPORTS_LOCAL_API': true,
       'process.env.SWIPER_VERSION': `'${swiperVersion}'`,
       // video.js' vhs-utils supports both atob() in web browsers and Buffer in node
       // As the FreeTube web build only runs in web browsers, we can override their check for atob() here: https://github.com/videojs/vhs-utils/blob/main/src/decode-b64-to-uint8-array.js#L3
@@ -148,7 +148,7 @@ const config = {
       patterns: [
         {
           from: path.join(__dirname, '../node_modules/swiper/modules/{a11y,navigation,pagination}-element.css').replaceAll('\\', '/'),
-          to: 'swiper.css',
+          to: `swiper-${swiperVersion}.css`,
           context: path.join(__dirname, '../node_modules/swiper/modules'),
           transformAll: (assets) => {
             return Buffer.concat(assets.map(asset => asset.data))
@@ -160,6 +160,9 @@ const config = {
   resolve: {
     alias: {
       vue$: 'vue/dist/vue.runtime.esm.js',
+      'portal-vue$': 'portal-vue/dist/portal-vue.esm.js',
+
+      DB_HANDLERS_ELECTRON_RENDERER_OR_WEB$: path.resolve(__dirname, '../src/datastores/handlers/web.js'),
 
       // video.js's mpd-parser uses @xmldom/xmldom so that it can support both node and web browsers
       // As FreeTube only runs in electron and web browsers, we can use the native DOMParser class, instead of the "polyfill"

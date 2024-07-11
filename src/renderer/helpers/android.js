@@ -304,3 +304,22 @@ export async function initalizeDatabasesInDirectory(directoryHandle) {
   }
   return filteredFiles
 }
+
+export function isColourDark(colour) {
+  if (colour.length < 7) {
+    const char = colour.substring(1, 2)
+    colour = `${colour.substring(0, 1)}${char}${char}${char}${char}${char}${char}`
+  }
+  const diffFromWhite = Math.abs(parseInt('FFFFFF', 16) - parseInt(colour.substring(1, colour.length), 16))
+  const diffFromBlack = Math.abs(parseInt('000000', 16) - parseInt(colour.substring(1, colour.length), 16))
+  return diffFromBlack > diffFromWhite
+}
+
+export function updateAndroidTheme(usesMain = false) {
+  const bodyStyle = getComputedStyle(document.body)
+  const isDark = isColourDark(bodyStyle.getPropertyValue('--primary-text-color'))
+  const isDarkTop = usesMain ? isColourDark(bodyStyle.getPropertyValue('--text-with-main-color')) : isDark
+  const top = !usesMain ? bodyStyle.getPropertyValue('--card-bg-color') : bodyStyle.getPropertyValue('--primary-color')
+  const bottom = bodyStyle.getPropertyValue('--side-nav-color')
+  android.themeSystemUi(bottom, top, isDark, isDarkTop)
+}

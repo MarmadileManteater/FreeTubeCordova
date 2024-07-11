@@ -1,6 +1,5 @@
-import Vue, { defineComponent } from 'vue'
+import { defineComponent } from 'vue'
 import { mapActions, mapMutations } from 'vuex'
-import { ObserveVisibility } from 'vue-observe-visibility'
 import FtFlexBox from './components/ft-flex-box/ft-flex-box.vue'
 import TopNav from './components/top-nav/top-nav.vue'
 import SideNav from './components/side-nav/side-nav.vue'
@@ -11,16 +10,17 @@ import FtToast from './components/ft-toast/ft-toast.vue'
 import FtProgressBar from './components/ft-progress-bar/ft-progress-bar.vue'
 import FtPlaylistAddVideoPrompt from './components/ft-playlist-add-video-prompt/ft-playlist-add-video-prompt.vue'
 import FtCreatePlaylistPrompt from './components/ft-create-playlist-prompt/ft-create-playlist-prompt.vue'
+import FtSearchFilters from './components/ft-search-filters/ft-search-filters.vue'
 import { marked } from 'marked'
 import { IpcChannels } from '../constants'
 import packageDetails from '../../package.json'
 import { openExternalLink, openInternalPath, showToast } from './helpers/utils'
+import { translateWindowTitle } from './helpers/strings'
 import 'core-js'
 import android from 'android'
+import { updateAndroidTheme } from './helpers/android'
 
 let ipcRenderer = null
-
-Vue.directive('observe-visibility', ObserveVisibility)
 
 export default defineComponent({
   name: 'App',
@@ -35,6 +35,7 @@ export default defineComponent({
     FtProgressBar,
     FtPlaylistAddVideoPrompt,
     FtCreatePlaylistPrompt,
+    FtSearchFilters
   },
   data: function () {
     return {
@@ -47,6 +48,7 @@ export default defineComponent({
       latestBlogUrl: '',
       updateChangelog: '',
       changeLogTitle: '',
+      isPromptOpen: false,
       lastExternalLinkToBeOpened: '',
       showExternalLinkOpeningPrompt: false,
       externalLinkOpeningPromptValues: [
@@ -78,15 +80,17 @@ export default defineComponent({
     showCreatePlaylistPrompt: function () {
       return this.$store.getters.getShowCreatePlaylistPrompt
     },
+    showSearchFilters: function () {
+      return this.$store.getters.getShowSearchFilters
+    },
     windowTitle: function () {
-      const routeTitle = this.$route.meta.title
-      if (routeTitle !== 'Channel' && routeTitle !== 'Watch' && routeTitle !== 'Hashtag') {
-        let title =
-        this.$route.meta.path === '/home'
-          ? packageDetails.productName
-          : `${this.$t(this.$route.meta.title)} - ${packageDetails.productName}`
+      const routePath = this.$route.path
+      if (!routePath.startsWith('/channel/') && !routePath.startsWith('/watch/') && !routePath.startsWith('/hashtag/') && !routePath.startsWith('/playlist/')) {
+        let title = translateWindowTitle(this.$route.meta.title, this.$i18n)
         if (!title) {
           title = packageDetails.productName
+        } else {
+          title = `${title} - ${packageDetails.productName}`
         }
         return title
       } else {
@@ -102,6 +106,14 @@ export default defineComponent({
 
     baseTheme: function () {
       return this.$store.getters.getBaseTheme
+    },
+
+    isSideNavOpen: function () {
+      return this.$store.getters.getIsSideNavOpen
+    },
+
+    hideLabelsSideBar: function () {
+      return this.$store.getters.getHideLabelsSideBar
     },
 
     mainColor: function () {
@@ -126,7 +138,7 @@ export default defineComponent({
 
     externalLinkOpeningPromptNames: function () {
       return [
-        this.$t('Yes'),
+        this.$t('Yes, Open Link'),
         this.$t('No')
       ]
     },
@@ -145,12 +157,6 @@ export default defineComponent({
     secColor: 'checkThemeSettings',
 
     locale: 'setLocale',
-
-    $route () {
-      // react to route changes...
-      // Hide top nav filter panel on page change
-      this.$refs.topNav?.hideFilters()
-    }
   },
   created () {
     this.checkThemeSettings()
@@ -161,14 +167,19 @@ export default defineComponent({
     this.grabUserSettings().then(async () => {
       this.checkThemeSettings()
       try {
-        await this.fetchInvidiousInstances()
+        await this.fetchInvidiousInstancesFromFile()
         if (this.defaultInvidiousInstance === '') {
           await this.setRandomCurrentInvidiousInstance()
         }
+
+        this.fetchInvidiousInstances().then(e => {
+          if (this.defaultInvidiousInstance === '') {
+            this.setRandomCurrentInvidiousInstance()
+          }
+        })
       } catch (ex) {
         console.error(ex)
       }
-
       this.grabAllProfiles(this.$t('Profile.All Channels')).then(async () => {
         this.grabHistory()
         this.grabAllPlaylists()
@@ -177,7 +188,6 @@ export default defineComponent({
           ipcRenderer = require('electron').ipcRenderer
           this.setupListenersToSyncWindows()
           this.activateKeyboardShortcuts()
-          this.activateIPCListeners()
           this.openAllLinksExternally()
           this.enableSetSearchQueryText()
           this.enableOpenUrl()
@@ -194,13 +204,11 @@ export default defineComponent({
             const uri = decodeURIComponent(intent)
             await this.handleYoutubeLink(uri)
           }
-          // hides the splash screen
-          android.hideSplashScreen()
           window.addEventListener('enabled-light-mode', () => {
-            document.body.dataset.systemTheme = 'light'
+            this.checkThemeSettings()
           })
           window.addEventListener('enabled-dark-mode', () => {
-            document.body.dataset.systemTheme = 'dark'
+            this.checkThemeSettings()
           })
         }
 
@@ -212,10 +220,6 @@ export default defineComponent({
         }, 500)
       })
 
-      this.$router.afterEach((to, from) => {
-        this.$refs.topNav?.navigateHistory()
-      })
-
       this.$router.onReady(() => {
         if (this.$router.currentRoute.path === '/') {
           this.$router.replace({ path: this.landingPage })
@@ -223,7 +227,6 @@ export default defineComponent({
       })
     })
   },
-
   methods: {
     checkThemeSettings: function () {
       const theme = {
@@ -231,8 +234,19 @@ export default defineComponent({
         mainColor: this.mainColor || 'mainRed',
         secColor: this.secColor || 'secBlue'
       }
-
-      this.updateTheme(theme)
+      if (process.env.IS_ANDROID) {
+        if (theme.baseTheme === 'system') {
+          // get a more precise theme with this
+          theme.baseTheme = android.getSystemTheme()
+        }
+        this.updateTheme(theme)
+        setTimeout(() => {
+          // 0 ms timeout to allow the css to update
+          updateAndroidTheme(this.$store.getters.getBarColor)
+        })
+      } else {
+        this.updateTheme(theme)
+      }
     },
 
     updateTheme: function (theme) {
@@ -299,10 +313,7 @@ export default defineComponent({
     },
 
     checkExternalPlayer: async function () {
-      const payload = {
-        externalPlayer: this.externalPlayer
-      }
-      this.getExternalPlayerCmdArgumentsData(payload)
+      this.getExternalPlayerCmdArgumentsData()
     },
 
     handleUpdateBannerClick: function (response) {
@@ -321,6 +332,10 @@ export default defineComponent({
       this.showBlogBanner = false
     },
 
+    handlePromptPortalUpdate: function(newVal) {
+      this.isPromptOpen = newVal
+    },
+
     openDownloadsPage: function () {
       const url = 'https://github.com/MarmadileManteater/FreeTubeCordova/releases'
       openExternalLink(url)
@@ -332,16 +347,6 @@ export default defineComponent({
       document.addEventListener('keydown', this.handleKeyboardShortcuts)
       document.addEventListener('mousedown', () => {
         this.hideOutlines()
-      })
-    },
-
-    activateIPCListeners: function () {
-      // handle menu event updates from main script
-      ipcRenderer.on('history-back', (_event) => {
-        this.$refs.topNav.historyBack()
-      })
-      ipcRenderer.on('history-forward', (_event) => {
-        this.$refs.topNav.historyForward()
       })
     },
 
@@ -489,12 +494,7 @@ export default defineComponent({
 
           default: {
             // Unknown URL type
-            let message = 'Unknown YouTube url type, cannot be opened in app'
-            if (this.$te(message) && this.$t(message) !== '') {
-              message = this.$t(message)
-            }
-
-            showToast(message)
+            showToast(this.$t('Unknown YouTube url type, cannot be opened in app'))
           }
         }
       })
@@ -511,23 +511,23 @@ export default defineComponent({
     },
 
     enableSetSearchQueryText: function () {
-      ipcRenderer.on('updateSearchInputText', (event, searchQueryText) => {
+      ipcRenderer.on(IpcChannels.UPDATE_SEARCH_INPUT_TEXT, (event, searchQueryText) => {
         if (searchQueryText) {
           this.$refs.topNav.updateSearchInputText(searchQueryText)
         }
       })
 
-      ipcRenderer.send('searchInputHandlingReady')
+      ipcRenderer.send(IpcChannels.SEARCH_INPUT_HANDLING_READY)
     },
 
     enableOpenUrl: function () {
-      ipcRenderer.on('openUrl', (event, url) => {
+      ipcRenderer.on(IpcChannels.OPEN_URL, (event, url) => {
         if (url) {
           this.handleYoutubeLink(url)
         }
       })
 
-      ipcRenderer.send('appReady')
+      ipcRenderer.send(IpcChannels.APP_READY)
     },
 
     handleExternalLinkOpeningPromptAnswer: function (option) {
@@ -558,7 +558,6 @@ export default defineComponent({
     },
 
     ...mapMutations([
-      'setInvidiousInstancesList',
       'setUsingTouch'
     ]),
 
@@ -570,13 +569,14 @@ export default defineComponent({
       'getYoutubeUrlInfo',
       'getExternalPlayerCmdArgumentsData',
       'fetchInvidiousInstances',
+      'fetchInvidiousInstancesFromFile',
       'setRandomCurrentInvidiousInstance',
       'setupListenersToSyncWindows',
       'updateBaseTheme',
       'updateMainColor',
       'updateSecColor',
       'showOutlines',
-      'hideOutlines'
+      'hideOutlines',
     ])
   }
 })

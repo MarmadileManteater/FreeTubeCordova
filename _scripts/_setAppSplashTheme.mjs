@@ -1,5 +1,5 @@
 
-import { readFile, writeFile } from 'fs/promises'
+import { readFile, readdir, writeFile } from 'fs/promises'
 import { join } from 'path'
 import { fileURLToPath } from 'url'
 
@@ -56,14 +56,55 @@ let backgroundXML = (await readFile(background)).toString()
 backgroundXML = backgroundXML.replace(/android:fillColor="[^"]*?" \/>/g, `android:fillColor="${currentTheme.back}" />`)
 await writeFile(background, backgroundXML)
 
-const lightTheme = join(scriptDir, '..', '..', 'android/app/src/main/res/values-v31/themes.xml')
-let lightThemeXml = (await readFile(lightTheme)).toString()
-lightThemeXml = lightThemeXml.replace(/<item name="android:windowSplashScreenBackground">[^"]*?<\/item>/g, `<item name="android:windowSplashScreenBackground">${currentTheme.back}</item>`)
-lightThemeXml = lightThemeXml.replace(/<item name="android:windowSplashScreenIconBackgroundColor">[^"]*?<\/item>/g, `<item name="android:windowSplashScreenIconBackgroundColor">${currentTheme.back}</item>`)
-await writeFile(lightTheme, lightThemeXml)
+/**
+ * @warning name is passed into regex unsantised; should never be given user input
+ * @param {string} xml
+ * @param {string} name
+ * @param {string} value
+ */
+function replaceItem(xml, name, value) {
+  return xml.replace(new RegExp(`<item name="android:${name}">[^"]*?<\/item>`), `<item name="android:${name}">${value}</item>`)
+}
 
-const darkTheme = join(scriptDir, '..', '..', 'android/app/src/main/res/values-night-v31/themes.xml')
-let darkThemeXml = (await readFile(darkTheme)).toString()
-darkThemeXml = darkThemeXml.replace(/<item name="android:windowSplashScreenBackground">[^"]*?<\/item>/g, `<item name="android:windowSplashScreenBackground">${currentTheme.backDark}</item>`)
-darkThemeXml = darkThemeXml.replace(/<item name="android:windowSplashScreenIconBackgroundColor">[^"]*?<\/item>/g, `<item name="android:windowSplashScreenIconBackgroundColor">${currentTheme.backDark}</item>`)
-await writeFile(darkTheme, darkThemeXml)
+async function constructThemePath(isDark = false, version = 0) {
+  const resDirectory = join(scriptDir, '..', '..', 'android/app/src/main/res/')
+  const files = await readdir(resDirectory)
+  const versionsListed = files
+                        .filter(file => file.startsWith(`values${isDark ? '-night-' : '-'}v`))
+                        .map(file => parseInt(file.split('-v')[1]))
+  if (versionsListed.indexOf(version) !== -1) {
+    return join(resDirectory, `values${isDark ? '-night-' : '-'}v${version}`, 'themes.xml')
+  } else {
+    return join(resDirectory, 'values', 'themes.xml')
+  }
+}
+
+async function setValuesForThemeFile(values, isDark = false, version = 0) {
+  const themePath = await constructThemePath(isDark, version)
+  let themeXml = (await readFile(themePath)).toString()
+  for (const key in values) {
+    themeXml = replaceItem(themeXml, key, values[key])
+  }
+  await writeFile(themePath, themeXml)
+}
+
+
+await setValuesForThemeFile({
+  windowSplashScreenBackground: currentTheme.back,
+  windowSplashScreenIconBackgroundColor: currentTheme.back
+}, false, 31)
+
+await setValuesForThemeFile({
+  windowSplashScreenBackground: currentTheme.backDark,
+  windowSplashScreenIconBackgroundColor: currentTheme.backDark
+}, true, 31)
+
+await setValuesForThemeFile({
+  windowSplashScreenBackground: currentTheme.back,
+  windowSplashScreenIconBackgroundColor: currentTheme.back
+}, false, 33)
+
+await setValuesForThemeFile({
+  windowSplashScreenBackground: currentTheme.backDark,
+  windowSplashScreenIconBackgroundColor: currentTheme.backDark
+}, true, 33)

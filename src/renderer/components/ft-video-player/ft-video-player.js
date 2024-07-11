@@ -119,6 +119,7 @@ export default defineComponent({
       default: false
     }
   },
+  emits: ['ended', 'error', 'ready', 'store-caption-list', 'timeupdate', 'toggle-theatre-mode'],
   data: function () {
     return {
       powerSaveBlocker: null,
@@ -432,6 +433,9 @@ export default defineComponent({
     window.removeEventListener('beforeunload', this.stopPowerSaveBlocker)
   },
   methods: {
+    handlePause() {
+      this.player.exitFullscreen()
+    },
     initializePlayer: async function () {
       if (typeof this.$refs.video !== 'undefined') {
         if (!this.useDash) {
@@ -450,6 +454,7 @@ export default defineComponent({
           // (when default quality is low like 240p)
           playerBandwidthOption.bandwidth = this.selectedBitrate * VHS_BANDWIDTH_VARIANCE + 1
         }
+
         this.player = videojs(this.$refs.video, {
           html5: {
             preloadTextTracks: false,
@@ -464,8 +469,8 @@ export default defineComponent({
         })
         this.player.mobileUi({
           fullscreen: {
-            enterOnRotate: this.enterFullscreenOnDisplayRotate,
-            exitOnRotate: this.enterFullscreenOnDisplayRotate,
+            enterOnRotate: !process.env.IS_ANDROID && this.enterFullscreenOnDisplayRotate,
+            exitOnRotate: !process.env.IS_ANDROID && this.enterFullscreenOnDisplayRotate,
             lockOnRotate: false
           },
           // Without this flag, the mobile UI will only activate
@@ -478,6 +483,23 @@ export default defineComponent({
             tapTimeout: 300
           }
         })
+
+        if (process.env.IS_ANDROID && this.enterFullscreenOnDisplayRotate) {
+          window.addEventListener('app-pause', this.handlePause)
+          screen.orientation.onchange = () => {
+            if (this.player.isFullscreen() && screen.orientation.angle === 0) {
+              this.player.exitFullscreen()
+            } else if (screen.orientation.angle === 90 || screen.orientation.angle === 270) {
+              if (!android.isAppPaused()) {
+                this.player.requestFullscreen()
+              }
+            }
+          }
+          this.player.on('dispose', () => {
+            screen.orientation.onchange = null
+            window.removeEventListener('app-pause', this.handlePause)
+          })
+        }
 
         const qualityLevels = this.player.qualityLevels()
 
@@ -688,6 +710,7 @@ export default defineComponent({
 
         this.player.on('play', async () => {
           if (process.env.IS_ANDROID) {
+            android.enableKeepScreenOn()
             updateMediaSessionState(STATE_PLAYING.toString())
           }
           if ('mediaSession' in navigator) {
@@ -703,6 +726,7 @@ export default defineComponent({
 
         this.player.on('pause', () => {
           if (process.env.IS_ANDROID) {
+            android.disableKeepScreenOn()
             updateMediaSessionState(STATE_PAUSED)
           }
           if ('mediaSession' in navigator) {
@@ -729,7 +753,6 @@ export default defineComponent({
           }
           this.$emit('timeupdate')
           if (process.env.IS_ANDROID) {
-            // todo add code to update state of media session
             updateMediaSessionState(null, Math.floor(this.player.currentTime() * 1000).toString())
           }
         })
@@ -742,8 +765,8 @@ export default defineComponent({
         // right click menu
         if (process.env.IS_ELECTRON) {
           const { ipcRenderer } = require('electron')
-          ipcRenderer.removeAllListeners('showVideoStatistics')
-          ipcRenderer.on('showVideoStatistics', (event) => {
+          ipcRenderer.removeAllListeners(IpcChannels.SHOW_VIDEO_STATISTICS)
+          ipcRenderer.on(IpcChannels.SHOW_VIDEO_STATISTICS, (event) => {
             this.toggleShowStatsModal()
           })
         }
@@ -1327,7 +1350,7 @@ export default defineComponent({
 
       this.useDash = false
       this.useHls = false
-      this.activeSourceList = (this.proxyVideos || (!process.env.IS_ELECTRON && !process.env.IS_ANDROID))
+      this.activeSourceList = (this.proxyVideos || !process.env.SUPPORTS_LOCAL_API)
         // use map here to return slightly different list without modifying original
         ? this.sourceList.map((source) => {
           return {
@@ -2124,6 +2147,8 @@ export default defineComponent({
 
           // Unexpected errors should be reported
           console.error(err)
+          // ignore as this will most likely be removed by shaka player changes
+          // eslint-disable-next-line @intlify/vue-i18n/no-missing-keys
           const errorMessage = this.$t('play() request Error (Click to copy)')
           showToast(`${errorMessage}: ${err}`, 10000, () => {
             copyToClipboard(err)

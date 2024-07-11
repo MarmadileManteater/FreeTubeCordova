@@ -25,7 +25,6 @@ const config = {
     filename: '[name].js',
   },
   externals: {
-    electron: '{}',
     android: '{}',
     'youtubei.js': '{}'
   },
@@ -110,13 +109,14 @@ const config = {
     ]
   },
   node: {
-    __dirname: true,
-    __filename: isDevMode,
+    __dirname: false,
+    __filename: false
   },
   plugins: [
     new webpack.DefinePlugin({
       'process.env.IS_ELECTRON': false,
       'process.env.IS_ELECTRON_MAIN': false,
+      'process.env.SUPPORTS_LOCAL_API': false,
       'process.env.SWIPER_VERSION': `'${swiperVersion}'`,
       'process.env.IS_ANDROID': false,
       // video.js' vhs-utils supports both atob() in web browsers and Buffer in node
@@ -148,7 +148,7 @@ const config = {
       patterns: [
         {
           from: path.join(__dirname, '../node_modules/swiper/modules/{a11y,navigation,pagination}-element.css').replaceAll('\\', '/'),
-          to: 'swiper.css',
+          to: `swiper-${swiperVersion}.css`,
           context: path.join(__dirname, '../node_modules/swiper/modules'),
           transformAll: (assets) => {
             return Buffer.concat(assets.map(asset => asset.data))
@@ -160,6 +160,9 @@ const config = {
   resolve: {
     alias: {
       vue$: 'vue/dist/vue.runtime.esm.js',
+      'portal-vue$': 'portal-vue/dist/portal-vue.esm.js',
+
+      DB_HANDLERS_ELECTRON_RENDERER_OR_WEB$: path.resolve(__dirname, '../src/datastores/handlers/web.js'),
 
       // video.js's mpd-parser uses @xmldom/xmldom so that it can support both node and web browsers
       // As FreeTube only runs in electron and web browsers, we can use the native DOMParser class, instead of the "polyfill"
@@ -177,6 +180,7 @@ const config = {
 
 const processLocalesPlugin = new ProcessLocalesPlugin({
   compress: false,
+  hotReload: isDevMode,
   inputDir: path.join(__dirname, '../static/locales'),
   outputDir: 'static/locales',
 })
@@ -189,6 +193,14 @@ config.plugins.push(
   }),
   new CopyWebpackPlugin({
       patterns: [
+        {
+          from: path.join(__dirname, '../_icons/192x192.png'),
+          to: path.join(__dirname, '../dist/web/static/_icons/192x192.png'),
+        },
+        {
+          from: path.join(__dirname, '../_icons/512x512.png'),
+          to: path.join(__dirname, '../dist/web/static/_icons/512x512.png'),
+        },
         {
           from: path.join(__dirname, '../static/pwabuilder-sw.js'),
           to: path.join(__dirname, '../dist/web/pwabuilder-sw.js'),

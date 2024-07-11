@@ -94,7 +94,7 @@ export default defineComponent({
     this.liveChatInstance = null
   },
   created: function () {
-    if (!(process.env.IS_ELECTRON || process.env.IS_ANDROID)) {
+    if (!process.env.SUPPORTS_LOCAL_API) {
       this.hasError = true
       this.errorMessage = this.$t('Video["Live Chat is currently not supported in this build."]')
       this.isLoading = false
@@ -306,7 +306,7 @@ export default defineComponent({
       }
     },
 
-    onScroll: function (event) {
+    onScroll: function (event, isScrollEnd = false) {
       const liveChatComments = this.$refs.liveChatComments
       if (event.wheelDelta >= 0 && this.stayAtBottom) {
         this.stayAtBottom = false
@@ -314,10 +314,8 @@ export default defineComponent({
         if (liveChatComments.scrollHeight > liveChatComments.clientHeight) {
           this.showScrollToBottom = true
         }
-      } else if (event.wheelDelta < 0 && !this.stayAtBottom) {
-        if ((liveChatComments.scrollHeight - liveChatComments.scrollTop) === liveChatComments.clientHeight) {
-          this.scrollToBottom()
-        }
+      } else if ((isScrollEnd || event.wheelDelta < 0) && !this.stayAtBottom && (liveChatComments.scrollHeight - liveChatComments.scrollTop) === liveChatComments.clientHeight) {
+        this.scrollToBottom()
       }
     },
 

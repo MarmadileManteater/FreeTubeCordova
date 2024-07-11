@@ -1,14 +1,11 @@
 package io.freetubeapp.freetube
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
-import android.os.PowerManager
-import android.os.PowerManager.WakeLock
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
@@ -29,7 +26,6 @@ import androidx.core.view.WindowInsetsControllerCompat
 import io.freetubeapp.freetube.databinding.ActivityMainBinding
 import java.net.URLEncoder
 import java.util.Base64
-import java.util.UUID.randomUUID
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.ThreadPoolExecutor
@@ -44,22 +40,14 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
   private lateinit var keepAliveService: KeepAliveService
   private lateinit var keepAliveIntent: Intent
   private var fullscreenView: View? = null
-  /**
-   * 🧊🥶
-   */
-  private var isColdStart: Boolean = true
   lateinit var webView: BackgroundPlayWebView
   lateinit var jsInterface: FreeTubeJavaScriptInterface
   lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
-  lateinit var wakeLock: WakeLock
   lateinit var content: View
-  var releasedWakeLock: Boolean = false
-  var paused: Boolean = false
   var showSplashScreen: Boolean = true
-  companion object {
-    val POWER_MANAGER_TAG: String = "${randomUUID()}"
-  }
-
+  var darkMode: Boolean = false
+  var paused: Boolean = false
+  var isInAPrompt: Boolean = false
   /*
    * Gets the number of available cores
    * (not always the same as the maximum number of cores)
@@ -87,138 +75,146 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
   @Suppress("DEPRECATION")
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    if (isColdStart) {
-      val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
-      wakeLock = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK, POWER_MANAGER_TAG)
-      wakeLock.acquire()
+    when (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) {
+      Configuration.UI_MODE_NIGHT_NO -> {
+        darkMode = false
+      }
+      Configuration.UI_MODE_NIGHT_YES -> {
+        darkMode = true
+      }
+    }
 
-      content = findViewById(android.R.id.content)
-      content.viewTreeObserver.addOnPreDrawListener(
-        object : ViewTreeObserver.OnPreDrawListener {
-          override fun onPreDraw(): Boolean {
-            // Check whether the initial data is ready.
-            return if (!showSplashScreen) {
-              // The content is ready. Start drawing.
-              content.viewTreeObserver.removeOnPreDrawListener(this)
-              true
-            } else {
-              // The content isn't ready. Suspend.
-              false
-            }
+    content = findViewById(android.R.id.content)
+    content.viewTreeObserver.addOnPreDrawListener(
+      object : ViewTreeObserver.OnPreDrawListener {
+        override fun onPreDraw(): Boolean {
+          // Check whether the initial data is ready.
+          return if (!showSplashScreen) {
+            // The content is ready. Start drawing.
+            content.viewTreeObserver.removeOnPreDrawListener(this)
+            true
+          } else {
+            // The content isn't ready. Suspend.
+            false
           }
         }
-      )
+      }
+    )
 
+    activityResultListeners = mutableListOf()
+
+    activityResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+      for (listener in activityResultListeners) {
+        listener(it)
+      }
+      // clear the listeners
       activityResultListeners = mutableListOf()
+    }
 
-      activityResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        for (listener in activityResultListeners) {
-          listener(it)
+    MediaControlsReceiver.notifyMediaSessionListeners = {
+        action ->
+      webView.loadUrl(String.format("javascript: window.notifyMediaSessionListeners('%s')", action))
+    }
+
+    // this keeps android from shutting off the app to conserve battery
+    keepAliveService = KeepAliveService()
+    keepAliveIntent = Intent(this, keepAliveService.javaClass)
+    startService(keepAliveIntent)
+
+    // this gets the controller for hiding and showing the system bars
+    WindowCompat.setDecorFitsSystemWindows(window, false)
+    val windowInsetsController =
+      WindowCompat.getInsetsController(window, window.decorView)
+    windowInsetsController.systemBarsBehavior =
+      WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+
+    // initialize the list of listeners for permissions handlers
+    permissionsListeners = arrayOf<(Int, Array<String?>, IntArray) -> Unit>().toMutableList()
+
+    binding = ActivityMainBinding.inflate(layoutInflater)
+    setContentView(binding.root)
+    webView = binding.webView
+    webView.setBackgroundColor(Color.TRANSPARENT)
+
+    // bind the back button to the web-view history
+    onBackPressedDispatcher.addCallback {
+      if (isInAPrompt) {
+        webView.post {
+          webView.loadUrl("javascript: window.dispatchEvent(new Event(\"exit-prompt\"))")
+          jsInterface.exitPromptMode()
         }
-        // clear the listeners
-        activityResultListeners = mutableListOf()
-      }
-
-      MediaControlsReceiver.notifyMediaSessionListeners = {
-          action ->
-        webView.loadUrl(String.format("javascript: window.notifyMediaSessionListeners('%s')", action))
-      }
-
-      // this keeps android from shutting off the app to conserve battery
-      keepAliveService = KeepAliveService()
-      keepAliveIntent = Intent(this, keepAliveService.javaClass)
-      startService(keepAliveIntent)
-
-      // this gets the controller for hiding and showing the system bars
-      WindowCompat.setDecorFitsSystemWindows(window, false)
-      val windowInsetsController =
-        WindowCompat.getInsetsController(window, window.decorView)
-      windowInsetsController.systemBarsBehavior =
-        WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-
-      // initialize the list of listeners for permissions handlers
-      permissionsListeners = arrayOf<(Int, Array<String?>, IntArray) -> Unit>().toMutableList()
-
-      binding = ActivityMainBinding.inflate(layoutInflater)
-      setContentView(binding.root)
-      webView = binding.webView
-      webView.setBackgroundColor(Color.TRANSPARENT)
-
-      // bind the back button to the web-view history
-      onBackPressedDispatcher.addCallback {
+      } else {
         if (webView.canGoBack()) {
           webView.goBack()
         } else {
           this@MainActivity.moveTaskToBack(true)
         }
       }
+    }
 
-      webView.settings.javaScriptEnabled = true
+    webView.settings.javaScriptEnabled = true
 
-      // this is the 🥃 special sauce that makes local api streaming a possibility
-      webView.settings.allowUniversalAccessFromFileURLs = true
-      webView.settings.allowFileAccessFromFileURLs = true
-      // allow playlist ▶auto-play in background
-      webView.settings.mediaPlaybackRequiresUserGesture = false
+    // this is the 🥃 special sauce that makes local api streaming a possibility
+    webView.settings.allowUniversalAccessFromFileURLs = true
+    webView.settings.allowFileAccessFromFileURLs = true
+    // allow playlist ▶auto-play in background
+    webView.settings.mediaPlaybackRequiresUserGesture = false
 
-      jsInterface = FreeTubeJavaScriptInterface(this)
-      webView.addJavascriptInterface(jsInterface, "Android")
-      webView.webChromeClient = object: WebChromeClient() {
+    jsInterface = FreeTubeJavaScriptInterface(this)
+    webView.addJavascriptInterface(jsInterface, "Android")
+    webView.webChromeClient = object: WebChromeClient() {
 
-        override fun onShowCustomView(view: View?, callback: CustomViewCallback?) {
-          windowInsetsController.hide(WindowInsetsCompat.Type.systemBars())
-          fullscreenView = view!!
-          view.layoutParams = FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-          this@MainActivity.binding.root.addView(view)
-          webView.visibility = View.GONE
-          this@MainActivity.binding.root.fitsSystemWindows = false
+      override fun onShowCustomView(view: View?, callback: CustomViewCallback?) {
+        windowInsetsController.hide(WindowInsetsCompat.Type.systemBars())
+        fullscreenView = view!!
+        view.layoutParams = FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+        this@MainActivity.binding.root.addView(view)
+        webView.visibility = View.GONE
+        this@MainActivity.binding.root.fitsSystemWindows = false
 
-          webView.loadUrl("javascript: window.dispatchEvent(new Event(\"start-fullscreen\"))")
-        }
-
-        override fun onHideCustomView() {
-          webView.visibility = View.VISIBLE
-          this@MainActivity.binding.root.removeView(fullscreenView)
-          fullscreenView = null
-          windowInsetsController.show(WindowInsetsCompat.Type.systemBars())
-          this@MainActivity.binding.root.fitsSystemWindows = true
-
-          webView.loadUrl("javascript: window.dispatchEvent(new Event(\"end-fullscreen\"))")
-        }
+        webView.loadUrl("javascript: window.dispatchEvent(new Event(\"start-fullscreen\"))")
       }
-      webView.webViewClient = object: WebViewClient() {
-        override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
-          if (request!!.url!!.scheme == "file") {
-            // don't send file url requests to a web browser (it will crash the app)
-            return true
-          }
-          val regex = """^https?:\/\/((www\.)?youtube\.com(\/embed)?|youtu\.be)\/.*$"""
 
-          if (Regex(regex).containsMatchIn(request!!.url!!.toString())) {
-            webView.loadUrl("javascript: window.notifyYoutubeLinkHandlers(\"${request!!.url}\")")
-            return true
-          }
-          // send all requests to a real web browser
-          val intent = Intent(Intent.ACTION_VIEW, request!!.url)
-          this@MainActivity.startActivity(intent)
+      override fun onHideCustomView() {
+        webView.visibility = View.VISIBLE
+        this@MainActivity.binding.root.removeView(fullscreenView)
+        fullscreenView = null
+        windowInsetsController.show(WindowInsetsCompat.Type.systemBars())
+        this@MainActivity.binding.root.fitsSystemWindows = true
+
+        webView.loadUrl("javascript: window.dispatchEvent(new Event(\"end-fullscreen\"))")
+      }
+    }
+    webView.webViewClient = object: WebViewClient() {
+      override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
+        if (request!!.url!!.scheme == "file") {
+          // don't send file url requests to a web browser (it will crash the app)
           return true
         }
-      }
-      if (intent!!.data !== null) {
-        val url = intent!!.data.toString()
-        val host = intent!!.data!!.host.toString()
-        val intentPath = if (host != "youtube.com" && host != "youtu.be" && host != "m.youtube.com" && host != "www.youtube.com") {
-          url.replace("${intent!!.data!!.host}", "youtube.com")
-        } else {
-          url
+        val regex = """^https?:\/\/((www\.)?youtube\.com(\/embed)?|youtu\.be)\/.*$"""
+
+        if (Regex(regex).containsMatchIn(request!!.url!!.toString())) {
+          webView.loadUrl("javascript: window.notifyYoutubeLinkHandlers(\"${request!!.url}\")")
+          return true
         }
-        val intentEncoded = URLEncoder.encode(intentPath)
-        webView.loadUrl("file:///android_asset/index.html?intent=${intentEncoded}")
-      } else {
-        webView.loadUrl("file:///android_asset/index.html")
+        // send all requests to a real web browser
+        val intent = Intent(Intent.ACTION_VIEW, request!!.url)
+        this@MainActivity.startActivity(intent)
+        return true
       }
-      // 😌🔥
-      isColdStart = false
+    }
+    if (intent!!.data !== null) {
+      val url = intent!!.data.toString()
+      val host = intent!!.data!!.host.toString()
+      val intentPath = if (host != "youtube.com" && host != "youtu.be" && host != "m.youtube.com" && host != "www.youtube.com") {
+        url.replace("${intent!!.data!!.host}", "youtube.com")
+      } else {
+        url
+      }
+      val intentEncoded = URLEncoder.encode(intentPath)
+      webView.loadUrl("file:///android_asset/index.html?intent=${intentEncoded}")
+    } else {
+      webView.loadUrl("file:///android_asset/index.html")
     }
   }
 
@@ -264,11 +260,13 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
     super.onConfigurationChanged(newConfig)
     when (newConfig.uiMode and Configuration.UI_MODE_NIGHT_MASK) {
       Configuration.UI_MODE_NIGHT_NO -> {
+        darkMode = false
         webView.post {
           webView.loadUrl("javascript: window.dispatchEvent(new Event(\"enabled-light-mode\"))")
         }
       }
       Configuration.UI_MODE_NIGHT_YES -> {
+        darkMode = true
         webView.post {
           webView.loadUrl("javascript: window.dispatchEvent(new Event(\"enabled-dark-mode\"))")
         }
@@ -306,22 +304,15 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
   }
 
   override fun onPause() {
-    try {
-      super.onPause()
-      webView.loadUrl("javascript: window.dispatchEvent(new Event(\"app-pause\"))")
-      wakeLock.release()
-    } catch (exception: Exception) {
-      consoleWarn(exception.toString())
-    }
+    super.onPause()
+    paused = true
+    webView.loadUrl("javascript: window.dispatchEvent(new Event(\"app-pause\"))")
   }
 
   override fun onResume() {
     super.onResume()
     paused = false
     webView.loadUrl("javascript: window.dispatchEvent(new Event(\"app-resume\"))")
-    if (wakeLock != null) {
-      wakeLock.acquire()
-    }
   }
 
   override fun onDestroy() {
