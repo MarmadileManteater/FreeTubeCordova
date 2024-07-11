@@ -21,7 +21,6 @@ jobs:
         cache: "yarn"
     - name: 🧶 Yarn install
       run: yarn ci
-      continue-on-error: true
 
     - name: Set environment icon & splash for android app
       run: |
@@ -30,6 +29,7 @@ jobs:
 
     - name: 🔍Lint code
       run: yarn lint
+      continue-on-error: true
 
     - name: 📚Read package.json
       id: pkg
