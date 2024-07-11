@@ -22,6 +22,10 @@ jobs:
     - name: 🧶 Yarn install
       run: yarn ci
 
+    - name: Is vtt-thumbnails installed correctly?
+      run: |
+        ls /node_modules/videojs-vtt-thumbnails-freetube
+
     - name: Set environment icon & splash for android app
       run: |
         # to make it easier to tell which is which when multiple are installed
