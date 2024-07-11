@@ -386,11 +386,10 @@ const stateWithSideEffects = {
       await Promise.allSettled(loadPromises)
 
       i18n.locale = targetLocale
-      // hides the splash screen
-      android.hideSplashScreen()
       await dispatch('getRegionData', {
         locale: targetLocale
       })
+      android.hideSplashScreen()
     }
   },
 
