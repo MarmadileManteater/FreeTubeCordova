@@ -39,4 +39,8 @@
   :deep(.pure-checkbox label) {
     padding-block: 7px;
   }
+
+  :deep(.checkboxTitle) {
+    padding-block-end: 10px;
+  }
 }
