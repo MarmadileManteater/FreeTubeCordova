@@ -84,6 +84,9 @@ export default defineComponent({
     }
   },
   methods: {
+    exitPrompt: function () {
+      this.$emit('click', null)
+    },
     optionButtonTextColor: function(index) {
       if (index === 0 && this.isFirstOptionDestructive) {
         return 'var(--destructive-text-color)'
