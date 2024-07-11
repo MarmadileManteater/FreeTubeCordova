@@ -48,7 +48,6 @@
     "pack:web": "webpack --mode=production --node-env=production --config _scripts/webpack.web.config.js",
     "pack:android": "webpack --mode=production --node-env=production --config _scripts/webpack.android.config.js",
     "pack:android:dev": "webpack --mode=development --node-env=development --config _scripts/webpack.android.config.js",
-    "postinstall": "yarn run --silent rebuild:electron",
     "prettier": "prettier --write \"{src,_scripts}/**/*.{js,vue}\"",
     "rebuild:electron": "electron-builder install-app-deps",
     "release": "run-s test build",
