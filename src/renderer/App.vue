@@ -19,6 +19,7 @@
       v-if="showReleaseNotes"
       :label="changeLogTitle"
       theme="readable-width"
+      :fullscreen="true"
       @click="showReleaseNotes = !showReleaseNotes"
     >
       <span

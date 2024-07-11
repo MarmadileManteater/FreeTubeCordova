@@ -80,3 +80,24 @@
     block-size: 65vh;
   }
 }
+
+@media (width <= 420px) {
+  :deep(.ft-card.promptCard.readable-width.fullscreen) {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .changeLogText {
+    block-size: revert;
+    max-block-size: calc(100vh - 100px);
+    overflow-y: scroll;
+  }
+
+  .changeLogText + :deep(.ft-flex-box) {
+    flex-grow: 1;
+  }
+
+  .changeLogText + :deep(.ft-flex-box .btn) {
+    margin-block-start: auto;
+  }
+}
