@@ -8268,7 +8268,7 @@ videojs-vtt-thumbnails-freetube@0.0.15:
   dependencies:
     global "^4.4.0"
     request "^2.88.2"
-    video.js "^7.2.0 || ^6.6.0"
+    video.js "7.21.5"
 
 videojs-vtt.js@0.15.5, videojs-vtt.js@^0.15.5:
   version "0.15.5"
