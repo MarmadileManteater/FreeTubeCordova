@@ -24,7 +24,7 @@ jobs:
 
     - name: Is vtt-thumbnails installed correctly?
       run: |
-        ls /node_modules/videojs-vtt-thumbnails-freetube
+        ls ./node_modules/videojs-vtt-thumbnails-freetube
 
     - name: Set environment icon & splash for android app
       run: |
