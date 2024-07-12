@@ -54,7 +54,8 @@ export default defineComponent({
       externalLinkOpeningPromptValues: [
         'yes',
         'no'
-      ]
+      ],
+      nightlyLink: ''
     }
   },
   computed: {
@@ -279,6 +280,23 @@ export default defineComponent({
             .catch((error) => {
               console.error('errored while checking for updates', requestUrl, error)
             })
+        } else {
+          // nightly check
+          fetch('https://api.github.com/repos/MarmadileManteater/FreetubeAndroid/actions/runs')
+            .then((response) => response.json())
+            .then((json) => {
+              const currentAppWorkflowRun = packageDetails.version.split('-nightly-')[1]
+              const buildRuns = json.workflow_runs.filter(run => run.name === 'Build Android')
+              if (buildRuns.length > 0) {
+                if (currentAppWorkflowRun < buildRuns[0].run_number) {
+                  this.updateChangelog = marked.parse(`latest commit:\r\n\`\`\`\r\n${buildRuns[0].head_commit.message}\r\n\`\`\``)
+                  this.changeLogTitle = `Nightly ${buildRuns[0].run_number}`
+                  this.updateBannerMessage = this.$t('Version $ is now available!  Click for more details').replace('$', buildRuns[0].run_number)
+                  this.nightlyLink = buildRuns[0].html_url
+                  this.showUpdatesBanner = true
+                }
+              }
+            })
         }
       }
     },
@@ -337,7 +355,9 @@ export default defineComponent({
     },
 
     openDownloadsPage: function () {
-      const url = 'https://github.com/MarmadileManteater/FreeTubeCordova/releases'
+      const url = packageDetails.version.indexOf('-nightly-') === -1
+        ? 'https://github.com/MarmadileManteater/FreeTubeCordova/releases'
+        : this.nightlyLink
       openExternalLink(url)
       this.showReleaseNotes = false
       this.showUpdatesBanner = false
