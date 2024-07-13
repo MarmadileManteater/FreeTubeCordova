@@ -1,14 +1,23 @@
 import { defineComponent } from 'vue'
+import { mapActions } from 'vuex'
 import FtFlexBox from '../ft-flex-box/ft-flex-box.vue'
 import SideNavMoreOptions from '../side-nav-more-options/side-nav-more-options.vue'
 import { youtubeImageUrlToInvidious } from '../../helpers/api/invidious'
 import { deepCopy } from '../../helpers/utils'
+import packageDetails from '../../../../package.json'
 
 export default defineComponent({
   name: 'SideNav',
   components: {
     'ft-flex-box': FtFlexBox,
     'side-nav-more-options': SideNavMoreOptions
+  },
+  data() {
+    return {
+      usingAndroid: process.env.IS_ANDROID,
+      // release builds are the only ones with 3 periods in version numbers
+      usingRelease: packageDetails.version.split('.').length - 1 === 3,
+    }
   },
   computed: {
     isOpen: function () {
@@ -81,5 +90,10 @@ export default defineComponent({
         hiddenLabels: this.hideText
       }
     }
+  },
+  methods: {
+    ...mapActions([
+      'showLogViewer'
+    ])
   }
 })

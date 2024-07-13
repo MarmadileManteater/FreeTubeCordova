@@ -11,6 +11,7 @@ import FtProgressBar from './components/ft-progress-bar/ft-progress-bar.vue'
 import FtPlaylistAddVideoPrompt from './components/ft-playlist-add-video-prompt/ft-playlist-add-video-prompt.vue'
 import FtCreatePlaylistPrompt from './components/ft-create-playlist-prompt/ft-create-playlist-prompt.vue'
 import FtSearchFilters from './components/ft-search-filters/ft-search-filters.vue'
+import FtaLogViewer from './components/fta-log-viewer/fta-log-viewer.vue'
 import { marked } from 'marked'
 import { IpcChannels } from '../constants'
 import packageDetails from '../../package.json'
@@ -35,7 +36,8 @@ export default defineComponent({
     FtProgressBar,
     FtPlaylistAddVideoPrompt,
     FtCreatePlaylistPrompt,
-    FtSearchFilters
+    FtSearchFilters,
+    FtaLogViewer
   },
   data: function () {
     return {

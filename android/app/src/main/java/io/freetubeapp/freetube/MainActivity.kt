@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
+import android.webkit.ConsoleMessage
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
@@ -24,8 +25,10 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import io.freetubeapp.freetube.databinding.ActivityMainBinding
+import org.json.JSONObject
 import java.net.URLEncoder
 import java.util.Base64
+import java.util.UUID
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.ThreadPoolExecutor
@@ -44,6 +47,7 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
   lateinit var jsInterface: FreeTubeJavaScriptInterface
   lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
   lateinit var content: View
+  var consoleMessages: MutableList<JSONObject> = mutableListOf()
   var showSplashScreen: Boolean = true
   var darkMode: Boolean = false
   var paused: Boolean = false
@@ -163,6 +167,20 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
     jsInterface = FreeTubeJavaScriptInterface(this)
     webView.addJavascriptInterface(jsInterface, "Android")
     webView.webChromeClient = object: WebChromeClient() {
+
+      override fun onConsoleMessage(consoleMessage: ConsoleMessage): Boolean {
+        val messageData = JSONObject()
+        messageData.put("content", consoleMessage.message())
+        messageData.put("level", consoleMessage.messageLevel())
+        messageData.put("timestamp", System.currentTimeMillis())
+        messageData.put("id", UUID.randomUUID())
+        messageData.put("key", "${messageData["id"]}-${messageData["timestamp"]}")
+        messageData.put("sourceId", consoleMessage.sourceId())
+        messageData.put("lineNumber", consoleMessage.lineNumber())
+        consoleMessages.add(messageData)
+        webView.loadUrl("javascript: var event = new Event(\"console-message\"); event.data = JSON.parse(${btoa(messageData.toString())}); window.dispatchEvent(event)")
+        return super.onConsoleMessage(consoleMessage);
+      }
 
       override fun onShowCustomView(view: View?, callback: CustomViewCallback?) {
         windowInsetsController.hide(WindowInsetsCompat.Type.systemBars())

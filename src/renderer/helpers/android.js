@@ -323,3 +323,7 @@ export function updateAndroidTheme(usesMain = false) {
   const bottom = bodyStyle.getPropertyValue('--side-nav-color')
   android.themeSystemUi(bottom, top, isDark, isDarkTop)
 }
+
+export function getConsoleLogs() {
+  return JSON.parse(android.getLogs())
+}

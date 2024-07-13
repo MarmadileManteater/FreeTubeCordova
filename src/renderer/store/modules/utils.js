@@ -31,6 +31,7 @@ const state = {
   cachedPlaylist: null,
   deArrowCache: {},
   showProgressBar: false,
+  showLogViewer: false,
   showAddToPlaylistPrompt: false,
   showCreatePlaylistPrompt: false,
   showSearchFilters: false,
@@ -112,6 +113,10 @@ const getters = {
 
   getShowSearchFilters(state) {
     return state.showSearchFilters
+  },
+
+  getShowLogViewer(state) {
+    return state.showLogViewer
   },
 
   getToBeAddedToPlaylistVideoList(state) {
@@ -398,6 +403,14 @@ const actions = {
 
   hideSearchFilters ({ commit }) {
     commit('setShowSearchFilters', false)
+  },
+
+  showLogViewer({ commit }) {
+    commit('setShowLogViewer', true)
+  },
+
+  hideLogViewer({ commit }) {
+    commit('setShowLogViewer', false)
   },
 
   updateShowProgressBar ({ commit }, value) {
@@ -864,6 +877,10 @@ const mutations = {
 
   setShowSearchFilters (state, payload) {
     state.showSearchFilters = payload
+  },
+
+  setShowLogViewer (state, payload) {
+    state.showLogViewer = payload
   },
 
   setToBeAddedToPlaylistVideoList (state, payload) {
