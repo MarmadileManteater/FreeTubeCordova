@@ -540,7 +540,7 @@ export async function addToDownloadQueue(downloadRequest) {
     queueDirectory = downloadsDirectory.createDirectory('queue')
   }
   // write the request into a file which is timestamped
-  const requestFileName = `${new Date().getTime()}-${downloadRequest.id}.json`
+  const requestFileName = `${new Date().getTime()}-${downloadRequest.videoData.id}.json`
   const requestFileUri = queueDirectory.createFile(requestFileName)
   await writeFile(requestFileUri, JSON.stringify(downloadRequest, null, 2))
 }
