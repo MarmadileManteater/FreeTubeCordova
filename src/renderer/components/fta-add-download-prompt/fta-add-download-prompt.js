@@ -4,6 +4,8 @@ import FtInput from '../ft-input/ft-input.vue'
 import FtButton from '../ft-button/ft-button.vue'
 import FtPrompt from '../ft-prompt/ft-prompt.vue'
 import FtFlexBox from '../ft-flex-box/ft-flex-box.vue'
+import { addToDownloadQueue } from '../../helpers/android'
+import { showToast } from '../../helpers/utils'
 
 export default defineComponent({
   name: 'FtaAddDownloadPrompt',
@@ -32,6 +34,10 @@ export default defineComponent({
     suggestedTitle: {
       type: String,
       default: () => ''
+    },
+    videoData: {
+      type: Object,
+      required: true
     }
   },
   data: function () {
@@ -155,14 +161,27 @@ export default defineComponent({
      */
     placeholderTitle: function () {
       if (this.formatSelected !== -1) {
-        return `${this.suggestedTitle}.${this.audioVideoSources[this.formatSelected].container}`
+        return this.suggestedTitle
       } else {
         return ''
       }
+    },
+    container: function () {
+      return `.${this.audioVideoSources[this.formatSelected].container}`
     }
   },
   methods: {
-    addToDownload() {
+    async addToDownload() {
+      const downloadRequest = {
+        videoData: this.videoData,
+        format: this.audioVideoSources[this.formatSelected],
+        captions: this.captions[this.captionSelected],
+        // -1 means default to what is paired in formats
+        languageTrackSelected: this.audioTrackSelected
+      }
+      await addToDownloadQueue(downloadRequest)
+      showToast(this.$t('Download Prompt.Video has been added to download queue'))
+      this.hide()
     },
     updateFormatSelected(selected) {
       this.formatSelected = parseInt(selected)

@@ -118,6 +118,7 @@
           @click="handleDownload"
         />
         <fta-add-download-prompt
+          :video-data="downloadPromptData"
           :sources-for-download="downloadLinks"
           :shown="isDownloadPromptShown"
           :hide="hideDownloadPrompt"

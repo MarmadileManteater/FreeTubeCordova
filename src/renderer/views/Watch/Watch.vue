@@ -112,6 +112,7 @@
         :is-live="isLive"
         :is-upcoming="isUpcoming"
         :download-links="downloadLinks"
+        :download-prompt-data="downloadPromptData"
         :playlist-id="playlistId"
         :get-playlist-index="getPlaylistIndex"
         :get-playlist-reverse="getPlaylistReverse"

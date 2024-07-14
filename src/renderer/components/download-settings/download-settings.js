@@ -62,7 +62,7 @@ export default defineComponent({
     selectDownloadsDirectory: async function () {
       const directoryUris = []
       const downloadsDirectory = await requestDirectory()
-      const files = downloadsDirectory.listFiles()
+      const files = await downloadsDirectory.listFiles()
       const dirs = files.filter((file) => file.isDirectory && EXPECTED_DATA_DIRS.indexOf(file.fileName) !== -1)
       if (dirs.length !== EXPECTED_DATA_DIRS.length) {
         // something is missing

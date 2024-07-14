@@ -23,3 +23,16 @@ input {
 .select, .ft-input-component {
   margin-block-end: 1em;
 }
+
+.file-name-input {
+  display: flex;
+}
+
+.file-name-input .type {
+  justify-content: center;
+  display: flex;
+  flex-direction: column;
+  margin-block-start: 10px;
+  margin-inline-start: 7px;
+}
+

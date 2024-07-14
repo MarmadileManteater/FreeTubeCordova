@@ -36,12 +36,15 @@
           :icon="['fas', 'globe']"
           @change="updateAudioTrackSelected"
         />
-        <ft-input
-          :label="'File name'"
-          :show-label="true"
-          :placeholder="placeholderTitle"
-          :show-action-button="false"
-        />
+        <div class="file-name-input">
+          <ft-input
+            :label="'File name'"
+            :show-label="true"
+            :placeholder="placeholderTitle"
+            :show-action-button="false"
+          />
+          <div class="type">{{ container }}</div>
+        </div>
       </ft-flex-box>
       <div class="buttons">
         <!-- using user playlists strings here is a dirty trick -->

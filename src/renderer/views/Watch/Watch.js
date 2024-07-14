@@ -134,6 +134,23 @@ export default defineComponent({
     }
   },
   computed: {
+    downloadPromptData: function () {
+      return {
+        id: this.videoId,
+        title: this.videoTitle,
+        channelId: this.channelId,
+        channelName: this.channelName,
+        channelThumbnail: this.channelThumbnail,
+        published: this.videoPublished,
+        channelSubscriptionCountText: this.channelSubscriptionCountText,
+        likes: this.videoLikeCount,
+        lengthSeconds: this.videoLengthSeconds,
+        thumbnail: this.thumbnail,
+        chapters: this.videoChapters,
+        description: this.videoDescription,
+        descriptionHtml: this.videoDescriptionHtml
+      }
+    },
     historyEntry: function () {
       return this.$store.getters.getHistoryCacheById[this.videoId]
     },

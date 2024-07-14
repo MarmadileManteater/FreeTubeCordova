@@ -224,7 +224,7 @@ export function handleAmbigiousContent(content, filePath) {
 
 /**
  * @callback ListFiles
- * @returns {Array<AndroidFile|DirectoryHandle>}
+ * @returns {Promise<Array<AndroidFile|DirectoryHandle>>}
  */
 
 /**
@@ -265,16 +265,42 @@ export function restoreHandleFromDirectoryUri(uri) {
     createDirectory(dirName) {
       return restoreHandleFromDirectoryUri(android.createDirectoryInTree(uri, dirName))
     },
-    listFiles() {
-      const files = JSON.parse(android.listFilesInTree(uri)).map((file) => {
+    async listFiles() {
+      const files = await Promise.all(JSON.parse(android.listFilesInTree(uri)).map(async (file) => {
         if (file.isDirectory) {
-          Object.assign(file, restoreHandleFromDirectoryUri(file.uri))
+          Object.assign(file, await restoreHandleFromDirectoryUri(file.uri))
         }
         return file
-      })
+      }))
       return files
     }
   }
+}
+
+export async function getDownloadsDirectory() {
+  const downloadsDirectory = JSON.parse(await readFile('data://', 'downloads-directory.json')).uri
+  return await restoreHandleFromDirectoryUri(downloadsDirectory)
+}
+
+export async function getNestedUri(handle, path) {
+  /** @type {Array<string>} */
+  let parts = path.split('/')
+  /** @type {DirectoryHandle} */
+  let runningHandle = handle
+  while (parts.length > 0) {
+    const startingLength = parts.length
+    const ls = await runningHandle.listFiles()
+    for (const file in ls) {
+      if (file === parts[0]) {
+        runningHandle = file
+        parts = parts.slice(1)
+      }
+    }
+    if (startingLength === parts.length) {
+      throw new Error('Could not find path given')
+    }
+  }
+  return runningHandle
 }
 
 export const EXPECTED_FILES = ['profiles.db', 'settings.db', 'history.db', 'playlists.db']
@@ -287,7 +313,7 @@ export async function initalizeDatabasesInDirectory(directoryHandle) {
   if (directoryHandle.canceled) {
     return []
   }
-  const files = directoryHandle.listFiles()
+  const files = await directoryHandle.listFiles()
   const filteredFiles = files.filter(({ fileName }) => EXPECTED_FILES.indexOf(fileName) !== -1)
   const filteredFileNames = filteredFiles.map((item) => item.fileName)
   if (filteredFiles.length === EXPECTED_FILES.length) {
@@ -344,7 +370,7 @@ export const EXPECTED_DATA_DIRS = ['authors', 'videos']
  * @returns {Promise<string>}
  */
 export async function downloadVideoAndAudio(directoryHandle, videoFormat, audioFormat, videoId, update = () => {}) {
-  const files = directoryHandle.listFiles()
+  const files = await directoryHandle.listFiles()
   /** @type {DirectoryHandle} */
   let videoFolder
   const prexistingFolders = files.filter(file => file.isDirectory && file.fileName === videoId)
@@ -356,7 +382,7 @@ export async function downloadVideoAndAudio(directoryHandle, videoFormat, audioF
   const videoMime = videoFormat.mime_type.split('video/')[1].split(';')[0]
   const audioMime = audioFormat.mime_type.split('audio/')[1].split(';')[0]
   const videoFileName = `video.${videoMime}`
-  let alreadyExistingFiles = videoFolder.listFiles().filter((file) => file.fileName === videoFileName)
+  let alreadyExistingFiles = (await videoFolder.listFiles()).filter((file) => file.fileName === videoFileName)
   if (alreadyExistingFiles.length > 0) {
     android.deleteFileInTree(alreadyExistingFiles[0].uri)
   }
@@ -372,7 +398,7 @@ export async function downloadVideoAndAudio(directoryHandle, videoFormat, audioF
     }]
   })
   const audioFileName = `audio.${audioMime}`
-  alreadyExistingFiles = videoFolder.listFiles().filter((file) => file.fileName === audioFileName)
+  alreadyExistingFiles = (await videoFolder.listFiles()).filter((file) => file.fileName === audioFileName)
   if (alreadyExistingFiles.length > 0) {
     android.deleteFileInTree(alreadyExistingFiles[0].uri)
   }
@@ -503,4 +529,18 @@ export function getDownloadFormats(formats) {
     }
   }
   return pairings
+}
+
+export async function addToDownloadQueue(downloadRequest) {
+  const downloadsDirectory = await getDownloadsDirectory()
+  const files = await downloadsDirectory.listFiles()
+  /** setting up queue */
+  let queueDirectory = files.find(file => file.fileName === 'queue')
+  if (!queueDirectory) {
+    queueDirectory = downloadsDirectory.createDirectory('queue')
+  }
+  // write the request into a file which is timestamped
+  const requestFileName = `${new Date().getTime()}-${downloadRequest.id}.json`
+  const requestFileUri = queueDirectory.createFile(requestFileName)
+  await writeFile(requestFileUri, JSON.stringify(downloadRequest, null, 2))
 }

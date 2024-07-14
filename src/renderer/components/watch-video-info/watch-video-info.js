@@ -77,6 +77,10 @@ export default defineComponent({
       type: Array,
       required: true
     },
+    downloadPromptData: {
+      type: Object,
+      required: true
+    },
     playlistId: {
       type: String,
       default: null
