@@ -136,6 +136,32 @@
           {{ $t("Log Viewer.Console Log") }}
         </p>
       </a>
+      <a
+        v-if="usingAndroid && downloadBehavior == 'download'"
+        class="navOption"
+        :title="$t('Download Manager.Download Manager')"
+        :aria-label="hideLabelsSideBar ? $t('Download Manager.Download Manager') : null"
+        @keydown="showDownloadManager"
+        @click="showDownloadManager"
+      >
+        <div
+          class="thumbnailContainer"
+        >
+          <font-awesome-icon
+            :icon="['fas', 'download']"
+            class="navIcon"
+            :class="applyNavIconExpand"
+            fixed-width
+          />
+        </div>
+        <p
+          v-if="!hideLabelsSideBar"
+          id="channelLabel"
+          class="navLabel"
+        >
+          {{ $t("Download Manager.Downloads") }}
+        </p>
+      </a>
     </div>
     <router-link
       class="navOption mobileShow"

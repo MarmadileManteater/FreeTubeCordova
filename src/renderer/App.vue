@@ -56,6 +56,7 @@
     <ft-create-playlist-prompt
       v-if="showCreatePlaylistPrompt"
     />
+    <fta-download-manager />
     <fta-log-viewer />
     <ft-toast />
     <ft-progress-bar

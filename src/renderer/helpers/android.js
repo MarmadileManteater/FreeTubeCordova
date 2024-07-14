@@ -543,4 +543,5 @@ export async function addToDownloadQueue(downloadRequest) {
   const requestFileName = `${new Date().getTime()}-${downloadRequest.videoData.id}.json`
   const requestFileUri = queueDirectory.createFile(requestFileName)
   await writeFile(requestFileUri, JSON.stringify(downloadRequest, null, 2))
+  window.dispatchEvent(new Event('add-to-download-queue'))
 }

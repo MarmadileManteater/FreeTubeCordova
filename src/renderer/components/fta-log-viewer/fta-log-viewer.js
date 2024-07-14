@@ -25,7 +25,7 @@ export default defineComponent({
     return {
       usingAndroid: process.env.IS_ANDROID,
       // release builds are the only ones with 3 periods in version numbers
-      usingRelease: packageDetails.version.split('.').length - 1 === 3,
+      isRelease: packageDetails.version.split('.').length - 1 === 3,
       theme: this.getThemeFromBody(),
       logs: []
     }

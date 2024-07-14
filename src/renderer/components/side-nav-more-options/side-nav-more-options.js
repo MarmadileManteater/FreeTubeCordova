@@ -32,11 +32,15 @@ export default defineComponent({
       return {
         navIconExpand: this.hideLabelsSideBar
       }
+    },
+    downloadBehavior: function () {
+      return this.$store.getters.getDownloadBehavior
     }
   },
   methods: {
     ...mapActions([
-      'showLogViewer'
+      'showLogViewer',
+      'showDownloadManager'
     ])
   }
 })

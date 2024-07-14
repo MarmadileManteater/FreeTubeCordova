@@ -12,6 +12,7 @@ import FtPlaylistAddVideoPrompt from './components/ft-playlist-add-video-prompt/
 import FtCreatePlaylistPrompt from './components/ft-create-playlist-prompt/ft-create-playlist-prompt.vue'
 import FtSearchFilters from './components/ft-search-filters/ft-search-filters.vue'
 import FtaLogViewer from './components/fta-log-viewer/fta-log-viewer.vue'
+import FtaDownloadManager from './components/fta-download-manager/fta-download-manage.vue'
 import { marked } from 'marked'
 import { IpcChannels } from '../constants'
 import packageDetails from '../../package.json'
@@ -37,7 +38,8 @@ export default defineComponent({
     FtPlaylistAddVideoPrompt,
     FtCreatePlaylistPrompt,
     FtSearchFilters,
-    FtaLogViewer
+    FtaLogViewer,
+    FtaDownloadManager
   },
   data: function () {
     return {

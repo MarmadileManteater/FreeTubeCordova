@@ -31,6 +31,7 @@ const state = {
   cachedPlaylist: null,
   deArrowCache: {},
   showProgressBar: false,
+  showDownloadManager: false,
   showLogViewer: false,
   showAddToPlaylistPrompt: false,
   showCreatePlaylistPrompt: false,
@@ -113,6 +114,10 @@ const getters = {
 
   getShowSearchFilters(state) {
     return state.showSearchFilters
+  },
+
+  getShowDownloadManager(state) {
+    return state.showDownloadManager
   },
 
   getShowLogViewer(state) {
@@ -403,6 +408,14 @@ const actions = {
 
   hideSearchFilters ({ commit }) {
     commit('setShowSearchFilters', false)
+  },
+
+  showDownloadManager({ commit }) {
+    commit('setShowDownloadManager', true)
+  },
+
+  hideDownloadManager({ commit }) {
+    commit('setShowDownloadManager', false)
   },
 
   showLogViewer({ commit }) {
@@ -877,6 +890,10 @@ const mutations = {
 
   setShowSearchFilters (state, payload) {
     state.showSearchFilters = payload
+  },
+
+  setShowDownloadManager (state, payload) {
+    state.showDownloadManager = payload
   },
 
   setShowLogViewer (state, payload) {

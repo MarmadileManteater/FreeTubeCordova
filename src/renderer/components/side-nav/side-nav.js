@@ -89,11 +89,15 @@ export default defineComponent({
       return {
         hiddenLabels: this.hideText
       }
+    },
+    downloadBehavior: function () {
+      return this.$store.getters.getDownloadBehavior
     }
   },
   methods: {
     ...mapActions([
-      'showLogViewer'
+      'showLogViewer',
+      'showDownloadManager'
     ])
   }
 })
