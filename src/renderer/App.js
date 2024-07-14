@@ -1,6 +1,5 @@
-import Vue, { defineComponent } from 'vue'
+import { defineComponent } from 'vue'
 import { mapActions, mapMutations } from 'vuex'
-import { ObserveVisibility } from 'vue-observe-visibility'
 import FtFlexBox from './components/ft-flex-box/ft-flex-box.vue'
 import TopNav from './components/top-nav/top-nav.vue'
 import SideNav from './components/side-nav/side-nav.vue'
@@ -12,6 +11,7 @@ import FtProgressBar from './components/ft-progress-bar/ft-progress-bar.vue'
 import FtPlaylistAddVideoPrompt from './components/ft-playlist-add-video-prompt/ft-playlist-add-video-prompt.vue'
 import FtCreatePlaylistPrompt from './components/ft-create-playlist-prompt/ft-create-playlist-prompt.vue'
 import FtSearchFilters from './components/ft-search-filters/ft-search-filters.vue'
+import FtaLogViewer from './components/fta-log-viewer/fta-log-viewer.vue'
 import { marked } from 'marked'
 import { IpcChannels } from '../constants'
 import packageDetails from '../../package.json'
@@ -20,9 +20,8 @@ import { translateWindowTitle } from './helpers/strings'
 import 'core-js'
 import android from 'android'
 import { updateAndroidTheme } from './helpers/android'
-let ipcRenderer = null
 
-Vue.directive('observe-visibility', ObserveVisibility)
+let ipcRenderer = null
 
 export default defineComponent({
   name: 'App',
@@ -37,7 +36,8 @@ export default defineComponent({
     FtProgressBar,
     FtPlaylistAddVideoPrompt,
     FtCreatePlaylistPrompt,
-    FtSearchFilters
+    FtSearchFilters,
+    FtaLogViewer
   },
   data: function () {
     return {
@@ -56,7 +56,8 @@ export default defineComponent({
       externalLinkOpeningPromptValues: [
         'yes',
         'no'
-      ]
+      ],
+      nightlyLink: ''
     }
   },
   computed: {
@@ -87,7 +88,7 @@ export default defineComponent({
     },
     windowTitle: function () {
       const routePath = this.$route.path
-      if (!routePath.startsWith('/channel/') && !routePath.startsWith('/watch/') && !routePath.startsWith('/hashtag/')) {
+      if (!routePath.startsWith('/channel/') && !routePath.startsWith('/watch/') && !routePath.startsWith('/hashtag/') && !routePath.startsWith('/playlist/')) {
         let title = translateWindowTitle(this.$route.meta.title, this.$i18n)
         if (!title) {
           title = packageDetails.productName
@@ -108,6 +109,14 @@ export default defineComponent({
 
     baseTheme: function () {
       return this.$store.getters.getBaseTheme
+    },
+
+    isSideNavOpen: function () {
+      return this.$store.getters.getIsSideNavOpen
+    },
+
+    hideLabelsSideBar: function () {
+      return this.$store.getters.getHideLabelsSideBar
     },
 
     mainColor: function () {
@@ -182,7 +191,6 @@ export default defineComponent({
           ipcRenderer = require('electron').ipcRenderer
           this.setupListenersToSyncWindows()
           this.activateKeyboardShortcuts()
-          this.activateIPCListeners()
           this.openAllLinksExternally()
           this.enableSetSearchQueryText()
           this.enableOpenUrl()
@@ -199,8 +207,6 @@ export default defineComponent({
             const uri = decodeURIComponent(intent)
             await this.handleYoutubeLink(uri)
           }
-          // hides the splash screen
-          android.hideSplashScreen()
           window.addEventListener('enabled-light-mode', () => {
             this.checkThemeSettings()
           })
@@ -215,10 +221,6 @@ export default defineComponent({
           this.checkForNewUpdates()
           this.checkForNewBlogPosts()
         }, 500)
-      })
-
-      this.$router.afterEach((to, from) => {
-        this.$refs.topNav?.navigateHistory()
       })
 
       this.$router.onReady(() => {
@@ -280,6 +282,23 @@ export default defineComponent({
             .catch((error) => {
               console.error('errored while checking for updates', requestUrl, error)
             })
+        } else {
+          // nightly check
+          fetch('https://api.github.com/repos/MarmadileManteater/FreetubeAndroid/actions/runs')
+            .then((response) => response.json())
+            .then((json) => {
+              const currentAppWorkflowRun = packageDetails.version.split('-nightly-')[1]
+              const buildRuns = json.workflow_runs.filter(run => run.name === 'Build Android')
+              if (buildRuns.length > 0) {
+                if (currentAppWorkflowRun < buildRuns[0].run_number) {
+                  this.updateChangelog = marked.parse(`latest commit:\r\n\`\`\`\r\n${buildRuns[0].head_commit.message}\r\n\`\`\``)
+                  this.changeLogTitle = `Nightly ${buildRuns[0].run_number}`
+                  this.updateBannerMessage = this.$t('Version $ is now available!  Click for more details').replace('$', buildRuns[0].run_number)
+                  this.nightlyLink = buildRuns[0].html_url
+                  this.showUpdatesBanner = true
+                }
+              }
+            })
         }
       }
     },
@@ -338,7 +357,9 @@ export default defineComponent({
     },
 
     openDownloadsPage: function () {
-      const url = 'https://github.com/MarmadileManteater/FreeTubeCordova/releases'
+      const url = packageDetails.version.indexOf('-nightly-') === -1
+        ? 'https://github.com/MarmadileManteater/FreeTubeCordova/releases'
+        : this.nightlyLink
       openExternalLink(url)
       this.showReleaseNotes = false
       this.showUpdatesBanner = false
@@ -348,16 +369,6 @@ export default defineComponent({
       document.addEventListener('keydown', this.handleKeyboardShortcuts)
       document.addEventListener('mousedown', () => {
         this.hideOutlines()
-      })
-    },
-
-    activateIPCListeners: function () {
-      // handle menu event updates from main script
-      ipcRenderer.on('history-back', (_event) => {
-        this.$refs.topNav.historyBack()
-      })
-      ipcRenderer.on('history-forward', (_event) => {
-        this.$refs.topNav.historyForward()
       })
     },
 
@@ -522,23 +533,23 @@ export default defineComponent({
     },
 
     enableSetSearchQueryText: function () {
-      ipcRenderer.on('updateSearchInputText', (event, searchQueryText) => {
+      ipcRenderer.on(IpcChannels.UPDATE_SEARCH_INPUT_TEXT, (event, searchQueryText) => {
         if (searchQueryText) {
           this.$refs.topNav.updateSearchInputText(searchQueryText)
         }
       })
 
-      ipcRenderer.send('searchInputHandlingReady')
+      ipcRenderer.send(IpcChannels.SEARCH_INPUT_HANDLING_READY)
     },
 
     enableOpenUrl: function () {
-      ipcRenderer.on('openUrl', (event, url) => {
+      ipcRenderer.on(IpcChannels.OPEN_URL, (event, url) => {
         if (url) {
           this.handleYoutubeLink(url)
         }
       })
 
-      ipcRenderer.send('appReady')
+      ipcRenderer.send(IpcChannels.APP_READY)
     },
 
     handleExternalLinkOpeningPromptAnswer: function (option) {
@@ -569,7 +580,6 @@ export default defineComponent({
     },
 
     ...mapMutations([
-      'setInvidiousInstancesList',
       'setUsingTouch'
     ]),
 

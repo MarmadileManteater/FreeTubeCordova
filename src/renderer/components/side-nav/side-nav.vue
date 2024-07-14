@@ -198,6 +198,32 @@
           {{ $t("About.About") }}
         </p>
       </router-link>
+      <a
+        v-if="usingAndroid && !usingRelease"
+        class="navOption mobileHidden"
+        :title="$t('Log Viewer.Console Log')"
+        :aria-label="hideLabelsSideBar ? $t('Log Viewer.Console Log') : null"
+        @keydown="showLogViewer"
+        @click="showLogViewer"
+      >
+        <div
+          class="thumbnailContainer"
+        >
+          <font-awesome-icon
+            :icon="['fas', 'terminal']"
+            class="navIcon"
+            :class="applyNavIconExpand"
+            fixed-width
+          />
+        </div>
+        <p
+          v-if="!hideLabelsSideBar"
+          id="channelLabel"
+          class="navLabel"
+        >
+          {{ $t("Log Viewer.Console Log") }}
+        </p>
+      </a>
       <hr>
       <div
         v-if="!hideActiveSubscriptions"

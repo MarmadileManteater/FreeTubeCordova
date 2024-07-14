@@ -324,6 +324,10 @@ export function updateAndroidTheme(usesMain = false) {
   android.themeSystemUi(bottom, top, isDark, isDarkTop)
 }
 
+export function getConsoleLogs() {
+  return JSON.parse(android.getLogs())
+}
+
 export const EXPECTED_DATA_DIRS = ['authors', 'videos']
 
 /**

@@ -3,6 +3,7 @@ import allLocales from '../../../../static/locales/activeLocales.json'
 import { MAIN_PROFILE_ID, IpcChannels, SyncEvents } from '../../../constants'
 import { DBSettingHandlers } from '../../../datastores/handlers/index'
 import { getSystemLocale, showToast } from '../../helpers/utils'
+import android from 'android'
 
 /*
  * Due to the complexity of the settings module in FreeTube, a more
@@ -226,6 +227,7 @@ const state = {
   hideVideoLikesAndDislikes: false,
   hideVideoViews: false,
   hideWatchedSubs: false,
+  unsubscriptionPopupStatus: false,
   hideLabelsSideBar: false,
   hideChapters: false,
   showDistractionFreeTitles: false,
@@ -387,6 +389,7 @@ const stateWithSideEffects = {
       await dispatch('getRegionData', {
         locale: targetLocale
       })
+      android.hideSplashScreen()
     }
   },
 
@@ -527,6 +530,14 @@ const customActions = {
 
           case SyncEvents.GENERAL.UPSERT:
             commit('upsertProfileToList', data)
+            break
+
+          case SyncEvents.PROFILES.ADD_CHANNEL:
+            commit('addChannelToProfiles', data)
+            break
+
+          case SyncEvents.PROFILES.REMOVE_CHANNEL:
+            commit('removeChannelFromProfiles', data)
             break
 
           case SyncEvents.GENERAL.DELETE:

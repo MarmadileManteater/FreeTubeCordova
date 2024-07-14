@@ -57,6 +57,18 @@ class FreeTubeJavaScriptInterface {
     lastState = PlaybackState.STATE_PLAYING
   }
 
+  @JavascriptInterface
+  fun getLogs(): String {
+    var logs = "["
+    for (message in context.consoleMessages) {
+      logs += "${message},"
+    }
+    // get rid of trailing comma
+    logs = logs.substring(0, logs.length - 1)
+    logs += "]"
+    return logs
+  }
+
   /**
    * @param directory a shortened directory uri
    * @return a full directory uri

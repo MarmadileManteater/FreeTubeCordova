@@ -5,16 +5,21 @@
     class="app"
     :class="{
       hideOutlines: outlinesHidden,
-      isLocaleRightToLeft: isLocaleRightToLeft
+      isLocaleRightToLeft: isLocaleRightToLeft,
+      isSideNavOpen: isSideNavOpen,
+      hideLabelsSideBar: hideLabelsSideBar && !isSideNavOpen
     }"
   >
     <portal-target
       name="promptPortal"
+      multiple
       @change="handlePromptPortalUpdate"
     />
     <ft-prompt
       v-if="showReleaseNotes"
       :label="changeLogTitle"
+      theme="readable-width"
+      :fullscreen="true"
       @click="showReleaseNotes = !showReleaseNotes"
     >
       <span
@@ -51,6 +56,7 @@
     <ft-create-playlist-prompt
       v-if="showCreatePlaylistPrompt"
     />
+    <fta-log-viewer />
     <ft-toast />
     <ft-progress-bar
       v-if="showProgressBar"
