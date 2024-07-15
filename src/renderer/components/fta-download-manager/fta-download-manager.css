@@ -1,0 +1,34 @@
+
+.wrapper {
+  block-size: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.queue {
+  max-block-size: calc(100vh - 136px);
+  overflow-y: scroll;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.thumbnail {
+  max-inline-size: 130px;
+  block-size: min-content;
+}
+
+.queueItem {
+  display: flex;
+  gap: 10px;
+}
+
+.buttons {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.buttons :deep(.btn) {
+  margin-block: auto 0;
+}

@@ -282,6 +282,15 @@ export async function getDownloadsDirectory() {
   return await restoreHandleFromDirectoryUri(downloadsDirectory)
 }
 
+export async function getQueueDirectory() {
+  const downloads = await getDownloadsDirectory()
+  const files = await downloads.listFiles()
+  const results = files.filter(file => file.fileName === 'queue')
+  if (results.length > 0) {
+    return results[0]
+  }
+}
+
 export async function getNestedUri(handle, path) {
   /** @type {Array<string>} */
   let parts = path.split('/')
@@ -540,8 +549,11 @@ export async function addToDownloadQueue(downloadRequest) {
     queueDirectory = downloadsDirectory.createDirectory('queue')
   }
   // write the request into a file which is timestamped
-  const requestFileName = `${new Date().getTime()}-${downloadRequest.videoData.id}.json`
+  downloadRequest.timestamp = new Date().getTime()
+  const requestFileName = `${downloadRequest.timestamp}-${downloadRequest.videoData.id}.json`
   const requestFileUri = queueDirectory.createFile(requestFileName)
   await writeFile(requestFileUri, JSON.stringify(downloadRequest, null, 2))
-  window.dispatchEvent(new Event('add-to-download-queue'))
+  const event = new Event('add-to-download-queue')
+  event.data = downloadRequest
+  window.dispatchEvent(event)
 }

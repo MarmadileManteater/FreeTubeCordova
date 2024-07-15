@@ -167,7 +167,7 @@ export default defineComponent({
       }
     },
     container: function () {
-      return `.${this.audioVideoSources[this.formatSelected].container}`
+      return this.formatSelected !== -1 ? `.${this.audioVideoSources[this.formatSelected].container}` : ''
     }
   },
   methods: {
