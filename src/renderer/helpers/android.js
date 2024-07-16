@@ -574,6 +574,7 @@ export async function getDownloadedVideos() {
 }
 
 export async function getVideoInformationDownloaded(videoId, component) {
+  component.isLoading = true
   const videos = await getDownloadedVideos()
   const matchingVideoFolders = videos.filter(video => video.fileName === videoId)
   if (matchingVideoFolders.length > 0) {
