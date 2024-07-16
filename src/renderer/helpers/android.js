@@ -409,7 +409,7 @@ export async function downloadVideoAndAudio(directoryHandle, videoFormat, audioF
     log: [(log) => {
       const json = JSON.parse(log)
       update({
-        stage: 'downloading video format',
+        stage: 'Downloading Video',
         label: videoFormat.quality_label,
         ...json
       })
@@ -425,7 +425,7 @@ export async function downloadVideoAndAudio(directoryHandle, videoFormat, audioF
     log: [(log) => {
       const json = JSON.parse(log)
       update({
-        stage: 'downloading audio format',
+        stage: 'Downloading Audio',
         label: audioFormat.quality_label,
         ...json
       })
@@ -439,13 +439,13 @@ export async function downloadVideoAndAudio(directoryHandle, videoFormat, audioF
     {
       log: [(message) => {
         update({
-          stage: 'muxing streams with ffmpeg',
+          stage: 'Muxing Streams',
           message
         })
       }],
       stats: [(stats) => {
         update({
-          stage: 'stats from ffmpeg',
+          stage: 'Muxing Streams',
           ...stats
         })
       }]

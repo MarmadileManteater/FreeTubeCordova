@@ -53,6 +53,14 @@ export default defineComponent({
         const videosDirectory = await getVideosDirectory()
         try {
           await downloadVideoAndAudio(videosDirectory, format.video, format.audio, item.videoData.id, (message) => {
+            item.stage = message.stage
+            if (!('messages' in item)) {
+              item.messages = {}
+            }
+            if (!(message.stage in item.messages)) {
+              item.messages[message.stage] = []
+            }
+            item.messages[message.stage].push(message.message)
             console.log(message)
           })
           const videoOutputDirectory = await getNestedUri(videosDirectory, item.videoData.id)

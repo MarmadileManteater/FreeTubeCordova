@@ -1,5 +1,5 @@
 
-.buttons {
+.buttons.download-prompt-buttons {
   margin-block-start: auto;
   display: flex;
   justify-content: space-between;

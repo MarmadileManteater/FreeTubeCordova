@@ -47,7 +47,7 @@
           <div class="type">{{ container }}</div>
         </div>
       </ft-flex-box>
-      <div class="buttons">
+      <div class="buttons download-prompt-buttons">
         <!-- using user playlists strings here is a dirty trick -->
         <!-- however, one tangible benefit is that upstream actually gets translations -->
         <ft-button

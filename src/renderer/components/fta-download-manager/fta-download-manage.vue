@@ -7,33 +7,36 @@
     @click="hideDownloadManager"
   >
     <div class="wrapper">
-      <ft-flex-box>
-        <h2 class="heading">
-          {{ $t('Download Manager.Download Manager') }}
-        </h2>
-        <div class="queue">
-          <div
-            v-for="queueItem in queueReversed"
-            :key="queueItem.videoData.id"
-            class="queueItem"
+      <h2 class="heading">
+        {{ $t('Download Manager.Download Manager') }}
+      </h2>
+      <div class="queue">
+        <div
+          v-for="queueItem in queueReversed"
+          :key="queueItem.videoData.id"
+          class="queueItem"
+        >
+          <img
+            class="thumbnail"
+            :src="queueItem.videoData.thumbnail"
+            :alt="queueItem.videoData.title"
           >
-            <img
-              class="thumbnail"
-              :src="queueItem.videoData.thumbnail"
-              :alt="queueItem.videoData.title"
+          <div class="meta">
+            <div
+              :class="['stage', queueItem.stage]"
             >
-            <div class="meta">
-              <div class="title">
-                {{ queueItem.videoData.title }}
-              </div>
-              <div class="date-added">
-                {{ getRelativeTimeFromDate(new Date(queueItem.timestamp)) }}
-              </div>
+              {{ $t(`Download Manager.Download Stages.${queueItem.stage}`) }}
+            </div>
+            <div class="title">
+              {{ queueItem.videoData.title }}
+            </div>
+            <div class="date-added">
+              {{ getRelativeTimeFromDate(new Date(queueItem.timestamp)) }}
             </div>
           </div>
         </div>
-      </ft-flex-box>
-      <div class="buttons">
+      </div>
+      <div class="buttons download-manager-buttons">
         <ft-button
           :label="$t('Close')"
           :text-color="null"
@@ -46,4 +49,4 @@
 </template>
 
 <script src="./fta-download-manager.js" />
-<style scoped src="./fta-download-manager.css" />
+<style src="./fta-download-manager.css" />

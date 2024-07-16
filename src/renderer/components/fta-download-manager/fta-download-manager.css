@@ -5,7 +5,7 @@
   flex-direction: column;
 }
 
-.queue {
+.wrapper .queue {
   max-block-size: calc(100vh - 136px);
   overflow-y: scroll;
   display: flex;
@@ -13,22 +13,26 @@
   gap: 16px;
 }
 
-.thumbnail {
+.wrapper .thumbnail {
   max-inline-size: 130px;
   block-size: min-content;
 }
 
-.queueItem {
+.wrapper .queueItem {
   display: flex;
   gap: 10px;
 }
 
-.buttons {
+.buttons.download-manager-buttons {
   flex-grow: 1;
   display: flex;
   justify-content: center;
 }
 
-.buttons :deep(.btn) {
+.wrapper .heading {
+  text-align: center;
+}
+
+.wrapper .buttons.download-manager-buttons .btn {
   margin-block: auto 0;
 }

@@ -30,3 +30,8 @@ Log Viewer:
 Download Manager:
   Download Manager: Download Manager
   Downloads: Downloads
+  Download Stages:
+    Processing: Processing
+    Downloading Video: Downloading Video
+    Downloading Audio: Downloading Audio
+    Muxing Streams: Muxing Streams

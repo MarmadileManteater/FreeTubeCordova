@@ -1,4 +1,5 @@
 import { defineComponent } from 'vue'
+import { mapActions } from 'vuex'
 import FtSelect from '../ft-select/ft-select.vue'
 import FtInput from '../ft-input/ft-input.vue'
 import FtButton from '../ft-button/ft-button.vue'
@@ -172,6 +173,9 @@ export default defineComponent({
     }
   },
   methods: {
+    ...mapActions([
+      'showDownloadManager'
+    ]),
     async addToDownload() {
       const downloadRequest = {
         videoData: this.videoData,
@@ -179,11 +183,13 @@ export default defineComponent({
         captions: this.captions[this.captionSelected],
         // -1 means default to what is paired in formats
         languageTrackSelected: this.audioTrackSelected,
-        fileName: `${(this.fileName !== '' ? this.fileName : this.placeholderTitle)}${this.container}`
+        fileName: `${(this.fileName !== '' ? this.fileName : this.placeholderTitle)}${this.container}`,
+        stage: 'Processing'
       }
       await addToDownloadQueue(downloadRequest)
       showToast(this.$t('Download Prompt.Video has been added to download queue'))
       this.hide()
+      this.showDownloadManager()
     },
     updateFormatSelected(selected) {
       this.formatSelected = parseInt(selected)
