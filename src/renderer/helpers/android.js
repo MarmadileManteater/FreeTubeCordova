@@ -566,3 +566,47 @@ export async function addToDownloadQueue(downloadRequest) {
   event.data = downloadRequest
   window.dispatchEvent(event)
 }
+
+export async function getDownloadedVideos() {
+  const videoDirectory = await getVideosDirectory()
+  const videos = await videoDirectory.listFiles()
+  return videos
+}
+
+export async function getVideoInformationDownloaded(videoId, component) {
+  const videos = await getDownloadedVideos()
+  const matchingVideoFolders = videos.filter(video => video.fileName === videoId)
+  if (matchingVideoFolders.length > 0) {
+    const filesContainedInVideoDirectory = await matchingVideoFolders[0].listFiles()
+    const dataFiles = filesContainedInVideoDirectory.filter(file => file.fileName === 'data.json')
+    if (dataFiles.length > 0) {
+      const response = JSON.parse(await readFile(dataFiles[0].uri))
+      // now to dump all of the data pulled out of the download prompt data back into the page
+      component.videoTitle = response.title
+      component.channelId = response.channelId
+      component.channelName = response.channelName
+      component.channelThumbnail = response.channelThumbnail
+      component.videoPublished = response.published
+      component.channelSubscriptionCountText = response.channelSubscriptionCountText
+      component.videoLikeCount = response.likes
+      component.videoLengthSeconds = response.lengthSeconds
+      component.thumbnail = response.thumbnail
+      component.videoChapters = response.chapters
+      component.videoDescription = response.description
+      component.videoDescriptionHtml = response.descriptionHtml
+      component.videoSourceList = [
+        {
+          url: response.uri,
+          qualityLabel: 'unknown'// TODO pass through information from prompt
+        }
+      ]
+
+      component.activeFormat = 'legacy'
+      component.activeSourceList = component.videoSourceList
+      component.audioSourceList = null
+      component.dashSrc = null
+      component.isLoading = false
+      return response
+    }
+  }
+}

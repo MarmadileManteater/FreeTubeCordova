@@ -35,7 +35,7 @@ import {
   youtubeImageUrlToInvidious
 } from '../../helpers/api/invidious'
 import {
-  createMediaSession, getDownloadFormats
+  createMediaSession, getDownloadFormats, getVideoInformationDownloaded
 } from '../../helpers/android'
 import android from 'android'
 
@@ -275,18 +275,26 @@ export default defineComponent({
       this.checkIfPlaylist()
       this.checkIfTimestamp()
 
-      switch (this.backendPreference) {
-        case 'local':
-          this.getVideoInformationLocal(this.videoId)
-          break
-        case 'invidious':
-          this.getVideoInformationInvidious(this.videoId)
+      const promise = process.env.IS_ANDROID && this.$store.getters.getDownloadBehavior === 'download'
+        ? getVideoInformationDownloaded(this.videoId, this)
+        : new Promise((resolve, _reject) => resolve())
 
-          if (this.forceLocalBackendForLegacy) {
-            this.getVideoInformationLocal(this.videoId)
+      promise.then((downloadedInfo) => {
+        if (downloadedInfo === undefined) {
+          switch (this.backendPreference) {
+            case 'local':
+              this.getVideoInformationLocal(this.videoId)
+              break
+            case 'invidious':
+              this.getVideoInformationInvidious(this.videoId)
+
+              if (this.forceLocalBackendForLegacy) {
+                this.getVideoInformationLocal(this.videoId)
+              }
+              break
           }
-          break
-      }
+        }
+      })
     },
     async thumbnail() {
       if (process.env.IS_ANDROID) {
@@ -369,12 +377,19 @@ export default defineComponent({
 
       this.checkIfPlaylist()
       this.checkIfTimestamp()
+      const promise = process.env.IS_ANDROID && this.$store.getters.getDownloadBehavior === 'download'
+        ? getVideoInformationDownloaded(this.videoId, this)
+        : new Promise((resolve, _reject) => resolve())
 
-      if (!process.env.SUPPORTS_LOCAL_API || this.backendPreference === 'invidious') {
-        this.getVideoInformationInvidious()
-      } else {
-        this.getVideoInformationLocal()
-      }
+      promise.then((downloadedInfo) => {
+        if (downloadedInfo === undefined) {
+          if (!process.env.SUPPORTS_LOCAL_API || this.backendPreference === 'invidious') {
+            this.getVideoInformationInvidious()
+          } else {
+            this.getVideoInformationLocal()
+          }
+        }
+      })
 
       window.addEventListener('beforeunload', this.handleWatchProgress)
     },
