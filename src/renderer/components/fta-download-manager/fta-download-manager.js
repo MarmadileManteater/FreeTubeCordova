@@ -89,13 +89,22 @@ export default defineComponent({
             await writeFile(jsonUri, JSON.stringify(data, null, 2))
           }
           this.queue = this.queue.slice(1)
+          const queueDir = await getQueueDirectory()
+          const files = await queueDir.listFiles()
+          const originalQueueFiles = files.filter(file => file.fileName === `${item.timestamp}-${item.videoData.id}.json`)
+          if (originalQueueFiles.length > 0) {
+            android.deleteFileInTree(originalQueueFiles[0].uri)
+          }
         } catch (ex) {
           console.error(ex)
+          const videoOutputDirectory = await getNestedUri(videosDirectory, item.videoData.id)
+          android.deleteFileInTree(videoOutputDirectory.uri)
         }
         this.isWorking = false
         if (this.queue.length > 0) {
           // todo put optional delay + recall work
           console.log('more work to do')
+          this.work()
         }
       }
     },
