@@ -3,9 +3,9 @@ import { mapActions } from 'vuex'
 import FtFlexBox from '../ft-flex-box/ft-flex-box.vue'
 import FtPrompt from '../ft-prompt/ft-prompt.vue'
 import FtButton from '../ft-button/ft-button.vue'
-import { getQueueDirectory, readFile } from '../../helpers/android'
+import { downloadVideoAndAudio, getDownloadsDirectory, getNestedUri, getQueueDirectory, getVideosDirectory, readFile, writeFile } from '../../helpers/android'
 import { getRelativeTimeFromDate } from '../../helpers/utils'
-
+import android from 'android'
 export default defineComponent({
   name: 'FtaDownloadManager',
   components: {
@@ -15,7 +15,8 @@ export default defineComponent({
   },
   data() {
     return {
-      queue: []
+      queue: [],
+      isWorking: false
     }
   },
   computed: {
@@ -33,7 +34,7 @@ export default defineComponent({
       return result
     }
   },
-  async mounted() {
+  async created() {
     await this.scanQueueDirectory()
     window.addEventListener('add-to-download-queue', this.addToDownloadQueue)
   },
@@ -42,6 +43,62 @@ export default defineComponent({
     window.removeEventListener('add-to-download-queue', this.addToDownloadQueue)
   },
   methods: {
+    async work() {
+      if (this.queue.length > 0 && !this.isWorking) {
+        this.isWorking = true
+        // something to work on
+        const item = this.queue[0]
+        /** @type {import('../../helpers/android').AudioVideo} */
+        const format = item.format
+        const videosDirectory = await getVideosDirectory()
+        try {
+          await downloadVideoAndAudio(videosDirectory, format.video, format.audio, item.videoData.id, (message) => {
+            console.log(message)
+          })
+          const videoOutputDirectory = await getNestedUri(videosDirectory, item.videoData.id)
+          const outputFiles = await videoOutputDirectory.listFiles()
+          let output = null
+          let video = null
+          let audio = null
+          for (const file in outputFiles) {
+            if (outputFiles[file].fileName.startsWith('output')) {
+              output = outputFiles[file]
+            }
+            if (outputFiles[file].fileName.startsWith('video')) {
+              video = outputFiles[file]
+            }
+            if (outputFiles[file].fileName.startsWith('audio')) {
+              audio = outputFiles[file]
+            }
+          }
+          if (output !== null) {
+            android.renameFile(output.uri, item.fileName)
+          }
+          // clean-up after ffmpeg
+          if (video !== null) {
+            android.deleteFileInTree(video.uri)
+          }
+          if (audio !== null) {
+            android.deleteFileInTree(audio.uri)
+          }
+          const finishedOutput = await videoOutputDirectory.listFiles()
+          if (finishedOutput.length > 0) {
+            const data = item.videoData
+            data.uri = finishedOutput[0].uri
+            const jsonUri = videoOutputDirectory.createFile('data.json')
+            await writeFile(jsonUri, JSON.stringify(data, null, 2))
+          }
+          this.queue = this.queue.slice(1)
+        } catch (ex) {
+          console.error(ex)
+        }
+        this.isWorking = false
+        if (this.queue.length > 0) {
+          // todo put optional delay + recall work
+          console.log('more work to do')
+        }
+      }
+    },
     getRelativeTimeFromDate() {
       return getRelativeTimeFromDate(...arguments)
     },
@@ -59,6 +116,9 @@ export default defineComponent({
     },
     async addToDownloadQueue({ data }) {
       this.queue.push(data)
+      if (!this.isWorking) {
+        this.work()
+      }
     },
     ...mapActions([
       'showDownloadManager',

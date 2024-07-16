@@ -291,17 +291,26 @@ export async function getQueueDirectory() {
   }
 }
 
+export async function getVideosDirectory() {
+  const downloads = await getDownloadsDirectory()
+  const files = await downloads.listFiles()
+  const results = files.filter(file => file.fileName === 'videos')
+  if (results.length > 0) {
+    return results[0]
+  }
+}
+
 export async function getNestedUri(handle, path) {
   /** @type {Array<string>} */
-  let parts = path.split('/')
+  let parts = path.indexOf('/') !== -1 ? path.split('/') : [path]
   /** @type {DirectoryHandle} */
   let runningHandle = handle
   while (parts.length > 0) {
     const startingLength = parts.length
     const ls = await runningHandle.listFiles()
     for (const file in ls) {
-      if (file === parts[0]) {
-        runningHandle = file
+      if (ls[file].fileName === parts[0]) {
+        runningHandle = ls[file]
         parts = parts.slice(1)
       }
     }

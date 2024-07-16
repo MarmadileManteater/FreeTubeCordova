@@ -42,6 +42,7 @@ export default defineComponent({
   },
   data: function () {
     return {
+      fileName: '',
       selected: -1,
       captionSelected: -1,
       audioTrackSelected: -1
@@ -177,7 +178,8 @@ export default defineComponent({
         format: this.audioVideoSources[this.formatSelected],
         captions: this.captions[this.captionSelected],
         // -1 means default to what is paired in formats
-        languageTrackSelected: this.audioTrackSelected
+        languageTrackSelected: this.audioTrackSelected,
+        fileName: `${(this.fileName !== '' ? this.fileName : this.placeholderTitle)}${this.container}`
       }
       await addToDownloadQueue(downloadRequest)
       showToast(this.$t('Download Prompt.Video has been added to download queue'))

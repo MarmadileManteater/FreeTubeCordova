@@ -41,6 +41,7 @@
             :label="'File name'"
             :show-label="true"
             :placeholder="placeholderTitle"
+            :value="fileName"
             :show-action-button="false"
           />
           <div class="type">{{ container }}</div>
