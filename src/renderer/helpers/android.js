@@ -397,15 +397,15 @@ export async function downloadVideoAndAudio(directoryHandle, videoFormat, audioF
   } else {
     videoFolder = prexistingFolders[0]
   }
-  const videoMime = videoFormat.mime_type.split('video/')[1].split(';')[0]
-  const audioMime = audioFormat.mime_type.split('audio/')[1].split(';')[0]
+  const videoMime = videoFormat.__container
+  const audioMime = audioFormat.__container
   const videoFileName = `video.${videoMime}`
   let alreadyExistingFiles = (await videoFolder.listFiles()).filter((file) => file.fileName === videoFileName)
   if (alreadyExistingFiles.length > 0) {
     android.deleteFileInTree(alreadyExistingFiles[0].uri)
   }
   const videoFile = videoFolder.createFile(videoFileName)
-  await window.awaitAsyncResult(android.downloadChunkedStream(videoFormat.freeTubeUrl, videoFile), {
+  await window.awaitAsyncResult(android.downloadChunkedStream(videoFormat.freeTubeUrl || videoFormat.url, videoFile), {
     log: [(log) => {
       const json = JSON.parse(log)
       update({
@@ -421,7 +421,7 @@ export async function downloadVideoAndAudio(directoryHandle, videoFormat, audioF
     android.deleteFileInTree(alreadyExistingFiles[0].uri)
   }
   const audioFile = videoFolder.createFile(audioFileName)
-  await window.awaitAsyncResult(android.downloadChunkedStream(audioFormat.freeTubeUrl, audioFile), {
+  await window.awaitAsyncResult(android.downloadChunkedStream(audioFormat.freeTubeUrl || audioFormat.url, audioFile), {
     log: [(log) => {
       const json = JSON.parse(log)
       update({
