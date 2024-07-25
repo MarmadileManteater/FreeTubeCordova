@@ -405,7 +405,7 @@ export async function downloadVideoAndAudio(directoryHandle, videoFormat, audioF
     android.deleteFileInTree(alreadyExistingFiles[0].uri)
   }
   const videoFile = videoFolder.createFile(videoFileName)
-  await window.awaitAsyncResult(android.downloadChunkedStream(videoFormat.freeTubeUrl || videoFormat.url, videoFile), {
+  await window.awaitAsyncResult(android.downloadChunkedStream(videoFormat.freeTubeUrl || videoFormat.url, videoFile, videoFormat.isIv !== undefined), {
     log: [(log) => {
       const json = JSON.parse(log)
       update({
@@ -421,7 +421,7 @@ export async function downloadVideoAndAudio(directoryHandle, videoFormat, audioF
     android.deleteFileInTree(alreadyExistingFiles[0].uri)
   }
   const audioFile = videoFolder.createFile(audioFileName)
-  await window.awaitAsyncResult(android.downloadChunkedStream(audioFormat.freeTubeUrl || audioFormat.url, audioFile), {
+  await window.awaitAsyncResult(android.downloadChunkedStream(audioFormat.freeTubeUrl || audioFormat.url, audioFile, audioFormat.isIv !== undefined), {
     log: [(log) => {
       const json = JSON.parse(log)
       update({

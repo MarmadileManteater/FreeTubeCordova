@@ -48,6 +48,7 @@ class FreeTubeJavaScriptInterface {
     private val NOTIFICATION_ID = (2..1000).random()
     private val NOTIFICATION_TAG = String.format("%s", randomUUID())
     private val CHUNK_SIZE = 10 * 1024 * 1024
+    private val CHUNK_SIZE_IV = 739// much smaller
   }
 
   constructor(main: MainActivity) {
@@ -91,7 +92,7 @@ class FreeTubeJavaScriptInterface {
   private fun getActions(state: Int = lastState): Array<Notification.Action> {
     var neutralAction = arrayOf("Pause", "pause")
     var neutralIcon = androidx.media3.ui.R.drawable.exo_icon_pause
-    if (state == PlaybackState.STATE_PAUSED) {
+    if (state == STATE_PAUSED) {
       neutralAction = arrayOf("Play", "play")
       neutralIcon = androidx.media3.ui.R.drawable.exo_icon_play
     }
@@ -441,7 +442,7 @@ class FreeTubeJavaScriptInterface {
     }
     return promise
   }
-  
+
   fun writeBytesToFile(basedir: String, filename: String, data: ByteArray, truncate: Boolean = true): Boolean {
     try {
       if (basedir.startsWith("content://")) {
@@ -587,6 +588,12 @@ class FreeTubeJavaScriptInterface {
   }
 
   @JavascriptInterface
+  fun renameFile(fileUri: String, newName: String){
+    val file = findTreeFileFromUri(fileUri)
+    file.renameTo(newName)
+  }
+
+  @JavascriptInterface
   fun createFileInTree(tree: String, fileName: String): String {
     val directory = findTreeFileFromUri(tree)
     return directory!!.createFile("*/*", fileName)!!.uri.toString()
@@ -695,7 +702,7 @@ class FreeTubeJavaScriptInterface {
   fun isAppPaused(): Boolean {
     return context.paused
   }
-  
+
   @JavascriptInterface
   fun ffmpeg(command: String): String {
     val promise = jsPromise()
@@ -736,7 +743,8 @@ class FreeTubeJavaScriptInterface {
    */
   @SuppressLint("NewApi")
   @JavascriptInterface
-  fun downloadChunkedStream(url: String, filename: String): String {
+  fun downloadChunkedStream(url: String, filename: String, iv: Boolean): String {
+    val chunkSize = if (!iv) CHUNK_SIZE else CHUNK_SIZE_IV
     val promise = jsPromise()
     addNamedCallbackToPromise(promise, "log")
     context.threadPoolExecutor.execute {
@@ -753,18 +761,30 @@ class FreeTubeJavaScriptInterface {
             break
           }
         }
-        for (i in 0..clen / CHUNK_SIZE) {
-          val endRange = (i + 1) * CHUNK_SIZE
-          val range = "${i * CHUNK_SIZE}-${endRange}"
-          val currentRequest = URL("${url}&range=${range}")
+        for (i in 0..clen / chunkSize) {
+          val endRange = (i + 1) * chunkSize
+          val range = "${i * chunkSize}-${endRange}"
+
+          val currentRequest = URL("${url}${if (iv) "" else "&range=${range}"}")
           val con = currentRequest.openConnection() as HttpURLConnection
-          con.requestMethod = "POST"
+          if (iv) {
+            con.setRequestProperty("Range", "bytes=$range")
+          }
+          if (!iv) {
+            con.requestMethod = "POST"
+          }
           con.connect()
+          if (con.responseCode !in 200..299) {
+            context.webView.post {
+              reject(promise, "Response code indicates non-success: ${con.responseCode}")
+            }
+            return@execute
+          }
           @Suppress("Since15")
-          stream!!.write(con.inputStream.readNBytes(CHUNK_SIZE))
+          stream!!.write(con.inputStream.readNBytes(chunkSize))
           stream!!.flush()
           context.webView.post{
-            notifyNamedCallback(promise, "log", "{ \"progress\": ${i * CHUNK_SIZE}, \"contentLength\": $clen }")
+            notifyNamedCallback(promise, "log", "{ \"progress\": ${i * chunkSize}, \"contentLength\": $clen }")
           }
         }
 
