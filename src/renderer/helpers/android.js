@@ -575,10 +575,14 @@ export async function getDownloadedVideos() {
 
 export async function getVideoInformationDownloaded(videoId, component) {
   component.isLoading = true
-  const videos = await getDownloadedVideos()
-  const matchingVideoFolders = videos.filter(video => video.fileName === videoId)
-  if (matchingVideoFolders.length > 0) {
-    const filesContainedInVideoDirectory = await matchingVideoFolders[0].listFiles()
+  const downloadsDirectory = await getDownloadsDirectory()
+  const directoryParts = downloadsDirectory.uri.split('%3A')
+  // gosh this feels like absolute non-sense
+  const documentTreeUri = `${downloadsDirectory.uri}/document/primary%3A${directoryParts[1]}`
+  const videoUri = `${documentTreeUri}%2Fvideos%2F${videoId}`
+  const matchingVideoFolder = restoreHandleFromDirectoryUri(videoUri)
+  try {
+    const filesContainedInVideoDirectory = await matchingVideoFolder.listFiles()
     const dataFiles = filesContainedInVideoDirectory.filter(file => file.fileName === 'data.json')
     if (dataFiles.length > 0) {
       const response = JSON.parse(await readFile(dataFiles[0].uri))
@@ -609,5 +613,7 @@ export async function getVideoInformationDownloaded(videoId, component) {
       component.isLoading = false
       return response
     }
+  } catch (ex) {
+    console.error(ex)
   }
 }
