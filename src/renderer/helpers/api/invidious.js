@@ -9,6 +9,10 @@ function getCurrentInstance() {
 }
 
 export function getProxyUrl(uri) {
+  if (uri.startsWith('content://')) {
+    // local uri DO NOT PROXY
+    return uri
+  }
   const currentInstance = getCurrentInstance()
 
   const url = new URL(uri)
