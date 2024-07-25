@@ -3,20 +3,25 @@ import { mapActions } from 'vuex'
 import FtFlexBox from '../ft-flex-box/ft-flex-box.vue'
 import FtPrompt from '../ft-prompt/ft-prompt.vue'
 import FtButton from '../ft-button/ft-button.vue'
+import FtaProgressBar from '../fta-progress-bar/fta-progress-bar.vue'
 import { downloadVideoAndAudio, getDownloadsDirectory, getNestedUri, getQueueDirectory, getVideosDirectory, readFile, writeFile } from '../../helpers/android'
 import { getRelativeTimeFromDate } from '../../helpers/utils'
 import android from 'android'
+
 export default defineComponent({
   name: 'FtaDownloadManager',
   components: {
     'ft-flex-box': FtFlexBox,
     'ft-prompt': FtPrompt,
-    'ft-button': FtButton
+    'ft-button': FtButton,
+    'fta-progress-bar': FtaProgressBar
   },
   data() {
     return {
       queue: [],
-      isWorking: false
+      isWorking: false,
+      currentProgress: 0,
+      estimatedRemaingTime: Infinity
     }
   },
   computed: {
@@ -45,6 +50,7 @@ export default defineComponent({
   methods: {
     async work() {
       if (this.queue.length > 0 && !this.isWorking) {
+        let timeStart = new Date().getTime()
         this.isWorking = true
         // something to work on
         const item = this.queue[0]
@@ -61,7 +67,24 @@ export default defineComponent({
               item.messages[message.stage] = []
             }
             item.messages[message.stage].push(message.message)
-            console.log(message)
+            if ('progress' in message) {
+              this.currentProgress = message.progress / message.contentLength
+              const timeTaken = new Date().getTime() - timeStart
+              const leftOverPercent = 1 - this.currentProgress
+              const amountOfTimeTakenPerPercentagePoint = (timeTaken / this.currentProgress)
+              const estimatedRemaingTime = amountOfTimeTakenPerPercentagePoint * leftOverPercent
+              let seconds = Math.round((estimatedRemaingTime / 1000) % 60)
+              let minutes = Math.round(((estimatedRemaingTime / 1000) / 60) % 60)
+              const hours = Math.round((((estimatedRemaingTime / 1000) / 60) / 60))
+              if (`${seconds}`.length < 2) {
+                seconds = `0${seconds}`
+              }
+              if (`${minutes}`.length < 2) {
+                minutes = `0${minutes}`
+              }
+
+              this.estimatedRemaingTime = `${hours}:${minutes}:${seconds}`
+            }
           })
           const videoOutputDirectory = await getNestedUri(videosDirectory, item.videoData.id)
           const outputFiles = await videoOutputDirectory.listFiles()

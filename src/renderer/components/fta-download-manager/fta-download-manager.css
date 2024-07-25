@@ -21,6 +21,12 @@
 .wrapper .queueItem {
   display: flex;
   gap: 10px;
+  flex-direction: column;
+}
+
+.wrapper .queueItem .videoData {
+  display: flex;
+  gap: 10px;
 }
 
 .buttons.download-manager-buttons {

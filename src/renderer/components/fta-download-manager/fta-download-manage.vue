@@ -16,23 +16,37 @@
           :key="queueItem.videoData.id"
           class="queueItem"
         >
-          <img
-            class="thumbnail"
-            :src="queueItem.videoData.thumbnail"
-            :alt="queueItem.videoData.title"
-          >
-          <div class="meta">
-            <div
-              :class="['stage', queueItem.stage]"
+          <div class="videoData">
+            <img
+              class="thumbnail"
+              :src="queueItem.videoData.thumbnail"
+              :alt="queueItem.videoData.title"
             >
-              {{ $t(`Download Manager.Download Stages.${queueItem.stage}`) }}
+            <div class="meta">
+              <div
+                :class="['stage', queueItem.stage]"
+              >
+                <!-- eslint-disable-next-line -->
+                {{ $t(`Download Manager.Download Stages.${queueItem.stage}`) }}
+              </div>
+              <div class="title">
+                {{ queueItem.videoData.title }}
+              </div>
+              <div class="date-added">
+                {{ getRelativeTimeFromDate(new Date(queueItem.timestamp)) }}
+              </div>
             </div>
-            <div class="title">
-              {{ queueItem.videoData.title }}
-            </div>
-            <div class="date-added">
-              {{ getRelativeTimeFromDate(new Date(queueItem.timestamp)) }}
-            </div>
+          </div>
+          <div
+            v-if="queueItem.stage !== 'Processing' && estimatedRemaingTime !== Infinity"
+          >
+            <fta-progress-bar
+              :filled-amount="currentProgress"
+            />
+            <!-- eslint-disable-next-line -->
+            <div>{{ $t("Download Manager.Current Progress") }}: {{ currentProgress }}%</div>
+            <!-- eslint-disable-next-line -->
+            <div>{{ $t("Download Manager.Approximate Remaining Download Time") }}: {{ estimatedRemaingTime }}</div>
           </div>
         </div>
       </div>
