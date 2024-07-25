@@ -92,6 +92,7 @@ import {
   faTimesCircle,
   faTrash,
   faTriangleExclamation,
+  faUserCheck,
   faUsers,
   faUsersSlash,
 } from '@fortawesome/free-solid-svg-icons'
@@ -193,6 +194,7 @@ library.add(
   faTimesCircle,
   faTrash,
   faTriangleExclamation,
+  faUserCheck,
   faUsers,
   faUsersSlash,
 
