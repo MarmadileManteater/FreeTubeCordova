@@ -217,7 +217,7 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
         if (request!!.requestHeaders.containsKey("x-user-agent")) {
           with (URL(request!!.url.toString()).openConnection() as HttpURLConnection) {
             requestMethod = request.method
-            val isClient5 = request.requestHeaders.containsKey("x-youtube-client-name")
+            val isClient5 = request.requestHeaders.containsKey("x-youtube-client-name") && request.requestHeaders["x-youtube-client-name"] == "5"
             // map headers
             for (header in request!!.requestHeaders) {
               fun getReal(key: String, value: String): Array<String>? {
