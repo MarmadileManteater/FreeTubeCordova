@@ -7,6 +7,20 @@
       <script>
         window.ofetch = window.fetch
         window.fetch = async (...args) => {
+          const requestId = crypto.randomUUID()
+          let body
+          for (const arg of args) {
+            if (typeof arg === 'object') {
+              if ('body' in arg) {
+                body = arg.body
+              }
+              if ('headers' in arg) {
+                arg.headers.append('x-fta-request-id', requestId)
+              }
+            }
+          }
+          Android.queueFetchBody(requestId, body)
+
           if (typeof args[0] === 'string' && args[0].startsWith('file://')) {
             // forward to xml http request
             /** @type {Response} */
