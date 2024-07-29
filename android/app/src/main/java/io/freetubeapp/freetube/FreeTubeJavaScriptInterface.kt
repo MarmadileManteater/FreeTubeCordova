@@ -815,6 +815,13 @@ class FreeTubeJavaScriptInterface {
     context.isInAPrompt = false
   }
 
+  @JavascriptInterface
+  fun queueFetchBody(id: String, body: String) {
+    if (body != "undefined") {
+      context.pendingRequestBodies[id] = body
+    }
+  }
+
   private fun addNamedCallbackToPromise(promise: String, name: String) {
     context.runOnUiThread {
       context.webView.loadUrl("javascript: window['${promise}'].callbacks = window['${promise}'].callbacks || {};  window['${promise}'].callbacks.notify = (key, message) => window['${promise}'].callbacks[key].forEach(callback => callback(message)); window['${promise}'].callbacks['${name}'] = window['${promise}'].callbacks['${name}'] || []")
