@@ -7,6 +7,31 @@
       <script>
         window.ofetch = window.fetch
         window.fetch = async (...args) => {
+          const requestId = crypto.randomUUID()
+          let body
+          for (const arg of args) {
+            if (typeof arg === 'object') {
+              if ('body' in arg) {
+                body = arg.body
+              }
+              if ('headers' in arg) {
+                if ('append' in arg.headers) {
+                  if (arg.headers.get('x-youtube-client-name') == 5) {
+                    arg.headers.append('x-fta-request-id', requestId)
+                    Android.queueFetchBody(requestId, body)
+                  }
+                } else {
+                  if ('x-youtube-client-name' in arg.headers) {
+                    if (arg.headers['x-youtube-client-name'] == 5) {
+                      arg.headers['x-fta-request-id'] = requestId
+                      Android.queueFetchBody(requestId, body)
+                    }
+                  }
+                }
+              }
+            }
+          }
+
           if (typeof args[0] === 'string' && args[0].startsWith('file://')) {
             // forward to xml http request
             /** @type {Response} */

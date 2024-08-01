@@ -9,8 +9,10 @@ import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
+import android.webkit.ConsoleMessage
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.FrameLayout
@@ -24,9 +26,15 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import io.freetubeapp.freetube.databinding.ActivityMainBinding
+import org.json.JSONObject
+import java.io.Serializable
+import java.net.HttpURLConnection
+import java.net.URL
 import java.net.URLEncoder
 import java.util.Base64
+import java.util.UUID
 import java.util.concurrent.BlockingQueue
+import java.util.concurrent.ConcurrentHashMap.KeySetView
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
@@ -44,10 +52,12 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
   lateinit var jsInterface: FreeTubeJavaScriptInterface
   lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
   lateinit var content: View
+  var consoleMessages: MutableList<JSONObject> = mutableListOf()
   var showSplashScreen: Boolean = true
   var darkMode: Boolean = false
   var paused: Boolean = false
   var isInAPrompt: Boolean = false
+  var pendingRequestBodies: MutableMap<String, String> = mutableMapOf()
   /*
    * Gets the number of available cores
    * (not always the same as the maximum number of cores)
@@ -164,6 +174,20 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
     webView.addJavascriptInterface(jsInterface, "Android")
     webView.webChromeClient = object: WebChromeClient() {
 
+      override fun onConsoleMessage(consoleMessage: ConsoleMessage): Boolean {
+        val messageData = JSONObject()
+        messageData.put("content", consoleMessage.message())
+        messageData.put("level", consoleMessage.messageLevel())
+        messageData.put("timestamp", System.currentTimeMillis())
+        messageData.put("id", UUID.randomUUID())
+        messageData.put("key", "${messageData["id"]}-${messageData["timestamp"]}")
+        messageData.put("sourceId", consoleMessage.sourceId())
+        messageData.put("lineNumber", consoleMessage.lineNumber())
+        consoleMessages.add(messageData)
+        webView.loadUrl("javascript: var event = new Event(\"console-message\"); event.data = JSON.parse(${btoa(messageData.toString())}); window.dispatchEvent(event)")
+        return super.onConsoleMessage(consoleMessage);
+      }
+
       override fun onShowCustomView(view: View?, callback: CustomViewCallback?) {
         windowInsetsController.hide(WindowInsetsCompat.Type.systemBars())
         fullscreenView = view!!
@@ -186,6 +210,72 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
       }
     }
     webView.webViewClient = object: WebViewClient() {
+      override fun shouldInterceptRequest(
+        view: WebView?,
+        request: WebResourceRequest?
+      ): WebResourceResponse? {
+        if (request!!.requestHeaders.containsKey("x-user-agent")) {
+          with (URL(request!!.url.toString()).openConnection() as HttpURLConnection) {
+            requestMethod = request.method
+            val isClient5 = request.requestHeaders.containsKey("x-youtube-client-name") && request.requestHeaders["x-youtube-client-name"] == "5"
+            // map headers
+            for (header in request!!.requestHeaders) {
+              fun getReal(key: String, value: String): Array<String>? {
+                if (key == "x-user-agent") {
+                  return arrayOf("User-Agent", value)
+                }
+                if (key == "User-Agent") {
+                  return null
+                }
+                if (key == "x-fta-request-id") {
+                  return null
+                }
+                if (isClient5) {
+                  if (key == "referrer") {
+                    return null
+                  }
+                  if (key == "origin") {
+                    return null
+                  }
+                  if (key == "Sec-Fetch-Site") {
+                    return null
+                  }
+                  if (key == "Sec-Fetch-Mode") {
+                    return null
+                  }
+                  if (key == "Sec-Fetch-Dest") {
+                    return null
+                  }
+                  if (key == "sec-ch-ua") {
+                    return null
+                  }
+                  if (key == "sec-ch-ua-mobile") {
+                    return null
+                  }
+                  if (key == "sec-ch-ua-platform") {
+                    return null
+                  }
+                }
+                return arrayOf(key, value)
+              }
+              val real = getReal(header.key, header.value)
+              if (real !== null) {
+                setRequestProperty(real[0], real[1])
+              }
+            }
+            if (request.requestHeaders.containsKey("x-fta-request-id")) {
+              if (pendingRequestBodies.containsKey(request.requestHeaders["x-fta-request-id"])) {
+                val body = pendingRequestBodies[request.requestHeaders["x-fta-request-id"]]
+                pendingRequestBodies.remove(request.requestHeaders["x-fta-request-id"])
+                outputStream.write(body!!.toByteArray())
+              }
+            }
+            // 🧝‍♀️ magic
+            return WebResourceResponse(this.contentType, this.contentEncoding, inputStream!!)
+          }
+        }
+        return super.shouldInterceptRequest(view, request)
+      }
       override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
         if (request!!.url!!.scheme == "file") {
           // don't send file url requests to a web browser (it will crash the app)
