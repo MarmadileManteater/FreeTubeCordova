@@ -15,7 +15,11 @@
                 body = arg.body
               }
               if ('headers' in arg) {
-                arg.headers.append('x-fta-request-id', requestId)
+                if ('append' in arg.headers) {
+                  arg.headers.append('x-fta-request-id', requestId)
+                } else {
+                  arg.headers['x-fta-request-id'] = requestId
+                }
               }
             }
           }
