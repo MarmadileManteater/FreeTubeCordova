@@ -15,11 +15,22 @@
                 body = arg.body
               }
               if ('headers' in arg) {
-                arg.headers.append('x-fta-request-id', requestId)
+                if ('append' in arg.headers) {
+                  if (arg.headers.get('x-youtube-client-name') == 5) {
+                    arg.headers.append('x-fta-request-id', requestId)
+                    Android.queueFetchBody(requestId, body)
+                  }
+                } else {
+                  if ('x-youtube-client-name' in arg.headers) {
+                    if (arg.headers['x-youtube-client-name'] == 5) {
+                      arg.headers['x-fta-request-id'] = requestId
+                      Android.queueFetchBody(requestId, body)
+                    }
+                  }
+                }
               }
             }
           }
-          Android.queueFetchBody(requestId, body)
 
           if (typeof args[0] === 'string' && args[0].startsWith('file://')) {
             // forward to xml http request
