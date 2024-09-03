@@ -266,6 +266,7 @@ History:
   Search bar placeholder: Leita í áhorfsferli
   Empty Search Message: Það eru engin myndskeið í ferlinum þínum sem samsvara leitinni
     þinni
+  Case Sensitive Search: Leit háð há-/lágstöfum
 Settings:
   # On Settings Page
   Settings: 'Stillingar'
@@ -547,8 +548,6 @@ Settings:
       á öllum áskriftum og notkunarsniðum tókst'
     All subscriptions have been successfully imported: 'Innflutningur á öllum áskriftum
       tókst'
-    One or more subscriptions were unable to be imported: 'Ekki tókst að flytja inn
-      eina eða fleiri áskriftir'
     Invalid subscriptions file: 'Ógild áskriftaskrá'
     This might take a while, please wait: 'Þetta getur tekið dálítinn tíma, sýndu
       smá þolinmæði'

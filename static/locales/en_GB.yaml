@@ -258,6 +258,7 @@ History:
   Your history list is currently empty.: 'Your history list is currently empty.'
   Search bar placeholder: Search in History
   Empty Search Message: There are no videos in your history that match your search
+  Case Sensitive Search: Case Sensitive Search
 Settings:
   # On Settings Page
   Settings: 'Settings'
@@ -494,8 +495,6 @@ Settings:
       and profiles have been successfully imported'
     All subscriptions have been successfully imported: 'All subscriptions have been
       successfully imported'
-    One or more subscriptions were unable to be imported: 'One or more subscriptions
-      were unable to be imported'
     Invalid subscriptions file: 'Invalid subscriptions file'
     This might take a while, please wait: 'This might take a while, please wait'
     Invalid history file: 'Invalid history file'

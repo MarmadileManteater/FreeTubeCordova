@@ -260,6 +260,7 @@ History:
   Your history list is currently empty.: 'Uw geschiedenis is momenteel leeg.'
   Search bar placeholder: In geschiedenis zoeken
   Empty Search Message: Geschiedenis bevat geen video's die overeen­komen met de zoek­opdracht
+  Case Sensitive Search: Hoofdletter­gevoelige zoek­opdracht
 Settings:
   # On Settings Page
   Settings: 'Instellingen'
@@ -501,8 +502,6 @@ Settings:
     Invalid history file: Ongeldig geschiedenisbestand
     This might take a while, please wait: Dit kan eventjes duren, even geduld aub
     Invalid subscriptions file: Ongeldig abonnementenbestand
-    One or more subscriptions were unable to be imported: Een of meer abonnementen
-      konden niet worden geïmporteerd
     All subscriptions have been successfully imported: Alle abonnementen zijn met
       succes geïmporteerd
     All subscriptions and profiles have been successfully imported: Alle abonnementen
