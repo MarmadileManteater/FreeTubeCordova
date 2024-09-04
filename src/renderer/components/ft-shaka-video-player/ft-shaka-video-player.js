@@ -248,6 +248,19 @@ export default defineComponent({
       })
     })
 
+    window.addEventListener('app-pause', () => {
+      ui.configure({
+        enableFullscreenOnRotation: false
+      })
+      document.exitFullscreen()
+    })
+
+    window.addEventListener('app-resume', () => {
+      ui.configure({
+        enableFullscreenOnRotation: enterFullscreenOnDisplayRotate.value
+      })
+    })
+
     const maxVideoPlaybackRate = computed(() => {
       return parseInt(store.getters.getMaxVideoPlaybackRate)
     })
