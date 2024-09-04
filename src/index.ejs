@@ -5,6 +5,11 @@
     <% if (process.env.IS_ANDROID) { %>
       <!-- 🔧🐒 -->
       <script>
+        HTMLVideoElement.prototype.canPlayType_ = HTMLVideoElement.prototype.canPlayType
+        HTMLVideoElement.prototype.canPlayType = function (value) {
+          if (value === 'application/x-mpegURL') return ''
+          return this.canPlayType_(value)
+        }
         window.ofetch = window.fetch
         window.fetch = async (...args) => {
           const requestId = crypto.randomUUID()
