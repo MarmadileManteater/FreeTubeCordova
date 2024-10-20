@@ -574,6 +574,7 @@ export async function getDownloadedVideos() {
 }
 
 export async function getVideoInformationDownloaded(videoId, component) {
+  console.warn(videoId)
   component.isLoading = true
   const downloadsDirectory = await getDownloadsDirectory()
   const directoryParts = downloadsDirectory.uri.split('%3A')
@@ -599,10 +600,16 @@ export async function getVideoInformationDownloaded(videoId, component) {
       component.videoChapters = response.chapters
       component.videoDescription = response.description
       component.videoDescriptionHtml = response.descriptionHtml
-      component.videoSourceList = [
+      component.legacyFormats = [
         {
+          bitrate: 0,
+          fps: 30,
+          height: 360,
+          itag: 18,
+          mimeType: "video/mp4; codecs=\"avc1.42001E, mp4a.40.2\"",
+          qualityLabel: "360p",
           url: response.uri,
-          qualityLabel: 'unknown'// TODO pass through information from prompt
+          width: 640
         }
       ]
 

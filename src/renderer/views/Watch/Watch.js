@@ -38,7 +38,8 @@ import {
 } from '../../helpers/api/invidious'
 import {
   createMediaSession,
-  getDownloadFormats
+  getDownloadFormats,
+  getVideoInformationDownloaded
 } from '../../helpers/android'
 import android from 'android'
 
@@ -396,11 +397,19 @@ export default defineComponent({
       // this has to be below checkIfPlaylist() as theatrePossible needs to know if there is a playlist or not
       this.useTheatreMode = this.defaultTheatreMode && this.theatrePossible
 
-      if (!process.env.SUPPORTS_LOCAL_API || this.backendPreference === 'invidious') {
-        this.getVideoInformationInvidious()
-      } else {
-        this.getVideoInformationLocal()
-      }
+      const promise = process.env.IS_ANDROID && this.$store.getters.getDownloadBehavior === 'download'
+        ? getVideoInformationDownloaded(this.videoId, this)
+        : new Promise((resolve, _reject) => resolve())
+
+      promise.then((downloadedInfo) => {
+        if (downloadedInfo === undefined) {
+          if (!process.env.SUPPORTS_LOCAL_API || this.backendPreference === 'invidious') {
+            this.getVideoInformationInvidious()
+          } else {
+            this.getVideoInformationLocal()
+          }
+        }
+      })
 
       window.addEventListener('beforeunload', this.handleWatchProgress)
     },
