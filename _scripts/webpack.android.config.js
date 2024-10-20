@@ -136,7 +136,7 @@ const config = {
       'window.atob': true
     }),
     new webpack.ProvidePlugin({
-      process: 'process/browser'
+      process: 'process/browser.js'
     }),
     new HtmlWebpackPlugin({
       excludeChunks: ['processTaskWorker'],
