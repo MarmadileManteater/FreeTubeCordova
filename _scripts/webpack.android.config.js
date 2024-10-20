@@ -8,6 +8,11 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const JsonMinimizerPlugin = require('json-minimizer-webpack-plugin')
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin')
 const ProcessLocalesPlugin = require('./ProcessLocalesPlugin')
+const {
+  SHAKA_LOCALE_MAPPINGS,
+  SHAKA_LOCALES_PREBUNDLED,
+  SHAKA_LOCALES_TO_BE_BUNDLED
+} = require('./getShakaLocales')
 
 const isDevMode = process.env.NODE_ENV === 'development'
 
@@ -164,10 +169,8 @@ const config = {
 
       DB_HANDLERS_ELECTRON_RENDERER_OR_WEB$: path.resolve(__dirname, '../src/datastores/handlers/web.js'),
 
-      // video.js's mpd-parser uses @xmldom/xmldom so that it can support both node and web browsers
-      // As FreeTube only runs in electron and web browsers, we can use the native DOMParser class, instead of the "polyfill"
-      // https://caniuse.com/mdn-api_domparser
-      '@xmldom/xmldom$': path.resolve(__dirname, '_domParser.js'),
+      // change to "shaka-player.ui.debug.js" to get debug logs (update jsconfig to get updated types)
+      'shaka-player$': 'shaka-player/dist/shaka-player.ui.js',
       'localforage': path.resolve(__dirname, '_localforage.js')
     },
     fallback: {
@@ -194,7 +197,9 @@ config.plugins.push(
   processAndroidLocales,
   new webpack.DefinePlugin({
     'process.env.LOCALE_NAMES': JSON.stringify(processLocalesPlugin.localeNames),
-    'process.env.GEOLOCATION_NAMES': JSON.stringify(fs.readdirSync(path.join(__dirname, '..', 'static', 'geolocations')).map(filename => filename.replace('.json', '')))
+    'process.env.GEOLOCATION_NAMES': JSON.stringify(fs.readdirSync(path.join(__dirname, '..', 'static', 'geolocations')).map(filename => filename.replace('.json', ''))),
+    'process.env.SHAKA_LOCALE_MAPPINGS': JSON.stringify(SHAKA_LOCALE_MAPPINGS),
+    'process.env.SHAKA_LOCALES_PREBUNDLED': JSON.stringify(SHAKA_LOCALES_PREBUNDLED)
   }),
   new CopyWebpackPlugin({
       patterns: [
@@ -210,6 +215,11 @@ config.plugins.push(
             ignore: ['**/.*', '**/locales/**', '**/locales-android/**', '**/pwabuilder-sw.js', '**/dashFiles/**', '**/storyboards/**'],
           },
         },
+        {
+          from: path.join(__dirname, '../node_modules/shaka-player/ui/locales', `{${SHAKA_LOCALES_TO_BE_BUNDLED.join(',')}}.json`).replaceAll('\\', '/'),
+          to: path.join(__dirname, '../android/app/src/main/assets/static/shaka-player-locales'),
+          context: path.join(__dirname, '../node_modules/shaka-player/ui/locales')
+        }
     ]
   })
 )

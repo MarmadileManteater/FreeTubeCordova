@@ -24,6 +24,7 @@
     >
       <span
         class="changeLogText"
+        lang="en"
         v-html="updateChangelog"
       />
       <ft-flex-box>
@@ -113,5 +114,4 @@
 <script src="./App.js" />
 
 <style src="./themes.css" />
-<style src="./videoJS.css" />
 <style scoped src="./App.css" />
