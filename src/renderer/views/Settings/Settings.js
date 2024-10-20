@@ -37,10 +37,12 @@ export default defineComponent({
     'password-dialog': PasswordDialog,
     'ft-toggle-switch': FtToggleSwitch,
     'ft-settings-menu': FtSettingsMenu,
+    ...(process.env.IS_ANDROID ? {
+      'download-settings': DownloadSettings
+    } : {}),
     ...(process.env.IS_ELECTRON
       ? {
           'proxy-settings': ProxySettings,
-          'download-settings': DownloadSettings,
           'external-player-settings': ExternalPlayerSettings,
           'experimental-settings': ExperimentalSettings
         }

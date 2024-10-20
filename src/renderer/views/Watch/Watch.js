@@ -304,14 +304,15 @@ export default defineComponent({
 
       promise.then((downloadedInfo) => {
         if (downloadedInfo === undefined) {
-                switch (this.backendPreference) {
-        case 'local':
-          this.getVideoInformationLocal(this.videoId)
-          break
-        case 'invidious':
-          this.getVideoInformationInvidious(this.videoId)
-          break
-      }
+          switch (this.backendPreference) {
+            case 'local':
+              this.getVideoInformationLocal(this.videoId)
+              break
+            case 'invidious':
+              this.getVideoInformationInvidious(this.videoId)
+              break
+          }
+        }
       })
     },
     async thumbnail() {
