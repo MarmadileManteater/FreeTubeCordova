@@ -37,7 +37,8 @@ import {
   youtubeImageUrlToInvidious
 } from '../../helpers/api/invidious'
 import {
-  createMediaSession
+  createMediaSession,
+  getDownloadFormats
 } from '../../helpers/android'
 import android from 'android'
 
@@ -672,25 +673,28 @@ export default defineComponent({
             /** @type {import('../../helpers/api/local').LocalFormat[]} */
             const formats = [...result.streaming_data.formats, ...result.streaming_data.adaptive_formats]
 
-            const downloadLinks = formats.map((format) => {
-              const qualityLabel = format.quality_label ?? format.bitrate
-              const fps = format.fps ? `${format.fps}fps` : 'kbps'
-              const type = format.mime_type.split(';')[0]
-              let label = `${qualityLabel} ${fps} - ${type}`
+            const downloadLinks = process.env.IS_ANDROID && this.$store.getters.getDownloadBehavior !== 'open'
+              ? getDownloadFormats([...result.streaming_data.adaptive_formats])
+              : formats.map((format) => {
+                const qualityLabel = format.quality_label ?? format.bitrate
+                const fps = format.fps ? `${format.fps}fps` : 'kbps'
+                const type = format.mime_type.split(';')[0]
+                let label = `${qualityLabel} ${fps} - ${type}`
 
-              if (format.has_audio !== format.has_video) {
-                if (format.has_video) {
-                  label += ` ${this.$t('Video.video only')}`
-                } else {
-                  label += ` ${this.$t('Video.audio only')}`
+                if (format.has_audio !== format.has_video) {
+                  if (format.has_video) {
+                    label += ` ${this.$t('Video.video only')}`
+                  } else {
+                    label += ` ${this.$t('Video.audio only')}`
+                  }
                 }
-              }
 
-              return {
-                url: format.freeTubeUrl,
-                label: label
-              }
-            })
+                return {
+                  url: format.freeTubeUrl,
+                  label: label
+                }
+              })
+
 
             if (result.captions) {
               const captionTracks = result.captions?.caption_tracks?.map((caption) => {
