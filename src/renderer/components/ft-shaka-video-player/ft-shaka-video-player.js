@@ -45,6 +45,8 @@ const TrackLabelFormat = shaka.ui.Overlay.TrackLabelFormat
 /** @type {Map<string, string>} */
 const LOCALE_MAPPINGS = new Map(process.env.SHAKA_LOCALE_MAPPINGS)
 
+let [onAppPause, onAppResume] = [() => {}, () => {}]
+
 export default defineComponent({
   name: 'FtShakaVideoPlayer',
   props: {
@@ -247,19 +249,25 @@ export default defineComponent({
         enableFullscreenOnRotation: newValue
       })
     })
-
-    window.addEventListener('app-pause', () => {
+    onAppPause = () => {
+      try {
+        document.exitFullscreen()
+      } catch (_ex) {
+        // pass
+      }
       ui.configure({
         enableFullscreenOnRotation: false
       })
-      document.exitFullscreen()
-    })
+    }
 
-    window.addEventListener('app-resume', () => {
+    onAppResume = () => {
       ui.configure({
         enableFullscreenOnRotation: enterFullscreenOnDisplayRotate.value
       })
-    })
+    }
+    window.addEventListener('app-pause', onAppPause)
+
+    window.addEventListener('app-resume', onAppResume)
 
     const maxVideoPlaybackRate = computed(() => {
       return parseInt(store.getters.getMaxVideoPlaybackRate)
@@ -2854,5 +2862,9 @@ export default defineComponent({
 
       updateMediaSessionPositionState
     }
+  },
+  destroyed: function () {
+    window.removeEventListener('app-pause', onAppPause)
+    window.removeEventListener('app-resume', onAppResume)
   }
 })
