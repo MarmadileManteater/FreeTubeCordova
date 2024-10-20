@@ -97,7 +97,7 @@ export default defineComponent({
       return this.$router.getRoutes().filter((route) => includedPageNames.includes(route.name))
     },
     defaultPageNames: function () {
-      return this.defaultPages.map((route) => translateWindowTitle(route.meta.title, this.$i18n))
+      return this.defaultPages.map((route) => translateWindowTitle(route.meta.title))
     },
     defaultPageValues: function () {
       // avoid Vue parsing issues by excluding '/' from path values
@@ -243,10 +243,6 @@ export default defineComponent({
 
     handlePreferredApiBackend: function (backend) {
       this.updateBackendPreference(backend)
-
-      if (backend === 'local') {
-        this.updateForceLocalBackendForLegacy(false)
-      }
     },
 
     handleThumbnailPreferenceChange: function (value) {
@@ -271,7 +267,6 @@ export default defineComponent({
       'updateRegion',
       'updateListType',
       'updateThumbnailPreference',
-      'updateForceLocalBackendForLegacy',
       'updateCurrentLocale',
       'updateExternalLinkHandling',
       'updateGeneralAutoLoadMorePaginatedItemsEnabled',

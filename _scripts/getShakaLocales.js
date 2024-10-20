@@ -3,7 +3,7 @@ const { readFileSync, readdirSync } = require('fs')
 function getPreloadedLocales() {
   const localesFile = readFileSync(`${__dirname}/../node_modules/shaka-player/dist/locales.js`, 'utf-8')
 
-  const localesLine = localesFile.match(/^\/\/ LOCALES: ([\w, -]+)$/m)
+  const localesLine = localesFile.match(/^\/\/ LOCALES: ([\w ,-]+)$/m)
 
   if (!localesLine) {
     throw new Error("Failed to parse shaka-player's preloaded locales")
@@ -41,15 +41,10 @@ function getMappings(shakaLocales, freeTubeLocales) {
         locale,
         locale
       ])
-    } else if (shakaLocales.has(locale.replace('_', '-'))) {
+    } else if (shakaLocales.has(locale.split('-')[0])) {
       mappings.push([
         locale,
-        locale.replace('_', '-')
-      ])
-    } else if (shakaLocales.has(locale.split(/[-_]/)[0])) {
-      mappings.push([
-        locale,
-        locale.split(/[-_]/)[0]
+        locale.split('-')[0]
       ])
     }
   }
@@ -60,7 +55,7 @@ function getMappings(shakaLocales, freeTubeLocales) {
     // according to https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
     // "no" is the macro language for "nb" and "nn"
     [
-      'nb_NO',
+      'nb-NO',
       'no'
     ],
     [

@@ -58,9 +58,14 @@ export default defineComponent({
     'watch-video-recommendations': WatchVideoRecommendations,
     'ft-age-restricted': FtAgeRestricted
   },
-  beforeRouteLeave: function (to, from, next) {
+  beforeRouteLeave: async function (to, from, next) {
     this.handleRouteChange()
     window.removeEventListener('beforeunload', this.handleWatchProgress)
+
+    if (this.$refs.player) {
+      await this.$refs.player.destroyPlayer()
+    }
+
     next()
   },
   data: function () {
@@ -113,12 +118,9 @@ export default defineComponent({
       playlistItemId: null,
       /** @type {number|null} */
       timestamp: null,
-      /** @type {number|null} */
-      startTimeSeconds: null,
       playNextTimeout: null,
       playNextCountDownIntervalId: null,
       infoAreaSticky: true,
-      commentsEnabled: true,
 
       onMountedRun: false,
 
@@ -169,9 +171,6 @@ export default defineComponent({
     defaultVideoFormat: function () {
       return this.$store.getters.getDefaultVideoFormat
     },
-    forceLocalBackendForLegacy: function () {
-      return this.$store.getters.getForceLocalBackendForLegacy
-    },
     thumbnailPreference: function () {
       return this.$store.getters.getThumbnailPreference
     },
@@ -206,7 +205,7 @@ export default defineComponent({
       return !this.hideRecommendedVideos || (!this.hideLiveChat && this.isLive) || this.watchingPlaylist
     },
     currentLocale: function () {
-      return this.$i18n.locale.replace('_', '-')
+      return this.$i18n.locale
     },
     hideChapters: function () {
       return this.$store.getters.getHideChapters
@@ -235,10 +234,35 @@ export default defineComponent({
 
       return this.$store.getters.getPlaylist(this.playlistId)
     },
+    startTimeSeconds: function () {
+      if (this.isLoading || this.isLive) {
+        return null
+      }
+
+      if (this.timestamp !== null && this.timestamp < this.videoLengthSeconds) {
+        return this.timestamp
+      } else if (this.saveWatchedProgress && this.historyEntryExists) {
+        // For UX consistency, no progress reading if writing disabled
+
+        /** @type {number} */
+        const watchProgress = this.historyEntry.watchProgress
+
+        if (watchProgress > 0 && watchProgress < this.videoLengthSeconds - 2) {
+          return watchProgress
+        }
+      }
+
+      return null
+    }
   },
   watch: {
-    $route() {
+    async $route() {
       this.handleRouteChange()
+
+      if (this.$refs.player) {
+        await this.$refs.player.destroyPlayer()
+      }
+
       // react to route changes...
       this.videoId = this.$route.params.id
 
@@ -252,11 +276,9 @@ export default defineComponent({
       this.vrProjection = null
       this.downloadLinks = []
       this.videoCurrentChapterIndex = 0
-      this.startTimeSeconds = null
       this.videoGenreIsMusic = false
 
       this.checkIfTimestamp()
-      this.setStartTime()
       this.checkIfPlaylist()
 
       switch (this.backendPreference) {
@@ -282,7 +304,6 @@ export default defineComponent({
     this.activeFormat = this.defaultVideoFormat
 
     this.checkIfTimestamp()
-    this.setStartTime()
   },
   mounted: function () {
   if (process.env.IS_ANDROID) {
@@ -394,12 +415,21 @@ export default defineComponent({
 
         const playabilityStatus = result.playability_status
 
-        if (playabilityStatus.status === 'UNPLAYABLE') {
-          /**
-           * @type {import ('youtubei.js').YTNodes.PlayerErrorMessage}
-           */
-          const errorScreen = playabilityStatus.error_screen
-          throw new Error(`[${playabilityStatus.status}] ${errorScreen.reason.text}: ${errorScreen.subreason.text}`)
+        // The apostrophe is intentionally that one (char code 8217), because that is the one YouTube uses
+        const BOT_MESSAGE = 'Sign in to confirm you’re not a bot'
+
+        if (playabilityStatus.status === 'UNPLAYABLE' || (playabilityStatus.status === 'LOGIN_REQUIRED' && playabilityStatus.reason === BOT_MESSAGE)) {
+          if (playabilityStatus.reason === BOT_MESSAGE) {
+            throw new Error(this.$t('Video.IP block'))
+          }
+
+          let errorText = `[${playabilityStatus.status}] ${playabilityStatus.reason}`
+
+          if (playabilityStatus.error_screen) {
+            errorText += `: ${playabilityStatus.error_screen.subreason.text}`
+          }
+
+          throw new Error(errorText)
         }
 
         // extract localised title first and fall back to the not localised one
@@ -513,17 +543,6 @@ export default defineComponent({
           this.liveChat = null
         }
 
-        // region No comment detection
-        // For videos without any comment (comment disabled?)
-        // e.g. https://youtu.be/8NBSwDEf8a8
-        //
-        // `comments_entry_point_header` is null probably when comment disabled
-        // e.g. https://youtu.be/8NBSwDEf8a8
-        // However videos with comments enabled but have no comment
-        // are different (which is not detected here)
-        this.commentsEnabled = result.comments_entry_point_header != null
-        // endregion No comment detection
-
         if ((this.isLive || this.isPostLiveDvr) && !this.isUpcoming) {
           let useRemoteManifest = true
 
@@ -554,6 +573,7 @@ export default defineComponent({
             //   this.manifestSrc = src
             //   this.manifestMimeType = MANIFEST_TYPE_DASH
             // } else {
+
             this.manifestSrc = result.streaming_data.hls_manifest_url
             this.manifestMimeType = MANIFEST_TYPE_HLS
             // }
@@ -622,12 +642,6 @@ export default defineComponent({
 
             if (result.streaming_data.formats.length > 0) {
               this.legacyFormats = result.streaming_data.formats.map(mapLocalLegacyFormat)
-
-              if (this.proxyVideos) {
-                this.legacyFormats.forEach(format => {
-                  format.url = getProxyUrl(format.url)
-                })
-              }
             }
 
             /** @type {import('../../helpers/api/local').LocalFormat[]} */
@@ -727,17 +741,8 @@ export default defineComponent({
               })
               ?.projection_type ?? null
 
-            // When `this.proxyVideos` is true
-            // It's possible that the Invidious instance used, only supports a subset of the formats from Local API
-            // i.e. the value passed into `adaptiveFormats`
-            // e.g. Supports 720p60, but not 720p - https://[DOMAIN_NAME]/api/manifest/dash/id/v3wm83zoSSY?local=true
-            if (this.proxyVideos) {
-              this.manifestSrc = await this.createInvidiousDashManifest()
-              this.manifestMimeType = MANIFEST_TYPE_DASH
-            } else {
-              this.manifestSrc = await this.createLocalDashManifest(result)
-              this.manifestMimeType = MANIFEST_TYPE_DASH
-            }
+            this.manifestSrc = await this.createLocalDashManifest(result)
+            this.manifestMimeType = MANIFEST_TYPE_DASH
           } else {
             this.manifestSrc = null
             this.enableLegacyFormat()
@@ -869,7 +874,16 @@ export default defineComponent({
             // // Proxying doesn't work for live or post live DVR DASH, so use HLS instead
             // // https://github.com/iv-org/invidious/pull/4589
             // if (this.proxyVideos) {
-            this.manifestSrc = result.hlsUrl
+
+            let hlsManifestUrl = result.hlsUrl
+
+            if (this.proxyVideos) {
+              const url = new URL(hlsManifestUrl)
+              url.searchParams.set('local', 'true')
+              hlsManifestUrl = url.toString()
+            }
+
+            this.manifestSrc = hlsManifestUrl
             this.manifestMimeType = MANIFEST_TYPE_HLS
 
             // The HLS manifests only contain combined audio+video streams, so we can't do audio only
@@ -894,19 +908,9 @@ export default defineComponent({
             // which fixed the API returning incorrect height, width and fps information
             const trustApiResponse = result.adaptiveFormats.some(stream => typeof stream.size === 'string')
 
-            if (process.env.SUPPORTS_LOCAL_API && this.forceLocalBackendForLegacy) {
-              const legacyFormats = await this.getLocalLegacyFormats()
+            this.legacyFormats = result.formatStreams.map(format => mapInvidiousLegacyFormat(format, trustApiResponse))
 
-              if (legacyFormats !== null) {
-                this.legacyFormats = legacyFormats
-              } else {
-                this.legacyFormats = result.formatStreams.map(format => mapInvidiousLegacyFormat(format, trustApiResponse))
-              }
-            } else {
-              this.legacyFormats = result.formatStreams.map(format => mapInvidiousLegacyFormat(format, trustApiResponse))
-            }
-
-            if (!process.env.SUPPORTS_LOCAL_API || (this.proxyVideos && !this.forceLocalBackendForLegacy)) {
+            if (!process.env.SUPPORTS_LOCAL_API || this.proxyVideos) {
               this.legacyFormats.forEach(format => {
                 format.url = getProxyUrl(format.url)
               })
@@ -1112,23 +1116,6 @@ export default defineComponent({
       }
     },
 
-    setStartTime: function () {
-      if (this.timestamp !== null && this.timestamp > 0) {
-        this.startTimeSeconds = this.timestamp
-        return
-      } else if (this.saveWatchedProgress && this.historyEntryExists) {
-        // For UX consistency, no progress reading if writing disabled
-        const watchProgress = this.historyEntry.watchProgress
-
-        if (watchProgress > 0) {
-          this.startTimeSeconds = watchProgress
-          return
-        }
-      }
-
-      this.startTimeSeconds = null
-    },
-
     checkIfPlaylist: function () {
       // On the off chance that user selected pause on current video
       // Then clicks on another video in the playlist
@@ -1183,20 +1170,6 @@ export default defineComponent({
       this.timestamp = isNaN(timestamp) || timestamp < 0 ? null : timestamp
     },
 
-    getLocalLegacyFormats: async function () {
-      try {
-        const result = await getLocalVideoInfo(this.videoId)
-        return result.streaming_data.formats.map(mapLocalLegacyFormat)
-      } catch (err) {
-        const errorMessage = this.$t('Local API Error (Click to copy)')
-        showToast(`${errorMessage}: ${err}`, 10000, () => {
-          copyToClipboard(err)
-        })
-        console.error(err)
-        return null
-      }
-    },
-
     handleFormatChange: function (format) {
       switch (format) {
         case 'dash':
@@ -1243,8 +1216,10 @@ export default defineComponent({
       }
 
       if (this.manifestSrc === null ||
-        // HLS consists of combined audio and video files, so we can't do audio only
-        ((this.isLive || this.isPostLiveDvr) && this.manifestMimeType !== MANIFEST_TYPE_DASH)) {
+        ((this.isLive || this.isPostLiveDvr) &&
+        // The WEB HLS manifests only contain combined audio and video files, so we can't do audio only
+        // The IOS HLS manifests have audio-only streams
+          this.manifestMimeType === MANIFEST_TYPE_HLS && !this.manifestSrc.includes('/demuxed/1'))) {
         showToast(this.$t('Change Format.Audio formats are not available for this video'))
         return
       }
@@ -1384,10 +1359,10 @@ export default defineComponent({
         // live streams don't have legacy formats, so only switch between dash and audio
 
         if (this.activeFormat === 'dash') {
-          console.error('Unable to play audio formats. Reverting to DASH formats...')
+          console.error('Unable to play DASH formats. Reverting to audio formats...')
           this.enableAudioFormat()
         } else {
-          console.error('Unable to play DASH formats. Reverting to audio formats...')
+          console.error('Unable to play audio formats. Reverting to DASH formats...')
           this.enableDashFormat()
         }
       } else {
@@ -1469,7 +1444,7 @@ export default defineComponent({
           if (localFormat.has_audio) {
             audioFormats.push(localFormat)
 
-            if (localFormat.is_dubbed || localFormat.is_descriptive || localFormat.is_drc || localFormat.is_secondary) {
+            if (localFormat.is_dubbed || localFormat.is_descriptive || localFormat.is_secondary) {
               hasMultipleAudioTracks = true
             }
           }
@@ -1583,7 +1558,7 @@ export default defineComponent({
       let translationName, translationCode
       // otherwise just fallback to the FreeTube display language and hope that YouTube will be able to handle it
       if (!translationLanguage) {
-        translationName = this.$i18n.t('Locale Name')
+        translationName = this.$t('Locale Name')
         translationCode = userLanguages.values().next()
       } else {
         translationName = translationLanguage.language_name.text

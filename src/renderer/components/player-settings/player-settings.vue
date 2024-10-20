@@ -5,17 +5,10 @@
     <div class="switchColumnGrid">
       <div class="switchColumn">
         <ft-toggle-switch
-          :label="$t('Settings.Player Settings.Force Local Backend for Legacy Formats')"
-          :compact="true"
-          :disabled="backendPreference === 'local'"
-          :default-value="forceLocalBackendForLegacy"
-          :tooltip="$t('Tooltips.Player Settings.Force Local Backend for Legacy Formats')"
-          @change="updateForceLocalBackendForLegacy"
-        />
-        <ft-toggle-switch
           :label="$t('Settings.Player Settings.Proxy Videos Through Invidious')"
           :compact="true"
-          :default-value="proxyVideos"
+          :default-value="showProxyVideosAsDisabled ? false : proxyVideos"
+          :disabled="showProxyVideosAsDisabled"
           :tooltip="$t('Tooltips.Player Settings.Proxy Videos Through Invidious')"
           :disabled="usingBrowser"
           @change="updateProxyVideos"

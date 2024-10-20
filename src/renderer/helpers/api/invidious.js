@@ -1,5 +1,9 @@
 import store from '../../store/index'
-import { stripHTML, toLocalePublicationString } from '../utils'
+import {
+  calculatePublishedDate,
+  stripHTML,
+  toLocalePublicationString,
+} from '../utils'
 import { isNullOrEmpty } from '../strings'
 import autolinker from 'autolinker'
 import { FormatUtils, Misc, Player } from 'youtubei.js'
@@ -60,6 +64,16 @@ export function invidiousAPICall({ resource, id = '', params = {}, doLogError = 
   })
 }
 
+async function resolveUrl(url) {
+  return await invidiousAPICall({
+    resource: 'resolveurl',
+    params: {
+      url
+    },
+    doLogError: false
+  })
+}
+
 /**
  * Gets the channel ID for a channel URL
  * used to get the ID for channel usernames and handles
@@ -67,13 +81,7 @@ export function invidiousAPICall({ resource, id = '', params = {}, doLogError = 
  */
 export async function invidiousGetChannelId(url) {
   try {
-    const response = await invidiousAPICall({
-      resource: 'resolveurl',
-      params: {
-        url
-      },
-      doLogError: false
-    })
+    const response = await resolveUrl(url)
 
     if (response.pageType === 'WEB_PAGE_TYPE_CHANNEL') {
       return response.ucid
@@ -198,6 +206,60 @@ export async function invidiousGetCommunityPosts(channelId, continuation = null)
   return { posts: response.comments, continuation: response.continuation ?? null }
 }
 
+export async function getInvidiousCommunityPost(postId, authorId = null) {
+  const payload = {
+    resource: 'post',
+    id: postId,
+  }
+
+  if (authorId == null) {
+    authorId = await invidiousGetChannelId('https://www.youtube.com/post/' + postId)
+  }
+
+  payload.params = {
+    ucid: authorId
+  }
+
+  const response = await invidiousAPICall(payload)
+
+  const post = parseInvidiousCommunityData(response.comments[0])
+  post.authorId = authorId
+  post.commentCount = null
+
+  return post
+}
+
+export async function getInvidiousCommunityPostComments({ postId, authorId }) {
+  const payload = {
+    resource: 'post',
+    id: postId,
+    subResource: 'comments',
+    params: {
+      ucid: authorId
+    }
+  }
+
+  const response = await invidiousAPICall(payload)
+  const commentData = parseInvidiousCommentData(response)
+
+  return { response, commentData }
+}
+
+export async function getInvidiousCommunityPostCommentReplies({ postId, replyToken, authorId }) {
+  const payload = {
+    resource: 'post',
+    id: postId,
+    subResource: 'comments',
+    params: {
+      ucid: authorId,
+      continuation: replyToken
+    }
+  }
+
+  const response = await invidiousAPICall(payload)
+  return { commentData: parseInvidiousCommentData(response), continuation: response.continuation ?? null }
+}
+
 function parseInvidiousCommunityData(data) {
   return {
     // use #/ to support channel YT links.
@@ -208,7 +270,7 @@ function parseInvidiousCommunityData(data) {
       thumbnail.url = youtubeImageUrlToInvidious(thumbnail.url)
       return thumbnail
     }),
-    publishedText: data.publishedText,
+    publishedTime: calculatePublishedDate(data.publishedText),
     voteCount: data.likeCount,
     postContent: parseInvidiousCommunityAttachments(data.attachment),
     commentCount: data?.replyCount ?? 0, // https://github.com/iv-org/invidious/pull/3635/
@@ -326,7 +388,7 @@ export function filterInvidiousFormats(formats) {
   })
 }
 
-export async function getHashtagInvidious(hashtag, page) {
+export async function getHashtagInvidious(hashtag, page = 1) {
   const payload = {
     resource: 'hashtag',
     id: hashtag,

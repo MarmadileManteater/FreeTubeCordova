@@ -54,8 +54,7 @@ export default defineComponent({
         {
           page: translateWindowTitle(this.$router.getRoutes()
             .find((route) => route.path === '/' + this.landingPage)
-            .meta.title,
-          this.$i18n
+            .meta.title
           )
         })
     },
@@ -199,6 +198,18 @@ export default defineComponent({
               searchQueryText: `#${hashtag}`,
             })
 
+            break
+          }
+
+          case 'post': {
+            const { postId, query } = result
+
+            openInternalPath({
+              path: `/post/${postId}`,
+              query,
+              doCreateNewWindow,
+              searchQueryText: queryText,
+            })
             break
           }
 

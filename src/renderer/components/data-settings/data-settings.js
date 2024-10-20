@@ -64,6 +64,9 @@ export default defineComponent({
     allPlaylists: function () {
       return this.$store.getters.getAllPlaylists
     },
+    historyCacheById: function () {
+      return this.$store.getters.getHistoryCacheById
+    },
     historyCacheSorted: function () {
       return this.$store.getters.getHistoryCacheSorted
     },
@@ -316,7 +319,7 @@ export default defineComponent({
         return [...yt.matchAll(splitCSVRegex)].map(s => {
           let newVal = s[1]
           if (newVal.startsWith('"')) {
-            newVal = newVal.substring(1, newVal.length - 2).replaceAll('""', '"')
+            newVal = newVal.substring(1, newVal.length - 1).replaceAll('""', '"')
           }
           return newVal
         })
@@ -719,7 +722,7 @@ export default defineComponent({
       })
     },
 
-    importFreeTubeHistory(textDecode) {
+    async importFreeTubeHistory(textDecode) {
       textDecode.pop()
 
       const requiredKeys = [
@@ -733,7 +736,6 @@ export default defineComponent({
         'title',
         'type',
         'videoId',
-        'viewCount',
         'watchProgress',
       ]
 
@@ -741,11 +743,16 @@ export default defineComponent({
         // `_id` absent if marked as watched manually
         '_id',
         'lastViewedPlaylistId',
+        'lastViewedPlaylistItemId',
+        'lastViewedPlaylistType',
+        'viewCount',
       ]
 
       const ignoredKeys = [
         'paid',
       ]
+
+      const historyItems = new Map(Object.entries(this.historyCacheById))
 
       textDecode.forEach((history) => {
         const historyData = JSON.parse(history)
@@ -770,14 +777,16 @@ export default defineComponent({
           showToast(this.$t('Settings.Data Settings.History object has insufficient data, skipping item'))
           console.error('Missing Keys: ', missingKeys, historyData)
         } else {
-          this.updateHistory(historyObject)
+          historyItems.set(historyObject.videoId, historyObject)
         }
       })
+
+      await this.overwriteHistory(historyItems)
 
       showToast(this.$t('Settings.Data Settings.All watched history has been successfully imported'))
     },
 
-    importYouTubeHistory(historyData) {
+    async importYouTubeHistory(historyData) {
       const filterPredicate = item =>
         item.products.includes('YouTube') &&
         item.titleUrl != null && // removed video doesnt contain url...
@@ -825,6 +834,8 @@ export default defineComponent({
         'activityControls',
       ].concat(Object.keys(keyMapping))
 
+      const historyItems = new Map(Object.entries(this.historyCacheById))
+
       filteredHistoryData.forEach(element => {
         const historyObject = {}
 
@@ -853,9 +864,11 @@ export default defineComponent({
           historyObject.watchProgress = 1
           historyObject.isLive = false
 
-          this.updateHistory(historyObject)
+          historyItems.set(historyObject.videoId, historyObject)
         }
       })
+
+      await this.overwriteHistory(historyItems)
 
       showToast(this.$t('Settings.Data Settings.All watched history has been successfully imported'))
     },
@@ -965,6 +978,7 @@ export default defineComponent({
         // to the app, so we'll only grab the data we need here.
 
         const playlistObject = {}
+        const videoIdToBeAddedSet = new Set()
 
         Object.keys(playlistData).forEach((key) => {
           if ([requiredKeys, optionalKeys, ignoredKeys].every((ks) => !ks.includes(key))) {
@@ -978,6 +992,7 @@ export default defineComponent({
 
               if (videoObjectHasAllRequiredKeys) {
                 videoArray.push(video)
+                videoIdToBeAddedSet.add(video.videoId)
               }
             })
 
@@ -991,48 +1006,62 @@ export default defineComponent({
         const playlistObjectKeys = Object.keys(playlistObject)
         const playlistObjectHasAllRequiredKeys = requiredKeys.every((k) => playlistObjectKeys.includes(k))
 
-        if (playlistObjectHasAllRequiredKeys) {
-          const existingPlaylist = this.allPlaylists.find((playlist) => {
-            return playlist.playlistName === playlistObject.playlistName
-          })
-
-          if (existingPlaylist !== undefined) {
-            playlistObject.videos.forEach((video) => {
-              let videoExists = false
-              if (video.playlistItemId != null) {
-                // Find by `playlistItemId` if present
-                videoExists = existingPlaylist.videos.some((x) => {
-                  // Allow duplicate (by videoId) videos to be added
-                  return x.videoId === video.videoId && x.playlistItemId === video.playlistItemId
-                })
-              } else {
-                // Older playlist exports have no `playlistItemId` but have `timeAdded`
-                // Which might be duplicate for copied playlists with duplicate `videoId`
-                videoExists = existingPlaylist.videos.some((x) => {
-                  // Allow duplicate (by videoId) videos to be added
-                  return x.videoId === video.videoId && x.timeAdded === video.timeAdded
-                })
-              }
-
-              if (!videoExists) {
-                // Keep original `timeAdded` value
-                const payload = {
-                  _id: existingPlaylist._id,
-                  videoData: video,
-                }
-
-                this.addVideo(payload)
-              }
-            })
-            // Update playlist's `lastUpdatedAt`
-            this.updatePlaylist({ _id: existingPlaylist._id })
-          } else {
-            this.addPlaylist(playlistObject)
-          }
-        } else {
+        if (!playlistObjectHasAllRequiredKeys) {
           const message = this.$t('Settings.Data Settings.Playlist insufficient data', { playlist: playlistData.playlistName })
           showToast(message)
+          return
         }
+
+        const existingPlaylist = this.allPlaylists.find((playlist) => {
+          return playlist.playlistName === playlistObject.playlistName
+        })
+
+        if (existingPlaylist === undefined) {
+          this.addPlaylist(playlistObject)
+          return
+        }
+
+        const duplicateVideoPresentInToBeAdded = playlistObject.videos.length > videoIdToBeAddedSet.size
+        const existingVideoIdSet = existingPlaylist.videos.reduce((video) => videoIdToBeAddedSet.add(video.videoId), new Set())
+        const duplicateVideoPresentInExistingPlaylist = existingPlaylist.videos.length > existingVideoIdSet.size
+        const shouldAddDuplicateVideos = duplicateVideoPresentInToBeAdded || duplicateVideoPresentInExistingPlaylist
+
+        playlistObject.videos.forEach((video) => {
+          let videoExists = false
+          if (shouldAddDuplicateVideos) {
+            if (video.playlistItemId != null) {
+              // Find by `playlistItemId` if present
+              videoExists = existingPlaylist.videos.some((x) => {
+                // Allow duplicate (by videoId) videos to be added
+                return x.videoId === video.videoId && x.playlistItemId === video.playlistItemId
+              })
+            } else {
+              // Older playlist exports have no `playlistItemId` but have `timeAdded`
+              // Which might be duplicate for copied playlists with duplicate `videoId`
+              videoExists = existingPlaylist.videos.some((x) => {
+                // Allow duplicate (by videoId) videos to be added
+                return x.videoId === video.videoId && x.timeAdded === video.timeAdded
+              })
+            }
+          } else {
+            videoExists = existingPlaylist.videos.some((x) => {
+              // Disallow duplicate (by videoId) videos to be added
+              return x.videoId === video.videoId
+            })
+          }
+
+          if (!videoExists) {
+            // Keep original `timeAdded` value
+            const payload = {
+              _id: existingPlaylist._id,
+              videoData: video,
+            }
+
+            this.addVideo(payload)
+          }
+        })
+        // Update playlist's `lastUpdatedAt`
+        this.updatePlaylist({ _id: existingPlaylist._id })
       })
 
       showToast(this.$t('Settings.Data Settings.All playlists has been successfully imported'))
@@ -1172,10 +1201,10 @@ export default defineComponent({
     ...mapActions([
       'updateProfile',
       'updateShowProgressBar',
-      'updateHistory',
       'addPlaylist',
       'addVideo',
       'updatePlaylist',
+      'overwriteHistory'
     ]),
 
     ...mapMutations([
