@@ -382,7 +382,9 @@ const stateWithSideEffects = {
 
       i18n.locale = targetLocale
       await dispatch('getRegionData', targetLocale)
-      android.hideSplashScreen()
+      if (process.env.IS_ANDROID) {
+        android.hideSplashScreen()
+      }
     }
   },
 
