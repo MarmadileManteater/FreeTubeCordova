@@ -1,15 +1,17 @@
 <template>
   <div class="settingsPage">
     <template v-if="unlocked">
-      <div v-show="settingsSectionTypeOpenInMobile != null">
+      <div
+        v-show="settingsSectionTypeOpenInMobile != null"
+        class="returnToMenuMobileIcon"
+        @click="returnToSettingsMenu"
+        @keydown.space.enter="returnToSettingsMenu"
+      >
         <font-awesome-icon
           :icon="['fas', 'angle-left']"
-          class="returnToMenuMobileIcon"
           role="button"
           :title="$t('Settings.Return to Settings Menu')"
           tabindex="0"
-          @click="returnToSettingsMenu"
-          @keydown.space.enter="returnToSettingsMenu"
         />
       </div>
       <ft-settings-menu
