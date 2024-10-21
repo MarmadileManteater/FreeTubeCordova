@@ -50,7 +50,8 @@ export default defineComponent({
     return {
       isInDesktopView: true,
       settingsSectionTypeOpenInMobile: null,
-      unlocked: false
+      unlocked: false,
+      currentPath: window.location.hash
     }
   },
   computed: {
@@ -170,9 +171,11 @@ export default defineComponent({
     }
   },
   mounted: function () {
+    this.onPopState(undefined, true)
     this.handleResize()
     window.addEventListener('resize', this.handleResize)
     document.addEventListener('scroll', this.markScrolledToSectionAsActive)
+    window.addEventListener('popstate', this.onPopState)
 
     // mark first section as active before any scrolling has taken place
     if (this.settingsSectionComponents.length > 0) {
@@ -183,9 +186,26 @@ export default defineComponent({
   beforeDestroy: function () {
     document.removeEventListener('scroll', this.markScrolledToSectionAsActive)
     window.removeEventListener('resize', this.handleResize)
+    window.removeEventListener('popstate', this.popState)
   },
   methods: {
-    navigateToSection: function(sectionType) {
+    onPopState: function (ev, forcedMobile = true) {
+      this.currentPath = window.location.hash
+      if (this.currentPath === '#/settings') {
+        this.returnToSettingsMenu()
+      } else {
+        const subPath = this.currentPath.split('#/settings#')[1]
+        if (subPath !== undefined) {
+          this.navigateToSection(subPath, forcedMobile)
+        }
+      }
+    },
+    pushState: function (path) {
+      if (`#/settings${path}` !== window.location.hash) {
+        history.pushState({}, null, `#/settings${path}`)
+      }
+    },
+    navigateToSection: function(sectionType, forcedMobile = false) {
       if (this.isInDesktopView) {
         nextTick(() => {
           const sectionElement = this.$refs[sectionType][0].$el
@@ -196,7 +216,10 @@ export default defineComponent({
           sectionHeading.focus()
           sectionHeading.tabIndex = -1
         })
-      } else {
+      }
+
+      if ((!this.isInDesktopView) || forcedMobile) {
+        this.pushState(`#${sectionType}`)
         this.settingsSectionTypeOpenInMobile = sectionType
       }
     },

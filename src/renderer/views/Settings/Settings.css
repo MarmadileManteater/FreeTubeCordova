@@ -42,8 +42,6 @@
     inline-size: 100%;
     max-inline-size: 100%;
     box-sizing: border-box;
-    padding-inline-end: 4%;
-    padding-block-end: 1em;
   }
 
   .settingsContent {
