@@ -274,9 +274,31 @@ export default defineComponent({
 
               const message = this.$t('Version $ is now available!  Click for more details')
               this.updateBannerMessage = message.replace('$', tagName)
-              const versionParts = packageDetails.version.split('.')
-              const appVersion = versionParts[versionParts.length - 1]
-              if (parseInt(versionNumber) > parseInt(appVersion)) {
+              function versionNumberGt(versionA, versionB) {
+                const partsA = versionA.split('.')
+                const partsB = versionB.split('.')
+                if (partsA.length > partsB.length) {
+                  return true
+                } else if (partsB.length > partsA.length) {
+                  return false
+                } else {
+                  const partComparisons = partsA.map(a => false)
+                  let oneLeftmostLt = false
+                  let oneGt = false
+                  for (let i = 0; i < partsA.length; i++) {
+                    partComparisons[i] = parseInt(partsA[i]) === parseInt(partsB[i]) ? 'eq' : parseInt(partsA[i]) > parseInt(partsB[i]) ? 'gt' : 'lt'
+                    if (partComparisons[i] === 'gt') {
+                      oneGt = true
+                    }
+                    if (partComparisons[i] === 'lt' && !oneGt) {
+                      oneLeftmostLt = true
+                    }
+                  }
+                  const thereIsAGtBeforeALt = !oneLeftmostLt
+                  return oneGt && thereIsAGtBeforeALt
+                }
+              }
+              if (versionNumberGt(json[0].name, packageDetails.version)) {
                 this.showUpdatesBanner = true
               }
             })
