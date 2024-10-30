@@ -1,5 +1,5 @@
 <template>
-  <div v-if="usingAndroid && !isRelease">
+  <div v-if="usingAndroid && !usingRelease">
     <ft-prompt
       v-if="shown"
       class="prompt"
