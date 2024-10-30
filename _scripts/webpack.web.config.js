@@ -124,6 +124,7 @@ const config = {
       'process.env.SUPPORTS_LOCAL_API': false,
       'process.env.SWIPER_VERSION': `'${swiperVersion}'`,
       'process.env.IS_ANDROID': false,
+      'process.env.IS_RELEASE': !isDevMode
     }),
     new webpack.ProvidePlugin({
       process: 'process/browser'

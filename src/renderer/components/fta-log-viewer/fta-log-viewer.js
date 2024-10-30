@@ -5,7 +5,6 @@ import FtPrompt from '../ft-prompt/ft-prompt.vue'
 import FtButton from '../ft-button/ft-button.vue'
 import { getConsoleLogs, isColourDark } from '../../helpers/android'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-import packageDetails from '../../../../package.json'
 
 export default defineComponent({
   name: 'FtaLogViewer',
@@ -24,8 +23,7 @@ export default defineComponent({
   data() {
     return {
       usingAndroid: process.env.IS_ANDROID,
-      // release builds are the only ones with 3 periods in version numbers
-      usingRelease: packageDetails.version.split('.').length - 1 === 3,
+      usingRelease: process.env.IS_RELEASE,
       theme: this.getThemeFromBody(),
       logs: []
     }

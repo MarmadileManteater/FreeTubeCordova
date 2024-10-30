@@ -121,6 +121,7 @@ const config = {
       'process.env.IS_ELECTRON': false,
       'process.env.IS_ELECTRON_MAIN': false,
       'process.env.IS_ANDROID': true,
+      'process.env.IS_RELEASE': !isDevMode,
       'process.env.SUPPORTS_LOCAL_API': true,
       'process.env.SWIPER_VERSION': `'${swiperVersion}'`,
       // video.js' vhs-utils supports both atob() in web browsers and Buffer in node

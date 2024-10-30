@@ -4,7 +4,6 @@ import FtFlexBox from '../ft-flex-box/ft-flex-box.vue'
 import SideNavMoreOptions from '../side-nav-more-options/side-nav-more-options.vue'
 import { youtubeImageUrlToInvidious } from '../../helpers/api/invidious'
 import { deepCopy } from '../../helpers/utils'
-import packageDetails from '../../../../package.json'
 
 export default defineComponent({
   name: 'SideNav',
@@ -15,8 +14,7 @@ export default defineComponent({
   data() {
     return {
       usingAndroid: process.env.IS_ANDROID,
-      // release builds are the only ones with 3 periods in version numbers
-      usingRelease: packageDetails.version.split('.').length - 1 === 3,
+      usingRelease: process.env.IS_RELEASE
     }
   },
   computed: {
