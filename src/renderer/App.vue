@@ -24,6 +24,7 @@
     >
       <span
         class="changeLogText"
+        lang="en"
         v-html="updateChangelog"
       />
       <ft-flex-box>
@@ -56,6 +57,7 @@
     <ft-create-playlist-prompt
       v-if="showCreatePlaylistPrompt"
     />
+    <fta-log-viewer />
     <ft-toast />
     <ft-progress-bar
       v-if="showProgressBar"
@@ -111,5 +113,4 @@
 <script src="./App.js" />
 
 <style src="./themes.css" />
-<style src="./videoJS.css" />
 <style scoped src="./App.css" />

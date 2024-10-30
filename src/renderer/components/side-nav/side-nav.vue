@@ -42,7 +42,7 @@
           class="thumbnailContainer"
         >
           <font-awesome-icon
-            :icon="['fas', 'list']"
+            :icon="['fas', 'user-check']"
             class="navIcon"
             :class="applyNavIconExpand"
             fixed-width
@@ -198,6 +198,32 @@
           {{ $t("About.About") }}
         </p>
       </router-link>
+      <a
+        v-if="usingAndroid && !usingRelease"
+        class="navOption mobileHidden"
+        :title="$t('Log Viewer.Console Log')"
+        :aria-label="hideLabelsSideBar ? $t('Log Viewer.Console Log') : null"
+        @keydown="showLogViewer"
+        @click="showLogViewer"
+      >
+        <div
+          class="thumbnailContainer"
+        >
+          <font-awesome-icon
+            :icon="['fas', 'terminal']"
+            class="navIcon"
+            :class="applyNavIconExpand"
+            fixed-width
+          />
+        </div>
+        <p
+          v-if="!hideLabelsSideBar"
+          id="channelLabel"
+          class="navLabel"
+        >
+          {{ $t("Log Viewer.Console Log") }}
+        </p>
+      </a>
       <hr>
       <div
         v-if="!hideActiveSubscriptions"
@@ -214,6 +240,7 @@
             class="thumbnailContainer"
           >
             <img
+              v-if="channel.thumbnail != null"
               class="channelThumbnail"
               height="35"
               width="35"
@@ -221,6 +248,11 @@
               :src="channel.thumbnail"
               :alt="isOpen ? '' : channel.name"
             >
+            <font-awesome-icon
+              v-else
+              class="channelThumbnail noThumbnail"
+              :icon="['fas', 'circle-user']"
+            />
           </div>
           <p
             v-if="isOpen"

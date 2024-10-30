@@ -1,34 +1,38 @@
 <template>
-  <div>
+  <div class="settingsPage">
     <template v-if="unlocked">
-      <div class="switchRow">
-        <ft-toggle-switch
-          class="settingsToggle"
-          :label="$t('Settings.Expand All Settings Sections')"
-          :default-value="allSettingsSectionsExpandedByDefault"
-          :compact="false"
-          @change="updateAllSettingsSectionsExpandedByDefault"
-        />
-        <ft-toggle-switch
-          class="settingsToggle"
-          :label="$t('Settings.Sort Settings Sections (A-Z)')"
-          :default-value="settingsSectionSortEnabled"
-          :compact="false"
-          @change="updateSettingsSectionSortEnabled"
-        />
-      </div>
-      <template
-        v-for="(settingsComponent, i) in settingsSectionComponents"
+      <ft-settings-menu
+        v-show="isInDesktopView || settingsSectionTypeOpenInMobile == null"
+        :settings-sections="settingsSectionComponents"
+        @navigate-to-section="navigateToSection"
+      />
+      <div
+        v-show="isInDesktopView || settingsSectionTypeOpenInMobile != null"
+        class="settingsContent"
       >
-        <hr
-          v-if="i !== 0"
-          :key="settingsComponent.type + 'hr'"
-        >
-        <component
-          :is="settingsComponent.type"
-          :key="settingsComponent.type + 'component'"
-        />
-      </template>
+        <div class="switchRow">
+          <ft-toggle-switch
+            class="settingsToggle"
+            :label="$t('Settings.Sort Settings Sections (A-Z)')"
+            :default-value="settingsSectionSortEnabled"
+            :compact="false"
+            @change="updateSettingsSectionSortEnabled"
+          />
+        </div>
+        <div class="settingsSections">
+          <template
+            v-for="(settingsComponent) in settingsSectionComponents"
+          >
+            <component
+              :is="settingsComponent.type"
+              :ref="settingsComponent.type"
+              :key="settingsComponent.type"
+              :class="{ hideOnMobile: settingsSectionTypeOpenInMobile !== settingsComponent.type }"
+              class="section"
+            />
+          </template>
+        </div>
+      </div>
     </template>
     <password-dialog
       v-else

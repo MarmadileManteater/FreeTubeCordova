@@ -11,6 +11,7 @@ import FtProgressBar from './components/ft-progress-bar/ft-progress-bar.vue'
 import FtPlaylistAddVideoPrompt from './components/ft-playlist-add-video-prompt/ft-playlist-add-video-prompt.vue'
 import FtCreatePlaylistPrompt from './components/ft-create-playlist-prompt/ft-create-playlist-prompt.vue'
 import FtSearchFilters from './components/ft-search-filters/ft-search-filters.vue'
+import FtaLogViewer from './components/fta-log-viewer/fta-log-viewer.vue'
 import { marked } from 'marked'
 import { IpcChannels } from '../constants'
 import packageDetails from '../../package.json'
@@ -35,7 +36,8 @@ export default defineComponent({
     FtProgressBar,
     FtPlaylistAddVideoPrompt,
     FtCreatePlaylistPrompt,
-    FtSearchFilters
+    FtSearchFilters,
+    FtaLogViewer
   },
   data: function () {
     return {
@@ -54,7 +56,8 @@ export default defineComponent({
       externalLinkOpeningPromptValues: [
         'yes',
         'no'
-      ]
+      ],
+      nightlyLink: ''
     }
   },
   computed: {
@@ -86,7 +89,7 @@ export default defineComponent({
     windowTitle: function () {
       const routePath = this.$route.path
       if (!routePath.startsWith('/channel/') && !routePath.startsWith('/watch/') && !routePath.startsWith('/hashtag/') && !routePath.startsWith('/playlist/')) {
-        let title = translateWindowTitle(this.$route.meta.title, this.$i18n)
+        let title = translateWindowTitle(this.$route.meta.title)
         if (!title) {
           title = packageDetails.productName
         } else {
@@ -125,7 +128,7 @@ export default defineComponent({
     },
 
     locale: function() {
-      return this.$i18n.locale.replace('_', '-')
+      return this.$i18n.locale
     },
 
     systemTheme: function () {
@@ -183,6 +186,7 @@ export default defineComponent({
       this.grabAllProfiles(this.$t('Profile.All Channels')).then(async () => {
         this.grabHistory()
         this.grabAllPlaylists()
+        this.grabAllSubscriptions()
 
         if (process.env.IS_ELECTRON) {
           ipcRenderer = require('electron').ipcRenderer
@@ -279,6 +283,23 @@ export default defineComponent({
             .catch((error) => {
               console.error('errored while checking for updates', requestUrl, error)
             })
+        } else {
+          // nightly check
+          fetch('https://api.github.com/repos/MarmadileManteater/FreetubeAndroid/actions/runs')
+            .then((response) => response.json())
+            .then((json) => {
+              const currentAppWorkflowRun = packageDetails.version.split('-nightly-')[1]
+              const buildRuns = json.workflow_runs.filter(run => run.name === 'Build Android')
+              if (buildRuns.length > 0) {
+                if (currentAppWorkflowRun < buildRuns[0].run_number) {
+                  this.updateChangelog = marked.parse(`latest commit:\r\n\`\`\`\r\n${buildRuns[0].head_commit.message}\r\n\`\`\``)
+                  this.changeLogTitle = `Nightly ${buildRuns[0].run_number}`
+                  this.updateBannerMessage = this.$t('Version $ is now available!  Click for more details').replace('$', buildRuns[0].run_number)
+                  this.nightlyLink = buildRuns[0].html_url
+                  this.showUpdatesBanner = true
+                }
+              }
+            })
         }
       }
     },
@@ -337,7 +358,9 @@ export default defineComponent({
     },
 
     openDownloadsPage: function () {
-      const url = 'https://github.com/MarmadileManteater/FreeTubeCordova/releases'
+      const url = packageDetails.version.indexOf('-nightly-') === -1
+        ? 'https://github.com/MarmadileManteater/FreeTubeCordova/releases'
+        : this.nightlyLink
       openExternalLink(url)
       this.showReleaseNotes = false
       this.showUpdatesBanner = false
@@ -474,6 +497,17 @@ export default defineComponent({
             break
           }
 
+          case 'post': {
+            const { postId, query } = result
+
+            openInternalPath({
+              path: `/post/${postId}`,
+              query,
+              doCreateNewWindow
+            })
+            break
+          }
+
           case 'channel': {
             const { channelId, subPath, url } = result
 
@@ -566,6 +600,7 @@ export default defineComponent({
       'grabAllProfiles',
       'grabHistory',
       'grabAllPlaylists',
+      'grabAllSubscriptions',
       'getYoutubeUrlInfo',
       'getExternalPlayerCmdArgumentsData',
       'fetchInvidiousInstances',

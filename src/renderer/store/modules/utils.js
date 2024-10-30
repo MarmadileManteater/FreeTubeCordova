@@ -31,6 +31,7 @@ const state = {
   cachedPlaylist: null,
   deArrowCache: {},
   showProgressBar: false,
+  showLogViewer: false,
   showAddToPlaylistPrompt: false,
   showCreatePlaylistPrompt: false,
   showSearchFilters: false,
@@ -52,13 +53,15 @@ const state = {
   externalPlayerNames: [],
   externalPlayerValues: [],
   externalPlayerCmdArguments: {},
-  lastVideoRefreshTimestampByProfile: {},
-  lastShortRefreshTimestampByProfile: {},
-  lastLiveRefreshTimestampByProfile: {},
-  lastCommunityRefreshTimestampByProfile: {},
   lastPopularRefreshTimestamp: '',
   lastTrendingRefreshTimestamp: '',
-  usingTouch: false
+  usingTouch: false,
+  subscriptionFirstAutoFetchRunData: {
+    videos: false,
+    liveStreams: false,
+    shorts: false,
+    communityPosts: false,
+  },
 }
 
 const getters = {
@@ -68,10 +71,6 @@ const getters = {
 
   getOutlinesHidden(state) {
     return state.outlinesHidden
-  },
-
-  getCurrentVolume(state) {
-    return state.currentVolume
   },
 
   getSessionSearchHistory(state) {
@@ -112,6 +111,10 @@ const getters = {
 
   getShowSearchFilters(state) {
     return state.showSearchFilters
+  },
+
+  getShowLogViewer(state) {
+    return state.showLogViewer
   },
 
   getToBeAddedToPlaylistVideoList(state) {
@@ -168,20 +171,17 @@ const getters = {
     return state.lastPopularRefreshTimestamp
   },
 
-  getLastCommunityRefreshTimestampByProfile: (state) => (profileId) => {
-    return state.lastCommunityRefreshTimestampByProfile[profileId]
+  getSubscriptionForVideosFirstAutoFetchRun(state) {
+    return state.subscriptionFirstAutoFetchRunData.videos === true
   },
-
-  getLastShortRefreshTimestampByProfile: (state) => (profileId) => {
-    return state.lastShortRefreshTimestampByProfile[profileId]
+  getSubscriptionForLiveStreamsFirstAutoFetchRun (state) {
+    return state.subscriptionFirstAutoFetchRunData.liveStreams === true
   },
-
-  getLastLiveRefreshTimestampByProfile: (state) => (profileId) => {
-    return state.lastLiveRefreshTimestampByProfile[profileId]
+  getSubscriptionForShortsFirstAutoFetchRun (state) {
+    return state.subscriptionFirstAutoFetchRunData.shorts === true
   },
-
-  getLastVideoRefreshTimestampByProfile: (state) => (profileId) => {
-    return state.lastVideoRefreshTimestampByProfile[profileId]
+  getSubscriptionForCommunityPostsFirstAutoFetchRun (state) {
+    return state.subscriptionFirstAutoFetchRunData.communityPosts === true
   },
 }
 
@@ -400,11 +400,19 @@ const actions = {
     commit('setShowSearchFilters', false)
   },
 
+  showLogViewer({ commit }) {
+    commit('setShowLogViewer', true)
+  },
+
+  hideLogViewer({ commit }) {
+    commit('setShowLogViewer', false)
+  },
+
   updateShowProgressBar ({ commit }, value) {
     commit('setShowProgressBar', value)
   },
 
-  async getRegionData ({ commit }, { locale }) {
+  async getRegionData ({ commit }, locale) {
     const localePathExists = process.env.GEOLOCATION_NAMES.includes(locale)
 
     const url = createWebURL(`/static/geolocations/${localePathExists ? locale : 'en-US'}.json`)
@@ -475,11 +483,13 @@ const actions = {
 
     const hashtagPattern = /^\/hashtag\/(?<tag>[^#&/?]+)$/
 
+    const postPattern = /^\/post\/(?<postId>.+)/
     const typePatterns = new Map([
       ['playlist', /^(\/playlist\/?|\/embed(\/?videoseries)?)$/],
       ['search', /^\/results|search\/?$/],
       ['hashtag', hashtagPattern],
-      ['channel', channelPattern]
+      ['channel', channelPattern],
+      ['post', postPattern]
     ])
 
     for (const [type, pattern] of typePatterns) {
@@ -556,6 +566,17 @@ const actions = {
           hashtag
         }
       }
+
+      case 'post': {
+        const match = url.pathname.match(postPattern)
+        const postId = match.groups.postId
+        const query = { authorId: url.searchParams.get('ucid') }
+        return {
+          urlType: 'post',
+          postId,
+          query
+        }
+      }
       /*
       Using RegExp named capture groups from ES2018
       To avoid access to specific captured value broken
@@ -613,6 +634,16 @@ const actions = {
             subPath = 'about'
             break
           case 'community':
+            if (url.searchParams.has('lb')) {
+              // if it has the lb search parameter then it is linking a specific community post
+              const postId = url.searchParams.get('lb')
+              const query = { authorId: channelId }
+              return {
+                urlType: 'post',
+                postId,
+                query
+              }
+            }
             subPath = 'community'
             break
           default:
@@ -778,22 +809,6 @@ const actions = {
       ipcRenderer.send(IpcChannels.OPEN_IN_EXTERNAL_PLAYER, { executable, args })
     }
   },
-
-  updateLastCommunityRefreshTimestampByProfile ({ commit }, payload) {
-    commit('updateLastCommunityRefreshTimestampByProfile', payload)
-  },
-
-  updateLastShortRefreshTimestampByProfile ({ commit }, payload) {
-    commit('updateLastShortRefreshTimestampByProfile', payload)
-  },
-
-  updateLastLiveRefreshTimestampByProfile ({ commit }, payload) {
-    commit('updateLastLiveRefreshTimestampByProfile', payload)
-  },
-
-  updateLastVideoRefreshTimestampByProfile ({ commit }, payload) {
-    commit('updateLastVideoRefreshTimestampByProfile', payload)
-  }
 }
 
 const mutations = {
@@ -866,6 +881,10 @@ const mutations = {
     state.showSearchFilters = payload
   },
 
+  setShowLogViewer (state, payload) {
+    state.showLogViewer = payload
+  },
+
   setToBeAddedToPlaylistVideoList (state, payload) {
     state.toBeAddedToPlaylistVideoList = payload
   },
@@ -895,22 +914,6 @@ const mutations = {
 
   setLastPopularRefreshTimestamp (state, timestamp) {
     state.lastPopularRefreshTimestamp = timestamp
-  },
-
-  updateLastCommunityRefreshTimestampByProfile (state, { profileId, timestamp }) {
-    vueSet(state.lastCommunityRefreshTimestampByProfile, profileId, timestamp)
-  },
-
-  updateLastShortRefreshTimestampByProfile (state, { profileId, timestamp }) {
-    vueSet(state.lastShortRefreshTimestampByProfile, profileId, timestamp)
-  },
-
-  updateLastLiveRefreshTimestampByProfile (state, { profileId, timestamp }) {
-    vueSet(state.lastLiveRefreshTimestampByProfile, profileId, timestamp)
-  },
-
-  updateLastVideoRefreshTimestampByProfile (state, { profileId, timestamp }) {
-    vueSet(state.lastVideoRefreshTimestampByProfile, profileId, timestamp)
   },
 
   clearTrendingCache(state) {
@@ -976,7 +979,19 @@ const mutations = {
 
   setUsingTouch(state, value) {
     state.usingTouch = value
-  }
+  },
+  setSubscriptionForVideosFirstAutoFetchRun (state) {
+    state.subscriptionFirstAutoFetchRunData.videos = true
+  },
+  setSubscriptionForLiveStreamsFirstAutoFetchRun (state) {
+    state.subscriptionFirstAutoFetchRunData.liveStreams = true
+  },
+  setSubscriptionForShortsFirstAutoFetchRun (state) {
+    state.subscriptionFirstAutoFetchRunData.shorts = true
+  },
+  setSubscriptionForCommunityPostsFirstAutoFetchRun (state) {
+    state.subscriptionFirstAutoFetchRunData.communityPosts = true
+  },
 }
 
 export default {

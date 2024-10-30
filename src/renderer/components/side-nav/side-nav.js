@@ -1,4 +1,5 @@
 import { defineComponent } from 'vue'
+import { mapActions } from 'vuex'
 import FtFlexBox from '../ft-flex-box/ft-flex-box.vue'
 import SideNavMoreOptions from '../side-nav-more-options/side-nav-more-options.vue'
 import { youtubeImageUrlToInvidious } from '../../helpers/api/invidious'
@@ -10,6 +11,12 @@ export default defineComponent({
     'ft-flex-box': FtFlexBox,
     'side-nav-more-options': SideNavMoreOptions
   },
+  data() {
+    return {
+      usingAndroid: process.env.IS_ANDROID,
+      usingRelease: process.env.IS_RELEASE
+    }
+  },
   computed: {
     isOpen: function () {
       return this.$store.getters.getIsSideNavOpen
@@ -20,8 +27,8 @@ export default defineComponent({
     backendPreference: function () {
       return this.$store.getters.getBackendPreference
     },
-    currentInvidiousInstance: function () {
-      return this.$store.getters.getCurrentInvidiousInstance
+    currentInvidiousInstanceUrl: function () {
+      return this.$store.getters.getCurrentInvidiousInstanceUrl
     },
     profileList: function () {
       return this.$store.getters.getProfileList
@@ -30,7 +37,7 @@ export default defineComponent({
       return this.$store.getters.getActiveProfile
     },
     locale: function () {
-      return this.$i18n.locale.replace('_', '-')
+      return this.$i18n.locale
     },
     activeSubscriptions: function () {
       const subscriptions = deepCopy(this.activeProfile.subscriptions)
@@ -47,7 +54,7 @@ export default defineComponent({
 
       if (this.backendPreference === 'invidious') {
         subscriptions.forEach((channel) => {
-          channel.thumbnail = youtubeImageUrlToInvidious(channel.thumbnail, this.currentInvidiousInstance)
+          channel.thumbnail = youtubeImageUrlToInvidious(channel.thumbnail, this.currentInvidiousInstanceUrl)
         })
       }
 
@@ -81,5 +88,10 @@ export default defineComponent({
         hiddenLabels: this.hideText
       }
     }
+  },
+  methods: {
+    ...mapActions([
+      'showLogViewer'
+    ])
   }
 })

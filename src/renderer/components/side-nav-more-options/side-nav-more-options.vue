@@ -37,7 +37,7 @@
           class="thumbnailContainer"
         >
           <font-awesome-icon
-            :icon="['fas', 'list']"
+            :icon="['fas', 'user-check']"
             class="navIcon"
             :class="applyNavIconExpand"
             fixed-width
@@ -110,6 +110,32 @@
           {{ $t("About.About") }}
         </p>
       </router-link>
+      <a
+        v-if="usingAndroid && !usingRelease"
+        class="navOption"
+        :title="$t('Log Viewer.Console Log')"
+        :aria-label="hideLabelsSideBar ? $t('Log Viewer.Console Log') : null"
+        @keydown="showLogViewer"
+        @click="showLogViewer"
+      >
+        <div
+          class="thumbnailContainer"
+        >
+          <font-awesome-icon
+            :icon="['fas', 'terminal']"
+            class="navIcon"
+            :class="applyNavIconExpand"
+            fixed-width
+          />
+        </div>
+        <p
+          v-if="!hideLabelsSideBar"
+          id="channelLabel"
+          class="navLabel"
+        >
+          {{ $t("Log Viewer.Console Log") }}
+        </p>
+      </a>
     </div>
     <router-link
       class="navOption mobileShow"

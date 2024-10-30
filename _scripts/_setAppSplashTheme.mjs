@@ -30,11 +30,25 @@ const COLOURS = {
     secondary: '#E4E4E4',
     back: '#f04242',
     backDark: '#f04242'
+  },
+  // blue from the logo as the background colour
+  RC: {
+    primary: '#E4E4E4',
+    secondary: '#E4E4E4',
+    back: '#14a4df',
+    backDark: '#14a4df'
+  },
+  // solarised dark
+  FEATURE_BRANCH: {
+    primary: '#E4E4E4',
+    secondary: '#E4E4E4',
+    back: '#204b56',
+    backDark: '#204b56'
   }
 }
 let colour = 'RELEASE'
 for (const key in COLOURS) {
-  if (process.argv.indexOf(`--${key.toLowerCase()}`) !== -1) {
+  if (process.argv.indexOf(`--${key.toLowerCase().replaceAll('_', '-')}`) !== -1) {
     colour = key
   }
 }

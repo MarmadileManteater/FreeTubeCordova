@@ -1,8 +1,8 @@
 import { defineComponent } from 'vue'
 import FtCard from '../../components/ft-card/ft-card.vue'
-import FtLogoFull from '../../components/ft-logo-full/ft-logo-full.vue'
-import { ABOUT_BITCOIN_ADDRESS } from '../../../constants.js'
 import packageDetails from '../../../../package.json'
+import { ABOUT_BITCOIN_ADDRESS } from '../../../constants'
+import FtLogoFull from '../../components/ft-logo-full/ft-logo-full.vue'
 
 export default defineComponent({
   name: 'About',
@@ -12,12 +12,16 @@ export default defineComponent({
   },
   data: function () {
     return {
-      versionNumber: `v${packageDetails.version}`,
-      chunks: [
+      versionNumber: `v${packageDetails.version}`
+    }
+  },
+  computed: {
+    chunks: function () {
+      return [
         {
           icon: ['fab', 'github'],
           title: this.$t('About.Source code'),
-          content: `<a href="https://github.com/MarmadileManteater/FreeTubeCordova">GitHub: FreeTubeAndroid</a><br>${this.$t('About.Licensed under the AGPLv3')} <a href="https://www.gnu.org/licenses/agpl-3.0.en.html">${this.$t('About.View License')}</a>.<br/> This is a fork of the official <a href="https://github.com/FreeTubeApp/FreeTube">FreeTube</a> repo with modifications to work better in a browser and on phones.`
+          content: `<a href="https://github.com/MarmadileManteater/FreeTubeCordova">GitHub: FreeTubeAndroid</a><br>${this.$t('About.Licensed under the')} <a href="https://www.gnu.org/licenses/agpl-3.0.en.html">${this.$t('About.AGPLv3')}</a>.<br/> This is a fork of the official <a href="https://github.com/FreeTubeApp/FreeTube">FreeTube</a> repo with modifications to work better in a browser and on phones.`
         },
         {
           icon: ['fas', 'file-download'],
@@ -74,7 +78,7 @@ export default defineComponent({
           title: `${this.$t('About.Donate')} - BTC`,
           content: `<a href="bitcoin:${ABOUT_BITCOIN_ADDRESS}">${ABOUT_BITCOIN_ADDRESS}</a>`
         }
-      ],
+      ]
     }
   }
 })

@@ -1,9 +1,12 @@
 import { defineComponent } from 'vue'
+import { mapActions } from 'vuex'
 
 export default defineComponent({
   name: 'SideNav',
   data: function () {
     return {
+      usingAndroid: process.env.IS_ANDROID,
+      usingRelease: process.env.IS_RELEASE,
       openMoreOptions: false
     }
   },
@@ -28,5 +31,10 @@ export default defineComponent({
         navIconExpand: this.hideLabelsSideBar
       }
     }
+  },
+  methods: {
+    ...mapActions([
+      'showLogViewer'
+    ])
   }
 })

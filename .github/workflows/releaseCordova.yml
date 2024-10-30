@@ -17,7 +17,7 @@ jobs:
     - name: Use Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: 18.x
+        node-version: 20.x
         cache: "yarn"
     - name: 🧶 Yarn install
       run: yarn ci
@@ -36,7 +36,11 @@ jobs:
       with:
         result-encoding: string
         script: |
-          return '${{ steps.pkg.outputs.version }}.${{ github.run_number }}'
+          // TODO✏ automate this
+          var run_number = ${{ github.run_number }} - 121
+          var version = '${{ steps.pkg.outputs.version }}'
+          var version_number = version + '.' + run_number
+          return version_number
     - name: Set App ID Variable
       id: appId
       uses: actions/github-script@v6
