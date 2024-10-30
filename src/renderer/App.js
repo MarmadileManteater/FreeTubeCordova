@@ -267,16 +267,15 @@ export default defineComponent({
             .then((response) => response.json())
             .then((json) => {
               const tagName = json[0].tag_name
-              const tagNameParts = tagName.split('.')
-              const versionNumber = tagNameParts[tagNameParts.length - 1]
               this.updateChangelog = marked.parse(json[0].body)
               this.changeLogTitle = json[0].name
 
               const message = this.$t('Version $ is now available!  Click for more details')
               this.updateBannerMessage = message.replace('$', tagName)
-              const versionParts = packageDetails.version.split('.')
-              const appVersion = versionParts[versionParts.length - 1]
-              if (parseInt(versionNumber) > parseInt(appVersion)) {
+              function versionNumberGt(versionA, versionB) {
+                return [versionA, versionB].sort().at(-1) === versionA
+              }
+              if (versionNumberGt(json[0].name, packageDetails.version)) {
                 this.showUpdatesBanner = true
               }
             })
