@@ -293,8 +293,13 @@ export async function getLocalVideoInfo(id) {
       }
     }
 
-    if (info.streaming_data) {
-      decipherFormats(info.streaming_data.formats, webInnertube.actions.session.player)
+    try {
+      if (info.streaming_data) {
+       decipherFormats(info.streaming_data.formats, webInnertube.actions.session.player)
+      }
+    } catch (ex) {
+      // pass when legacy formats fail
+      console.warn(ex)
     }
   }
 
