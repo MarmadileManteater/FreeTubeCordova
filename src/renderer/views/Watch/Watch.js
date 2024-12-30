@@ -15,6 +15,7 @@ import packageDetails from '../../../../package.json'
 import {
   buildVTTFileLocally,
   copyToClipboard,
+  extractNumberFromString,
   formatDurationAsTimestamp,
   formatNumber,
   showToast
@@ -28,10 +29,8 @@ import {
 } from '../../helpers/api/local'
 import {
   convertInvidiousToLocalFormat,
-  filterInvidiousFormats,
   generateInvidiousDashManifestLocally,
   getProxyUrl,
-  invidiousFetch,
   invidiousGetVideoInformation,
   mapInvidiousLegacyFormat,
   youtubeImageUrlToInvidious
@@ -81,6 +80,7 @@ export default defineComponent({
       isLiveContent: false,
       isUpcoming: false,
       isPostLiveDvr: false,
+      isUnlisted: false,
       upcomingTimestamp: null,
       upcomingTimeLeft: null,
       /** @type {'dash' | 'audio' | 'legacy'} */
@@ -413,31 +413,12 @@ export default defineComponent({
           return
         }
 
-        const playabilityStatus = result.playability_status
-
-        // The apostrophe is intentionally that one (char code 8217), because that is the one YouTube uses
-        const BOT_MESSAGE = 'Sign in to confirm you’re not a bot'
-
-        if (playabilityStatus.status === 'UNPLAYABLE' || (playabilityStatus.status === 'LOGIN_REQUIRED' && playabilityStatus.reason === BOT_MESSAGE)) {
-          if (playabilityStatus.reason === BOT_MESSAGE) {
-            throw new Error(this.$t('Video.IP block'))
-          }
-
-          let errorText = `[${playabilityStatus.status}] ${playabilityStatus.reason}`
-
-          if (playabilityStatus.error_screen) {
-            errorText += `: ${playabilityStatus.error_screen.subreason.text}`
-          }
-
-          throw new Error(errorText)
-        }
-
         // extract localised title first and fall back to the not localised one
         this.videoTitle = result.primary_info?.title.text ?? result.basic_info.title
-        this.videoViewCount = result.basic_info.view_count
+        this.videoViewCount = result.basic_info.view_count ?? extractNumberFromString(result.primary_info.view_count.text)
 
-        this.channelId = result.basic_info.channel_id
-        this.channelName = result.basic_info.author
+        this.channelId = result.basic_info.channel_id ?? result.secondary_info.owner?.author.id
+        this.channelName = result.basic_info.author ?? result.secondary_info.owner?.author.name
 
         if (result.secondary_info.owner?.author) {
           this.channelThumbnail = result.secondary_info.owner.author.best_thumbnail?.url ?? ''
@@ -453,8 +434,13 @@ export default defineComponent({
           channelId: this.channelId
         })
 
-        // `result.page[0].microformat.publish_date` example value: `2023-08-12T08:59:59-07:00`
-        this.videoPublished = new Date(result.page[0].microformat.publish_date).getTime()
+        if (result.page[0].microformat?.publish_date) {
+          // `result.page[0].microformat.publish_date` example value: `2023-08-12T08:59:59-07:00`
+          this.videoPublished = new Date(result.page[0].microformat.publish_date).getTime()
+        } else {
+          // text date Jan 1, 2000, not as accurate but better than nothing
+          this.videoPublished = new Date(result.primary_info.published).getTime()
+        }
 
         if (result.secondary_info?.description.runs) {
           try {
@@ -478,7 +464,7 @@ export default defineComponent({
             this.thumbnail = `https://i.ytimg.com/vi/${this.videoId}/maxres3.jpg`
             break
           default:
-            this.thumbnail = result.basic_info.thumbnail[0].url
+            this.thumbnail = result.basic_info.thumbnail?.[0].url ?? `https://i.ytimg.com/vi/${this.videoId}/maxresdefault.jpg`
             break
         }
 
@@ -496,6 +482,7 @@ export default defineComponent({
         this.isUpcoming = !!result.basic_info.is_upcoming
         this.isLiveContent = !!result.basic_info.is_live_content
         this.isPostLiveDvr = !!result.basic_info.is_post_live_dvr
+        this.isUnlisted = !!result.basic_info.is_unlisted
 
         const subCount = !result.secondary_info.owner.subscriber_count.isEmpty() ? parseLocalSubscriberCount(result.secondary_info.owner.subscriber_count.text) : NaN
 
@@ -521,7 +508,7 @@ export default defineComponent({
               })
             }
           } else {
-            chapters = this.extractChaptersFromDescription(result.basic_info.short_description)
+            chapters = this.extractChaptersFromDescription(result.basic_info.short_description ?? result.secondary_info.description.text)
           }
 
           if (chapters.length > 0) {
@@ -536,6 +523,51 @@ export default defineComponent({
         }
 
         this.videoChapters = chapters
+
+        const playabilityStatus = result.playability_status
+
+        // The apostrophe is intentionally that one (char code 8217), because that is the one YouTube uses
+        const BOT_MESSAGE = 'Sign in to confirm you’re not a bot'
+
+        if (playabilityStatus.status === 'UNPLAYABLE' || playabilityStatus.status === 'LOGIN_REQUIRED') {
+          if (playabilityStatus.error_screen?.offer_id === 'sponsors_only_video') {
+            // Members-only videos can only be watched while logged into a Google account that is a paid channel member
+            // so there is no point trying any other backends as it will always fail
+            this.errorMessage = this.$t('Video.MembersOnly')
+            this.customErrorIcon = ['fas', 'money-check-dollar']
+            this.isLoading = false
+            this.updateTitle()
+            return
+          } else if (playabilityStatus.reason === 'Sign in to confirm your age' || (result.has_trailer && result.getTrailerInfo() === null)) {
+            // Age-restricted videos can only be watched while logged into a Google account that is age-verified
+            // so there is no point trying any other backends as it will always fail
+            this.errorMessage = this.$t('Video.AgeRestricted')
+            this.isLoading = false
+            this.updateTitle()
+            return
+          }
+
+          let errorText
+
+          if (playabilityStatus.reason === BOT_MESSAGE || playabilityStatus.reason === 'Please sign in') {
+            errorText = this.$t('Video.IP block')
+          } else {
+            errorText = `[${playabilityStatus.status}] ${playabilityStatus.reason}`
+
+            if (playabilityStatus.error_screen?.subreason) {
+              errorText += `: ${playabilityStatus.error_screen.subreason.text}`
+            }
+          }
+
+          if (this.backendFallback) {
+            throw new Error(errorText)
+          } else {
+            this.errorMessage = errorText
+            this.isLoading = false
+            this.updateTitle()
+            return
+          }
+        }
 
         if (!this.hideLiveChat && this.isLive && result.livechat) {
           this.liveChat = result.getLiveChat()
@@ -748,6 +780,7 @@ export default defineComponent({
           }
 
           if (result.storyboards?.type === 'PlayerStoryboardSpec') {
+            /** @type {import('youtubei.js/dist/src/parser/classes/PlayerStoryboardSpec').StoryboardData[]} */
             let source = result.storyboards.boards
             if (window.innerWidth < 500) {
               source = source.filter((board) => board.thumbnail_height <= 90)
@@ -756,7 +789,6 @@ export default defineComponent({
           }
         }
 
-        // this.errorMessage = 'Test error message'
         this.isLoading = false
         this.updateTitle()
       } catch (err) {
@@ -819,6 +851,7 @@ export default defineComponent({
           this.isLive = result.liveNow
           this.isFamilyFriendly = result.isFamilyFriendly
           this.isPostLiveDvr = !!result.isPostLiveDvr
+          this.isUnlisted = !result.isListed
 
           this.captions = result.captions.map(caption => {
             return {
@@ -874,6 +907,8 @@ export default defineComponent({
             // // https://github.com/iv-org/invidious/pull/4589
             // if (this.proxyVideos) {
 
+            this.streamingDataExpiryDate = this.extractExpiryDateFromStreamingUrl(result.adaptiveFormats[0].url)
+
             let hlsManifestUrl = result.hlsUrl
 
             if (this.proxyVideos) {
@@ -902,12 +937,9 @@ export default defineComponent({
           } else {
             this.videoLengthSeconds = result.lengthSeconds
 
-            // Detect if the Invidious server is running a new enough version of Invidious
-            // to include this pull request: https://github.com/iv-org/invidious/pull/4586
-            // which fixed the API returning incorrect height, width and fps information
-            const trustApiResponse = result.adaptiveFormats.some(stream => typeof stream.size === 'string')
+            this.streamingDataExpiryDate = this.extractExpiryDateFromStreamingUrl(result.adaptiveFormats[0].url)
 
-            this.legacyFormats = result.formatStreams.map(format => mapInvidiousLegacyFormat(format, trustApiResponse))
+            this.legacyFormats = result.formatStreams.map(mapInvidiousLegacyFormat)
 
             if (!process.env.SUPPORTS_LOCAL_API || this.proxyVideos) {
               this.legacyFormats.forEach(format => {
@@ -952,7 +984,7 @@ export default defineComponent({
               return object
             }))
 
-            this.manifestSrc = await this.createInvidiousDashManifest(result, trustApiResponse)
+            this.manifestSrc = await this.createInvidiousDashManifest(result)
             this.manifestMimeType = MANIFEST_TYPE_DASH
           }
 
@@ -974,6 +1006,12 @@ export default defineComponent({
             this.isLoading = false
           }
         })
+    },
+
+    extractExpiryDateFromStreamingUrl: function (url) {
+      const expireString = new URL(url).searchParams.get('expire')
+
+      return new Date(parseInt(expireString) * 1000)
     },
 
     /**
@@ -1396,25 +1434,14 @@ export default defineComponent({
       return `data:application/dash+xml;charset=UTF-8,${encodeURIComponent(xmlData)}`
     },
 
-    createInvidiousDashManifest: async function (result, trustApiResponse = false) {
+    createInvidiousDashManifest: async function (result) {
       let url = `${this.currentInvidiousInstanceUrl}/api/manifest/dash/id/${this.videoId}`
 
       // If we are in Electron,
       // we can use YouTube.js' DASH manifest generator to generate the manifest.
       // Using YouTube.js' gives us support for multiple audio tracks (currently not supported by Invidious)
       if (process.env.SUPPORTS_LOCAL_API) {
-        const adaptiveFormats = await this.getAdaptiveFormatsInvidious(result, trustApiResponse)
-
-        let parsedManifest
-
-        if (!trustApiResponse) {
-          // Invidious' API response doesn't include the height and width (and fps and qualityLabel for AV1) of video streams
-          // so we need to extract them from Invidious' manifest
-          const response = await invidiousFetch(url)
-          const originalText = await response.text()
-
-          parsedManifest = new DOMParser().parseFromString(originalText, 'application/xml')
-        }
+        const adaptiveFormats = await this.getAdaptiveFormatsInvidious(result)
 
         /** @type {import('youtubei.js').Misc.Format[]} */
         const formats = []
@@ -1425,25 +1452,12 @@ export default defineComponent({
         let hasMultipleAudioTracks = false
 
         for (const format of adaptiveFormats) {
-          if (!trustApiResponse && format.type.startsWith('video/')) {
-            const representation = parsedManifest.querySelector(`Representation[id="${format.itag}"][bandwidth="${format.bitrate}"]`)
-
-            format.height = parseInt(representation.getAttribute('height'))
-            format.width = parseInt(representation.getAttribute('width'))
-            format.fps = parseInt(representation.getAttribute('frameRate'))
-
-            // the quality label is missing for AV1 formats
-            if (!format.qualityLabel) {
-              format.qualityLabel = format.width > format.height ? `${format.height}p` : `${format.width}p`
-            }
-          }
-
           const localFormat = convertInvidiousToLocalFormat(format)
 
           if (localFormat.has_audio) {
             audioFormats.push(localFormat)
 
-            if (localFormat.is_dubbed || localFormat.is_descriptive || localFormat.is_secondary) {
+            if (localFormat.is_dubbed || localFormat.is_descriptive || localFormat.is_secondary || localFormat.is_auto_dubbed) {
               hasMultipleAudioTracks = true
             }
           }
@@ -1453,7 +1467,7 @@ export default defineComponent({
 
         if (hasMultipleAudioTracks) {
           // match YouTube's local API response with English
-          const languageNames = new Intl.DisplayNames('en-US', { type: 'language' })
+          const languageNames = new Intl.DisplayNames('en-US', { type: 'language', languageDisplay: 'standard' })
           for (const format of audioFormats) {
             this.generateAudioTrackFieldInvidious(format, languageNames)
           }
@@ -1491,6 +1505,9 @@ export default defineComponent({
       } else if (format.is_secondary) {
         type = ' secondary'
         idNumber = 6
+      } else if (format.is_auto_dubbed) {
+        type = ''
+        idNumber = 10
       } else {
         type = ' alternative'
         idNumber = -1
@@ -1505,7 +1522,7 @@ export default defineComponent({
       }
     },
 
-    getAdaptiveFormatsInvidious: async function (existingInfoResult = null, trustApiResponse = false) {
+    getAdaptiveFormatsInvidious: async function (existingInfoResult = null) {
       let result
       if (existingInfoResult) {
         result = existingInfoResult
@@ -1513,32 +1530,25 @@ export default defineComponent({
         result = await invidiousGetVideoInformation(this.videoId)
       }
 
-      if (trustApiResponse) {
-        result.adaptiveFormats.forEach((format) => {
-          format.bitrate = parseInt(format.bitrate)
+      result.adaptiveFormats.forEach((format) => {
+        format.bitrate = parseInt(format.bitrate)
 
-          // audio streams don't have a size property
-          if (typeof format.size === 'string') {
-            const [stringWidth, stringHeight] = format.size.split('x')
+        // audio streams don't have a size property
+        if (typeof format.size === 'string') {
+          const [stringWidth, stringHeight] = format.size.split('x')
 
-            format.width = parseInt(stringWidth)
-            format.height = parseInt(stringHeight)
-          }
-        })
+          format.width = parseInt(stringWidth)
+          format.height = parseInt(stringHeight)
+        }
+      })
 
-        return result.adaptiveFormats
-      } else {
-        return filterInvidiousFormats(result.adaptiveFormats)
-          .map((format) => {
-            format.bitrate = parseInt(format.bitrate)
-            if (typeof format.resolution === 'string') {
-              format.height = parseInt(format.resolution.replace('p', ''))
-            }
-            return format
-          })
-      }
+      return result.adaptiveFormats
     },
 
+    /**
+     * @param {import('youtubei.js/dist/src/parser/classes/PlayerStoryboardSpec').StoryboardData} storyboardInfo
+     * @returns {string}
+     */
     createLocalStoryboardUrls: function (storyboardInfo) {
       const results = buildVTTFileLocally(storyboardInfo, this.videoLengthSeconds)
 
@@ -1558,7 +1568,7 @@ export default defineComponent({
       // otherwise just fallback to the FreeTube display language and hope that YouTube will be able to handle it
       if (!translationLanguage) {
         translationName = this.$t('Locale Name')
-        translationCode = userLanguages.values().next()
+        translationCode = userLanguages.values().next().value
       } else {
         translationName = translationLanguage.language_name.text
         translationCode = translationLanguage.language_code

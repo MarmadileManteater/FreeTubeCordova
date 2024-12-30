@@ -189,6 +189,8 @@ User Playlists:
   Remove Watched Videos: Remove Watched Videos
   Enable Quick Bookmark With This Playlist: Enable Quick Bookmark With This Playlist
   Quick Bookmark Enabled: Quick Bookmark Enabled
+  Export Playlist: Export This Playlist
+  The playlist has been successfully exported: The playlist has been successfully exported
   Are you sure you want to remove {playlistItemCount} duplicate videos from this playlist? This cannot be undone: Are you sure you want to remove 1 duplicate video from this playlist? This cannot be undone. | Are you sure you want to remove {playlistItemCount} duplicate videos from this playlist? This cannot be undone.
   Are you sure you want to remove {playlistItemCount} watched videos from this playlist? This cannot be undone: Are you sure you want to remove 1 watched video from this playlist? This cannot be undone. | Are you sure you want to remove {playlistItemCount} watched videos from this playlist? This cannot be undone.
   Delete Playlist: Delete Playlist
@@ -765,6 +767,8 @@ Channel:
     Viewing Posts Only Supported By Invidious: Viewing Posts is only supported by Invidious. Head to a channel's community tab to view content there without Invidious.
 Video:
   IP block: 'YouTube has blocked your IP address from watching videos. Please try switching to a different VPN or proxy.'
+  MembersOnly: Members-only videos cannot be watched with FreeTube as they require Google login and paid membership to the uploader's channel.
+  AgeRestricted: Age-restricted videos cannot be watched with FreeTube as they require Google login and using an age-verified YouTube account.
   More Options: More Options
   Mark As Watched: Mark As Watched
   Remove From History: Remove From History
@@ -800,6 +804,7 @@ Video:
   Premieres on: Premieres on
   Premieres: Premieres
   Upcoming: Upcoming
+  Unlisted: Unlisted
   Live: Live
   Live Now: Live Now
   Live Chat: Live Chat

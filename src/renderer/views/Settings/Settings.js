@@ -13,8 +13,8 @@ import ProxySettings from '../../components/proxy-settings/proxy-settings.vue'
 import SponsorBlockSettings from '../../components/sponsor-block-settings/sponsor-block-settings.vue'
 import ParentControlSettings from '../../components/parental-control-settings/parental-control-settings.vue'
 import ExperimentalSettings from '../../components/experimental-settings/experimental-settings.vue'
-import PasswordSettings from '../../components/password-settings/password-settings.vue'
-import PasswordDialog from '../../components/password-dialog/password-dialog.vue'
+import PasswordSettings from '../../components/PasswordSettings/PasswordSettings.vue'
+import PasswordDialog from '../../components/PasswordDialog/PasswordDialog.vue'
 import FtToggleSwitch from '../../components/ft-toggle-switch/ft-toggle-switch.vue'
 import FtSettingsMenu from '../../components/ft-settings-menu/ft-settings-menu.vue'
 
@@ -170,17 +170,11 @@ export default defineComponent({
       this.unlocked = true
     }
   },
-  mounted: function () {
+  mounted: function () { 
     this.onPopState(undefined, true)
-    this.handleResize()
-    window.addEventListener('resize', this.handleResize)
-    document.addEventListener('scroll', this.markScrolledToSectionAsActive)
     window.addEventListener('popstate', this.onPopState)
-
-    // mark first section as active before any scrolling has taken place
-    if (this.settingsSectionComponents.length > 0) {
-      const firstSection = document.getElementById(this.settingsSectionComponents[0].type)
-      firstSection.classList.add(ACTIVE_CLASS_NAME)
+    if (this.unlocked) {
+      this.handleMounted()
     }
   },
   beforeDestroy: function () {
@@ -189,6 +183,27 @@ export default defineComponent({
     window.removeEventListener('popstate', this.popState)
   },
   methods: {
+    handleMounted: function () {
+      this.handleResize()
+      window.addEventListener('resize', this.handleResize)
+      document.addEventListener('scroll', this.markScrolledToSectionAsActive)
+    window.addEventListener('popstate', this.onPopState)
+
+      // mark first section as active before any scrolling has taken place
+      if (this.settingsSectionComponents.length > 0) {
+        const firstSection = document.getElementById(this.settingsSectionComponents[0].type)
+        firstSection.classList.add(ACTIVE_CLASS_NAME)
+      }
+    },
+
+    handleUnlock: function () {
+      this.unlocked = true
+
+      nextTick(() => {
+        this.handleMounted()
+      })
+    },
+
     onPopState: function (ev, forcedMobile = true) {
       this.currentPath = window.location.hash
       if (this.currentPath === '#/settings') {

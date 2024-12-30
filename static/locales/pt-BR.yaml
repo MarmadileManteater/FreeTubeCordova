@@ -242,6 +242,8 @@ User Playlists:
     certeza de que deseja remover 1 vídeo assistido desta playlist? Isso não pode
     ser desfeito. | Tem certeza de que deseja remover {playlistItemCount} vídeos assistidos
     desta playlist? Isso não pode ser desfeito.
+  The playlist has been successfully exported: Playlist exportada com sucesso
+  Export Playlist: Exportar esta playlist
 History:
   # On History Page
   History: 'Histórico'
@@ -881,6 +883,11 @@ Video:
     Exit Full Window: Sair do preenchimento de janela
   IP block: O YouTube bloqueou seu endereço IP para assistir a vídeos. Tente mudar
     para uma VPN ou proxy diferente.
+  Unlisted: Não listado
+  MembersOnly: Vídeos exclusivos para membros não podem ser assistidos com o FreeTube,
+    pois exigem login do Google e assinatura paga do canal do remetente.
+  AgeRestricted: Vídeos com restrição de idade não podem ser assistidos com o FreeTube,
+    pois exigem login do Google e uso de uma conta do YouTube com verificação de idade.
 Videos:
   #& Sort By
   Sort By:

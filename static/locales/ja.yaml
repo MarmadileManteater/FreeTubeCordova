@@ -215,6 +215,8 @@ User Playlists:
   Remove Duplicate Videos: 重複した動画を削除
   Are you sure you want to remove {playlistItemCount} watched videos from this playlist? This cannot be undone: この再生リストから視聴済みの動画を1本削除してもよろしいですか？この操作は元に戻せません。
     | この再生リストから視聴済みの {playlistItemCount} 本の動画を削除してもよろしいですか？この操作は元に戻せません。
+  The playlist has been successfully exported: 再生リストのエクスポートに成功しました
+  Export Playlist: この再生リストをエクスポート
 History:
   # On History Page
   History: '履歴'
@@ -553,7 +555,7 @@ Settings:
   Experimental Settings:
     Replace HTTP Cache: HTTP キャッシュの置換
     Experimental Settings: 試験的
-    Warning:
+    Warning: 
       これらの設定は実験的なものであり、有効にするとアプリのクラッシュを引き起こす恐れがあります。バックアップをとっておくことを強くお勧めします。自己責任で使用してください！
   Password Settings:
     Password Settings: パスワード
@@ -746,7 +748,7 @@ Video:
       looping playlists: 再生リストのループ
       shuffling playlists: シャッフル再生リスト
       reversing playlists: 再生リストを反転させる
-      opening specific video in a playlist (falling back to opening the video): 再生リストで特定のビデオを開く
+      opening specific video in a playlist (falling back to opening the video): 再生リストで特定の動画を開く
         (ビデオを開く前にフォールバック)
       opening playlists: 再生リストを開く
       setting a playback rate: 再生レートの設定
@@ -794,6 +796,10 @@ Video:
     Take Screenshot: スクリーンショットを撮る
     Show Stats: 統計を表示
   IP block: YouTube はあなたのIPアドレスからの動画視聴をブロックしました。別の VPN またはプロキシに切り替えてみてください。
+  Unlisted: 非公開
+  MembersOnly: メンバー限定動画は Google にログインし、投稿チャンネルに課金する必要があるので FreeTube から直接見ることはできません。
+  AgeRestricted: 年齢制限がかかっている 動画 は Google にログインしておりかつ年齢確認を済ましている YouTube アカウントが必要なため、FreeTube
+    から直接見ることはできません。
 Videos:
   #& Sort By
   Sort By:
@@ -980,7 +986,7 @@ Tooltips:
       ID は、大文字と小文字を区別するので完全に一致させてください。
     Hide Subscriptions Live: この設定は、アプリ全体の "{appWideSetting}" 設定により上書きされます。"{settingsSection}"
       項目の "{subsection}" にあります
-    Hide Videos and Playlists Containing Text: FreeTube
+    Hide Videos and Playlists Containing Text: FreeTube 
       全体での履歴やあなたの再生リストと再生リスト内の動画を除き、元のタイトルにその単語を含む動画や単語の一部または、フレーズ（大文字と小文字を区別しない）が含まれているすべての動画と再生リストを非表示にします。
   SponsorBlock Settings:
     UseDeArrowTitles: 動画のタイトルを DeArrow からユーザーが投稿したタイトルに置き換えます。

@@ -940,12 +940,12 @@ export default defineComponent({
       ]
 
       const optionalKeys = [
+        '_id',
         'description',
         'createdAt',
       ]
 
       const ignoredKeys = [
-        '_id',
         'title',
         'type',
         'protected',
@@ -1013,6 +1013,10 @@ export default defineComponent({
         }
 
         const existingPlaylist = this.allPlaylists.find((playlist) => {
+          if (playlistObject._id != null && playlist._id === playlistObject._id) {
+            return true
+          }
+
           return playlist.playlistName === playlistObject.playlistName
         })
 
@@ -1060,8 +1064,13 @@ export default defineComponent({
             this.addVideo(payload)
           }
         })
-        // Update playlist's `lastUpdatedAt`
-        this.updatePlaylist({ _id: existingPlaylist._id })
+        // Update playlist's `lastUpdatedAt` & other attributes
+        this.updatePlaylist({
+          _id: existingPlaylist._id,
+          // Only these attributes would be updated (besides videos)
+          playlistName: playlistObject.playlistName,
+          description: playlistObject.description,
+        })
       })
 
       showToast(this.$t('Settings.Data Settings.All playlists has been successfully imported'))

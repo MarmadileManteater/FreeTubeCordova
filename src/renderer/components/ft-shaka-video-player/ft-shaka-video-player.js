@@ -3,10 +3,9 @@ import path from 'path'
 
 import { computed, defineComponent, onBeforeUnmount, onMounted, reactive, ref, shallowRef, watch } from 'vue'
 import shaka from 'shaka-player'
+import { useI18n } from '../../composables/use-i18n-polyfill'
 
 import store from '../../store/index'
-import i18n from '../../i18n/index'
-
 import { IpcChannels } from '../../../constants'
 import { AudioTrackSelection } from './player-components/AudioTrackSelection'
 import { FullWindowButton } from './player-components/FullWindowButton'
@@ -18,7 +17,6 @@ import {
   findMostSimilarAudioBandwidth,
   getSponsorBlockSegments,
   logShakaError,
-  qualityLabelToDimension,
   repairInvidiousManifest,
   sortCaptions,
   translateSponsorBlockCategory
@@ -120,6 +118,8 @@ export default defineComponent({
     'toggle-theatre-mode'
   ],
   setup: function (props, { emit, expose }) {
+    const { locale, t } = useI18n()
+
     /** @type {shaka.Player|null} */
     let player = null
 
@@ -379,7 +379,7 @@ export default defineComponent({
        *     color: string,
        *     skip: 'autoSkip' | 'promptToSkip' | 'showInSeekBar' | 'doNothing'
        *   }
-       * }} */
+        }} */
       const categoryData = {}
 
       sponsorCategories.forEach(x => {
@@ -561,7 +561,7 @@ export default defineComponent({
      * @param {'dash'|'audio'|'legacy'} format
      * @param {boolean} useAutoQuality
      * @returns {shaka.extern.PlayerConfiguration}
-     **/
+     */
     function getPlayerConfig(format, useAutoQuality = false) {
       return {
         // YouTube uses these values and they seem to work well in FreeTube too,
@@ -589,9 +589,11 @@ export default defineComponent({
         },
         autoShowText: shaka.config.AutoShowText.NEVER,
 
-        // Only use variants that are predicted to play smoothly
+        // Prioritise variants that are predicted to play:
+        // - `smooth`: without dropping frames
+        // - `powerEfficient` the spec is quite vague but in Chromium it should prioritise hardware decoding when available
         // https://developer.mozilla.org/en-US/docs/Web/API/MediaCapabilities/decodingInfo
-        preferredDecodingAttributes: format === 'dash' ? ['smooth'] : [],
+        preferredDecodingAttributes: format === 'dash' ? ['smooth', 'powerEfficient'] : [],
 
         // Electron doesn't like YouTube's vp9 VR video streams and throws:
         // "CHUNK_DEMUXER_ERROR_APPEND_FAILED: Projection element is incomplete; ProjectionPoseYaw required."
@@ -1015,7 +1017,7 @@ export default defineComponent({
       events.dispatchEvent(new CustomEvent('localeChanged'))
     }
 
-    watch(() => i18n.locale, setLocale)
+    watch(locale, setLocale)
 
     // #endregion player locales
 
@@ -1281,8 +1283,6 @@ export default defineComponent({
       /** @type {object[]} */
       const legacyFormats = props.legacyFormats
 
-      // TODO: switch to using height and width when Invidious starts returning them, instead of parsing the quality label
-
       let previousQuality
       if (previousFormat === 'dash') {
         const previousTrack = player.getVariantTracks().find(track => track.active)
@@ -1294,13 +1294,15 @@ export default defineComponent({
         previousQuality = defaultQuality.value
       }
 
+      const isPortrait = legacyFormats[0].height > legacyFormats[0].width
+
       let matches = legacyFormats.filter(variant => {
-        return previousQuality === qualityLabelToDimension(variant.qualityLabel)
+        return previousQuality === isPortrait ? variant.width : variant.height
       })
 
       if (matches.length === 0) {
         matches = legacyFormats.filter(variant => {
-          return previousQuality > qualityLabelToDimension(variant.qualityLabel)
+          return previousQuality > isPortrait ? variant.width : variant.height
         })
 
         if (matches.length > 0) {
@@ -1430,26 +1432,8 @@ export default defineComponent({
 
       stats.bitrate = (bitrate / 1000).toFixed(2)
 
-      if (typeof width === 'undefined' || typeof height === 'undefined') {
-        // Invidious doesn't provide any height or width information for their legacy formats, so lets read it from the video instead
-        // they have a size property but it's hard-coded, so it reports false information for shorts for example
-        const video_ = video.value
-
-        if (hasLoaded.value) {
-          stats.resolution.width = video_.videoWidth
-          stats.resolution.height = video_.videoHeight
-        } else {
-          video_.addEventListener('loadeddata', () => {
-            stats.resolution.width = video_.videoWidth
-            stats.resolution.height = video_.videoHeight
-          }, {
-            once: true
-          })
-        }
-      } else {
-        stats.resolution.width = width
-        stats.resolution.height = height
-      }
+      stats.resolution.width = width
+      stats.resolution.height = height
     }
 
     function updateStats() {
@@ -1542,7 +1526,7 @@ export default defineComponent({
         })
       } catch (err) {
         console.error(`Parse failed: ${err.message}`)
-        showToast(i18n.t('Screenshot Error', { error: err.message }))
+        showToast(t('Screenshot Error', { error: err.message }))
         canvas.remove()
         return
       }
@@ -1607,7 +1591,7 @@ export default defineComponent({
             await fs.mkdir(dirPath, { recursive: true })
           } catch (err) {
             console.error(err)
-            showToast(i18n.t('Screenshot Error', { error: err }))
+            showToast(t('Screenshot Error', { error: err }))
             canvas.remove()
             return
           }
@@ -1621,11 +1605,11 @@ export default defineComponent({
 
           fs.writeFile(filePath, arr)
             .then(() => {
-              showToast(i18n.t('Screenshot Success', { filePath }))
+              showToast(t('Screenshot Success', { filePath }))
             })
             .catch((err) => {
               console.error(err)
-              showToast(i18n.t('Screenshot Error', { error: err }))
+              showToast(t('Screenshot Error', { error: err }))
             })
         })
       }, mimeType, imageQuality)
@@ -1912,7 +1896,7 @@ export default defineComponent({
 
     /**
      * @param {WheelEvent} event
-     * */
+     */
     function mouseScrollVolume(event) {
       if (!event.ctrlKey && !event.metaKey) {
         event.preventDefault()
@@ -2124,9 +2108,12 @@ export default defineComponent({
           break
         }
         case ',':
-          event.preventDefault()
-          // Return to previous frame
-          frameByFrame(-1)
+          // `⌘+,` is for settings in MacOS
+          if (!event.metaKey) {
+            event.preventDefault()
+            // Return to previous frame
+            frameByFrame(-1)
+          }
           break
         case '.':
           event.preventDefault()
@@ -2187,7 +2174,7 @@ export default defineComponent({
     /**
      * @param {shaka.util.Error} error
      * @param {string} context
-     * @param {object=} details
+     * @param {object?} details
      */
     function handleError(error, context, details) {
       logShakaError(error, context, props.videoId, details)
@@ -2375,7 +2362,7 @@ export default defineComponent({
         player.getNetworkingEngine().registerResponseFilter(responseFilter)
       }
 
-      await setLocale(i18n.locale)
+      await setLocale(locale.value)
 
       // check if the component is already getting destroyed
       // which is possible because this function runs asynchronously
@@ -2427,19 +2414,8 @@ export default defineComponent({
       } else {
         // force the player aspect ratio to 16:9 to avoid overflowing the layout, when the video is too tall
 
-        // Invidious doesn't provide any height or width information for their legacy formats, so lets read it from the video instead
-        // they have a size property but it's hard-coded, so it reports false information for shorts for example
-
         const firstFormat = props.legacyFormats[0]
-        if (typeof firstFormat.width === 'undefined' || typeof firstFormat.height === 'undefined') {
-          videoElement.addEventListener('loadeddata', () => {
-            forceAspectRatio.value = videoElement.videoWidth / videoElement.videoHeight < 1.5
-          }, {
-            once: true
-          })
-        } else {
-          forceAspectRatio.value = firstFormat.width / firstFormat.height < 1.5
-        }
+        forceAspectRatio.value = firstFormat.width / firstFormat.height < 1.5
       }
 
       if (useSponsorBlock.value && sponsorSkips.value.seekBar.length > 0) {
@@ -2637,7 +2613,7 @@ export default defineComponent({
             const legacyFormat = activeLegacyFormat.value
 
             if (!useAutoQuality) {
-              dimension = qualityLabelToDimension(legacyFormat.qualityLabel)
+              dimension = legacyFormat.height > legacyFormat.width ? legacyFormat.width : legacyFormat.height
             }
           } else if (oldFormat !== 'legacy') {
             const track = player.getVariantTracks().find(track => track.active)
