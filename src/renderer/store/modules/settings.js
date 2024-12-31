@@ -183,7 +183,7 @@ const state = {
   defaultTheatreMode: false,
   defaultVideoFormat: 'dash',
   disableSmoothScrolling: false,
-  displayVideoPlayButton: false,
+  displayVideoPlayButton: true,
   enableSearchSuggestions: true,
   enableSubtitlesByDefault: false,
   enterFullscreenOnDisplayRotate: false,
