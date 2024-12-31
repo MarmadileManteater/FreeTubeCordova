@@ -202,7 +202,7 @@
         v-if="usingAndroid && !usingRelease"
         class="navOption mobileHidden"
         :title="$t('Log Viewer.Console Log')"
-        :aria-label="hideLabelsSideBar ? $t('Log Viewer.Console Log') : null"
+        :aria-label="hideText ? $t('Log Viewer.Console Log') : null"
         @keydown="showLogViewer"
         @click="showLogViewer"
       >
@@ -217,7 +217,7 @@
           />
         </div>
         <p
-          v-if="!hideLabelsSideBar"
+          v-if="!hideText"
           id="channelLabel"
           class="navLabel"
         >
@@ -387,6 +387,13 @@ const settingsTitle = computed(() => {
     KeyboardShortcuts.APP.GENERAL.NAVIGATE_TO_SETTINGS
   )
 })
+
+const usingAndroid = process.env.IS_ANDROID
+const usingRelease = process.env.IS_RELEASE
+
+const showLogViewer = () => {
+  store.dispatch('showLogViewer')
+}
 </script>
 
 <style scoped src="./SideNav.css" />

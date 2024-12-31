@@ -219,6 +219,13 @@ const popularVisible = computed(() => {
     (store.getters.getBackendFallback || store.getters.getBackendPreference === 'invidious')
 })
 
+const usingAndroid = process.env.IS_ANDROID
+const usingRelease = process.env.IS_RELEASE
+
+const showLogViewer = () => {
+  store.dispatch('showLogViewer')
+}
+
 const applyNavIconExpand = computed(() => {
   return {
     navIconExpand: hideLabelsSideBar.value
