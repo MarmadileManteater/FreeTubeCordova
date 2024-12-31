@@ -292,7 +292,7 @@ const backendFallback = computed(() => {
   return store.getters.getBackendFallback
 })
 
-/** @type {import('vue').ComputedRef<string>} */
+/** @type {import('vue').ComputedRef<'local' | 'invidious'>} */
 const backendPreference = computed(() => {
   return store.getters.getBackendPreference
 })

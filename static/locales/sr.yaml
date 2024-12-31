@@ -439,8 +439,7 @@ Settings:
       File Name Tooltip: Можете да користите променљиве испод. %Y Година 4 цифре.
         %M Месец 2 цифре. %D Дан 2 цифре. %H Сат 2 цифре. %N Минут 2 цифре. %S Секунда
         2 цифре. %T Милисекунда 3 цифре. %s Секунда видео снимка. %t Милисекунда видео
-        снимка 3 цифре. %i ID видео снимка. Такође, можете да користите „\“ или „/“
-        да бисте направили потфолдере.
+        снимка 3 цифре. %i ID видео снимка.
       File Name Label: Образац назива фајла
     Scroll Volume Over Video Player: Превуци за јачину звука преко плејера видео снимка
     Skip by Scrolling Over Video Player: Прескочи превлачењем преко плејера видео
@@ -534,6 +533,7 @@ Settings:
       садрже текст
     Hide Videos and Playlists Containing Text Placeholder: Реч, део речи или фраза
     Hide Channel Home: Сакриј картицу „Почетна“ канала
+    Show Added Items: Прикажи додате предмете
   Data Settings:
     Data Settings: 'Подаци'
     Select Import Type: 'Избор врсте увоза'
@@ -630,12 +630,12 @@ Settings:
     External Player: Спољни плејер
     External Player Settings: Спољни плејер
     Custom External Player Executable: Прилагођени извршни спољни плејер
-    Ignore Unsupported Action Warnings: Игнориши упозорења о неподржаним радњама
+    Ignore Unsupported Action Warnings: Занемари упозорења о неподржаним радњама
     Custom External Player Arguments: Прилагођени аргументи спољног плејера
     Players:
       None:
         Name: Ниједно
-    Ignore Default Arguments: Игнориши подразумеване аргументе
+    Ignore Default Arguments: Занемари подразумеване аргументе
   Download Settings:
     Choose Path: Избор путање
     Open in web browser: Отвори у прегледачу
@@ -681,7 +681,7 @@ About:
   Please read the: 'Прочитајте'
   room rules: 'правила собе'
   Translate: 'Преведи'
-  Credits: 'Кредити'
+  Credits: 'Заслуге'
   FreeTube is made possible by: 'FreeTube су омогућили'
   these people and projects: 'ови људи и пројекти'
   Donate: 'Донација'
@@ -1115,7 +1115,7 @@ Channels:
   Count: 'Пронађено канала: {number}.'
 External link opening has been disabled in the general settings: Отварање спољног
   линка је онемогућено у општим подешавањима
-Screenshot Success: Снимак екрана је сачуван као „{filePath}“
+Screenshot Success: Снимак екрана је сачуван
 Canceled next video autoplay: Отказано аутоматско пуштање следећег видео снимка
 Playing Next Video Interval: Пуштање следећег видео снимка убрзо. Кликнути за отказивање.
   | Пушта се следећи видео снимак за {nextVideoInterval} секунду. Кликнути за отказивање.

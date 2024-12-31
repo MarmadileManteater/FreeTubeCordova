@@ -1,5 +1,5 @@
 import { defineComponent } from 'vue'
-import { mapActions } from 'vuex'
+import { mapActions, mapMutations } from 'vuex'
 import shaka from 'shaka-player'
 import { Utils, YTNodes } from 'youtubei.js'
 import FtLoader from '../../components/ft-loader/ft-loader.vue'
@@ -604,7 +604,7 @@ export default defineComponent({
           }
         }
 
-        if (!this.hideLiveChat && this.isLive && result.livechat) {
+        if (!this.hideLiveChat && (this.isLive || this.isUpcoming) && result.livechat) {
           this.liveChat = result.getLiveChat()
         } else {
           this.liveChat = null
@@ -1730,12 +1730,15 @@ export default defineComponent({
     },
 
     ...mapActions([
-      'setAppTitle',
       'updateHistory',
       'updateWatchProgress',
       'updateLastViewedPlaylist',
       'updatePlaylistLastPlayedAt',
       'updateSubscriptionDetails',
+    ]),
+
+    ...mapMutations([
+      'setAppTitle'
     ])
   }
 })

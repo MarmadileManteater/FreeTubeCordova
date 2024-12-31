@@ -898,20 +898,37 @@ function runApp() {
 
   // #region navigation history
 
-  ipcMain.on(IpcChannels.GO_TO_NAV_HISTORY_OFFSET, ({ sender }, offset) => {
-    sender.navigationHistory.goToOffset(offset)
-  })
+  const NAV_HISTORY_DISPLAY_LIMIT = 15
+  // Math.trunc but with a bitwise OR so that it can be calcuated at build time and the number inlined
+  const HALF_OF_NAV_HISTORY_DISPLAY_LIMIT = (NAV_HISTORY_DISPLAY_LIMIT / 2) | 0
 
-  ipcMain.handle(IpcChannels.GET_NAV_HISTORY_ENTRY_TITLE_AT_INDEX, async ({ sender }, index) => {
-    return sender.navigationHistory.getEntryAtIndex(index)?.title
-  })
+  ipcMain.handle(IpcChannels.GET_NAVIGATION_HISTORY, ({ sender }) => {
+    const activeIndex = sender.navigationHistory.getActiveIndex()
+    const length = sender.navigationHistory.length()
 
-  ipcMain.handle(IpcChannels.GET_NAV_HISTORY_ACTIVE_INDEX, async ({ sender }) => {
-    return sender.navigationHistory.getActiveIndex()
-  })
+    let end
 
-  ipcMain.handle(IpcChannels.GET_NAV_HISTORY_LENGTH, async ({ sender }) => {
-    return sender.navigationHistory.length()
+    if (activeIndex < HALF_OF_NAV_HISTORY_DISPLAY_LIMIT) {
+      end = Math.min(length - 1, NAV_HISTORY_DISPLAY_LIMIT - 1)
+    } else if (length - activeIndex < HALF_OF_NAV_HISTORY_DISPLAY_LIMIT + 1) {
+      end = length - 1
+    } else {
+      end = activeIndex + HALF_OF_NAV_HISTORY_DISPLAY_LIMIT
+    }
+
+    const dropdownOptions = []
+
+    for (let index = end; index >= Math.max(0, end + 1 - NAV_HISTORY_DISPLAY_LIMIT); --index) {
+      const routeLabel = sender.navigationHistory.getEntryAtIndex(index)?.title
+
+      dropdownOptions.push({
+        label: routeLabel,
+        value: index - activeIndex,
+        active: index === activeIndex
+      })
+    }
+
+    return dropdownOptions
   })
 
   // #endregion navigation history
@@ -1298,11 +1315,7 @@ function runApp() {
           return null
 
         case DBActions.PLAYLISTS.DELETE_VIDEO_ID:
-          await baseHandlers.playlists.deleteVideoIdByPlaylistId({
-            _id: data._id,
-            videoId: data.videoId,
-            playlistItemId: data.playlistItemId,
-          })
+          await baseHandlers.playlists.deleteVideoIdByPlaylistId(data._id, data.videoId, data.playlistItemId)
           syncOtherWindows(
             IpcChannels.SYNC_PLAYLISTS,
             event,
@@ -1355,7 +1368,7 @@ function runApp() {
           return await baseHandlers.subscriptionCache.find()
 
         case DBActions.SUBSCRIPTION_CACHE.UPDATE_VIDEOS_BY_CHANNEL:
-          await baseHandlers.subscriptionCache.updateVideosByChannelId(data)
+          await baseHandlers.subscriptionCache.updateVideosByChannelId(data.channelId, data.entries, data.timestamp)
           syncOtherWindows(
             IpcChannels.SYNC_SUBSCRIPTION_CACHE,
             event,
@@ -1364,7 +1377,7 @@ function runApp() {
           return null
 
         case DBActions.SUBSCRIPTION_CACHE.UPDATE_LIVE_STREAMS_BY_CHANNEL:
-          await baseHandlers.subscriptionCache.updateLiveStreamsByChannelId(data)
+          await baseHandlers.subscriptionCache.updateLiveStreamsByChannelId(data.channelId, data.entries, data.timestamp)
           syncOtherWindows(
             IpcChannels.SYNC_SUBSCRIPTION_CACHE,
             event,
@@ -1373,7 +1386,7 @@ function runApp() {
           return null
 
         case DBActions.SUBSCRIPTION_CACHE.UPDATE_SHORTS_BY_CHANNEL:
-          await baseHandlers.subscriptionCache.updateShortsByChannelId(data)
+          await baseHandlers.subscriptionCache.updateShortsByChannelId(data.channelId, data.entries, data.timestamp)
           syncOtherWindows(
             IpcChannels.SYNC_SUBSCRIPTION_CACHE,
             event,
@@ -1382,7 +1395,7 @@ function runApp() {
           return null
 
         case DBActions.SUBSCRIPTION_CACHE.UPDATE_SHORTS_WITH_CHANNEL_PAGE_SHORTS_BY_CHANNEL:
-          await baseHandlers.subscriptionCache.updateShortsWithChannelPageShortsByChannelId(data)
+          await baseHandlers.subscriptionCache.updateShortsWithChannelPageShortsByChannelId(data.channelId, data.entries)
           syncOtherWindows(
             IpcChannels.SYNC_SUBSCRIPTION_CACHE,
             event,
@@ -1391,7 +1404,7 @@ function runApp() {
           return null
 
         case DBActions.SUBSCRIPTION_CACHE.UPDATE_COMMUNITY_POSTS_BY_CHANNEL:
-          await baseHandlers.subscriptionCache.updateCommunityPostsByChannelId(data)
+          await baseHandlers.subscriptionCache.updateCommunityPostsByChannelId(data.channelId, data.entries, data.timestamp)
           syncOtherWindows(
             IpcChannels.SYNC_SUBSCRIPTION_CACHE,
             event,

@@ -178,7 +178,7 @@ export async function untilEndOfLocalPlayList(playlist, callback, options = { ru
 /**
  * @param {string} location
  * @param {'default'|'music'|'gaming'|'movies'} tab
- * @param {import('youtubei.js').Mixins.TabbedFeed|null} instance
+ * @param {import('youtubei.js').Mixins.TabbedFeed<import('youtubei.js').IBrowseResponse> | null} instance
  */
 export async function getLocalTrending(location, tab, instance) {
   if (instance === null) {
@@ -893,12 +893,18 @@ export function parseChannelHomeTab(homeTab) {
       if (itemSection.contents.at(0).type === 'Shelf') {
         /** @type {import('youtubei.js').YTNodes.Shelf} */
         const shelf = itemSection.contents.at(0)
-        shelves.push({
-          title: shelf.title.text,
-          content: shelf.content.items.map(parseListItem).filter(_ => _),
-          playlistId: shelf.play_all_button?.endpoint.payload.playlistId,
-          subtitle: shelf.subtitle?.text
-        })
+
+        const playlistId = shelf.play_all_button?.endpoint.payload.playlistId
+
+        // filter out the members-only video section as none of the videos in that section are playable as they require a paid channel membership
+        if (!playlistId || !playlistId.startsWith('UUMO')) {
+          shelves.push({
+            title: shelf.title.text,
+            content: shelf.content.items.map(parseListItem).filter(_ => _),
+            playlistId,
+            subtitle: shelf.subtitle?.text
+          })
+        }
       } else if (itemSection.contents.at(0).type === 'ReelShelf') {
         /** @type {import('youtubei.js').YTNodes.ReelShelf} */
         const shelf = itemSection.contents.at(0)
@@ -916,14 +922,16 @@ export function parseChannelHomeTab(homeTab) {
         })
       }
     } else if (section.type === 'RichSection') {
-      /** @type {import('youtubei.js').YTNodes.RichShelf} */
-      const shelf = section.content
-      shelves.push({
-        title: shelf.title.text,
-        content: shelf.contents.map(e => parseListItem(e.content)),
-        subtitle: shelf.subtitle?.text,
-        playlistId: shelf.endpoint?.metadata.url.replace('/playlist?list=', '')
-      })
+      if (section.content.type === 'RichShelf') {
+        /** @type {import('youtubei.js').YTNodes.RichShelf} */
+        const shelf = section.content
+        shelves.push({
+          title: shelf.title?.text,
+          content: shelf.contents.map(e => parseListItem(e.content)),
+          subtitle: shelf.subtitle?.text,
+          playlistId: shelf.endpoint?.metadata.url.includes('/playlist') ? shelf.endpoint?.metadata.url.replace('/playlist?list=', '') : null
+        })
+      }
     }
   }
 

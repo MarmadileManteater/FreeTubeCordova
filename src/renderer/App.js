@@ -88,7 +88,7 @@ export default defineComponent({
     },
     windowTitle: function () {
       const routePath = this.$route.path
-      if (!routePath.startsWith('/channel/') && !routePath.startsWith('/watch/') && !routePath.startsWith('/hashtag/') && !routePath.startsWith('/playlist/')) {
+      if (!routePath.startsWith('/channel/') && !routePath.startsWith('/watch/') && !routePath.startsWith('/hashtag/') && !routePath.startsWith('/playlist/') && !routePath.startsWith('/search/')) {
         let title = translateWindowTitle(this.$route.meta.title)
         if (!title) {
           title = packageDetails.productName
@@ -643,7 +643,6 @@ export default defineComponent({
       'getExternalPlayerCmdArgumentsData',
       'fetchInvidiousInstances',
       'fetchInvidiousInstancesFromFile',
-      'setAppTitle',
       'setRandomCurrentInvidiousInstance',
       'setupListenersToSyncWindows',
       'updateBaseTheme',
@@ -651,6 +650,10 @@ export default defineComponent({
       'updateSecColor',
       'showOutlines',
       'hideOutlines',
+    ]),
+
+    ...mapMutations([
+      'setAppTitle'
     ])
   }
 })
