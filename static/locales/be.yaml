@@ -484,8 +484,6 @@ Settings:
     Fetch Feeds from RSS: 'Атрымліваць стужкі з RSS'
     Fetch Automatically: 'Аўтаматычна атрымліваць стужку'
     Confirm Before Unsubscribing: Пацвердзіце перад тым як адпісацца
-    Only Show Latest Video for Each Channel: Паказваць толькі апошняе відэа для кожнага
-      канала
   Distraction Free Settings:
     Distraction Free Settings: 'Адцягненне ўвагі'
     Sections:
@@ -1054,8 +1052,7 @@ Tooltips:
     Ignore Warnings: 'Адключыць папярэджанні, калі бягучы вонкавы прайгравальнік не
       падтрымлівае бягучае дзеянне (напрыклад, пераварочванне плэй-ліста і г.д.).'
     Custom External Player Arguments: 'Любыя карыстальніцкія аргументы каманднага
-      радка, падзеленыя кропкай з коскай ('';''), якія вы хочаце перадаць вонкаваму
-      прайгравальніку.'
+      радка, якія вы хочаце перадаць вонкаваму прайгравальніку.'
     DefaultCustomArgumentsTemplate: "(Па змаўчанні: '{defaultCustomArguments}')"
     Ignore Default Arguments: Не адпраўляйце ніякіх аргументаў па змаўчанні на вонкавы
       прайгравальнік, акрамя URL-адраса відэа (напрыклад, частата прайгравання, URL-адрас

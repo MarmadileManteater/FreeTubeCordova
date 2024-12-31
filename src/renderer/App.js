@@ -2,7 +2,7 @@ import { defineComponent } from 'vue'
 import { mapActions, mapMutations } from 'vuex'
 import FtFlexBox from './components/ft-flex-box/ft-flex-box.vue'
 import TopNav from './components/top-nav/top-nav.vue'
-import SideNav from './components/side-nav/side-nav.vue'
+import SideNav from './components/SideNav/SideNav.vue'
 import FtNotificationBanner from './components/ft-notification-banner/ft-notification-banner.vue'
 import FtPrompt from './components/ft-prompt/ft-prompt.vue'
 import FtButton from './components/ft-button/ft-button.vue'
@@ -10,7 +10,7 @@ import FtToast from './components/ft-toast/ft-toast.vue'
 import FtProgressBar from './components/FtProgressBar/FtProgressBar.vue'
 import FtPlaylistAddVideoPrompt from './components/ft-playlist-add-video-prompt/ft-playlist-add-video-prompt.vue'
 import FtCreatePlaylistPrompt from './components/ft-create-playlist-prompt/ft-create-playlist-prompt.vue'
-import FtSearchFilters from './components/ft-search-filters/ft-search-filters.vue'
+import FtSearchFilters from './components/FtSearchFilters/FtSearchFilters.vue'
 import FtaLogViewer from './components/fta-log-viewer/fta-log-viewer.vue'
 import { marked } from 'marked'
 import { IpcChannels } from '../constants'
@@ -103,6 +103,7 @@ export default defineComponent({
     externalPlayer: function () {
       return this.$store.getters.getExternalPlayer
     },
+
     defaultInvidiousInstance: function () {
       return this.$store.getters.getDefaultInvidiousInstance
     },
@@ -148,6 +149,14 @@ export default defineComponent({
 
     externalLinkHandling: function () {
       return this.$store.getters.getExternalLinkHandling
+    },
+
+    appTitle: function () {
+      return this.$store.getters.getAppTitle
+    },
+
+    openDeepLinksInNewWindow: function () {
+      return this.$store.getters.getOpenDeepLinksInNewWindow
     }
   },
   watch: {
@@ -160,10 +169,11 @@ export default defineComponent({
     secColor: 'checkThemeSettings',
 
     locale: 'setLocale',
+
+    appTitle: 'setDocumentTitle'
   },
   created () {
     this.checkThemeSettings()
-    this.setWindowTitle()
     this.setLocale()
   },
   mounted: function () {
@@ -228,10 +238,16 @@ export default defineComponent({
         if (this.$router.currentRoute.path === '/') {
           this.$router.replace({ path: this.landingPage })
         }
+
+        this.setWindowTitle()
       })
     })
   },
   methods: {
+    setDocumentTitle: function(value) {
+      document.title = value
+      this.$nextTick(() => this.$refs.topNav?.setActiveNavigationHistoryEntryTitle(value))
+    },
     checkThemeSettings: function () {
       const theme = {
         baseTheme: this.baseTheme || 'dark',
@@ -577,9 +593,9 @@ export default defineComponent({
     },
 
     enableOpenUrl: function () {
-      ipcRenderer.on(IpcChannels.OPEN_URL, (event, url) => {
+      ipcRenderer.on(IpcChannels.OPEN_URL, (event, url, { isLaunchLink = false } = { }) => {
         if (url) {
-          this.handleYoutubeLink(url)
+          this.handleYoutubeLink(url, { doCreateNewWindow: this.openDeepLinksInNewWindow && !isLaunchLink })
         }
       })
 
@@ -600,7 +616,7 @@ export default defineComponent({
 
     setWindowTitle: function() {
       if (this.windowTitle !== null) {
-        document.title = this.windowTitle
+        this.setAppTitle(this.windowTitle)
       }
     },
 
@@ -627,6 +643,7 @@ export default defineComponent({
       'getExternalPlayerCmdArgumentsData',
       'fetchInvidiousInstances',
       'fetchInvidiousInstancesFromFile',
+      'setAppTitle',
       'setRandomCurrentInvidiousInstance',
       'setupListenersToSyncWindows',
       'updateBaseTheme',

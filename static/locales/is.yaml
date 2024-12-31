@@ -315,6 +315,7 @@ Settings:
     Auto Load Next Page:
       Label: Hlaða næstu síðu sjálfvirkt
       Tooltip: Hlaða viðbótarsíðum og athugasemdum sjálfkrafa inn.
+    Open Deep Links In New Window: Opna slóðir sem beint er til FreeTube í nýjum glugga
   Theme Settings:
     Theme Settings: 'Þema'
     Match Top Bar with Main Color: 'Láta toppstiku samsvara aðallit'
@@ -334,6 +335,8 @@ Settings:
       Nordic: Norrænt
       Solarized Dark: Sólaríserað dökkt
       Solarized Light: Sólaríserað ljóst
+      Gruvbox Dark: Gruvbox dökkt
+      Gruvbox Light: Gruvbox ljóst
     Main Color Theme:
       Main Color Theme: 'Aðallitur þema'
       Red: 'Rautt'
@@ -381,6 +384,16 @@ Settings:
       Solarized Magenta: Sólaríserað blárautt
       Solarized Red: Sólaríserað rautt
       Solarized Green: Sólaríserað grænt
+      Gruvbox Dark Green: Gruvbox dökkgrænt
+      Gruvbox Dark Yellow: Gruvbox dökkgult
+      Gruvbox Dark Aqua: Gruvbox dökksægrænt
+      Gruvbox Light Red: Gruvbox ljósrautt
+      Gruvbox Light Blue: Gruvbox ljósblátt
+      Gruvbox Light Purple: Gruvbox ljósfjólublátt
+      Gruvbox Light Orange: Gruvbox ljósappelsínugult
+      Gruvbox Dark Orange: Gruvbox dökkappelsínugult
+      Gruvbox Dark Blue: Gruvbox dökkblátt
+      Gruvbox Dark Purple: Gruvbox dökkfjólublátt
     Secondary Color Theme: 'Aukalitur þema'
         #* Main Color Theme
     Hide Side Bar Labels: Fela skýringar á hliðarstiku
@@ -413,7 +426,7 @@ Settings:
       1440p: '1440p'
       4k: '4k'
       8k: '8k'
-    Next Video Interval: Bil í næsta myndskeið
+    Next Video Interval: Niðurtalning í sjálfvirka spilun
     Display Play Button In Video Player: Birta afspilunarhnapp í myndspilara
     Scroll Volume Over Video Player: Skruna hljóðstyrk ofan á myndspilara
     Fast-Forward / Rewind Interval: Millibil hraðspólunar / spóla til baka
@@ -438,6 +451,7 @@ Settings:
       File Name Label: Mynstur skráaheita
     Enter Fullscreen on Display Rotate: Fara í skjáfylli við snúning á skjá
     Skip by Scrolling Over Video Player: Sleppa með því að skruna ofan á myndspilara
+    Autoplay Interruption Timer: Niðurtalning í stöðvun á sjálfvirkri spilun
   Privacy Settings:
     Privacy Settings: 'Gagnaleynd'
     Remember History: 'Muna áhorfsferil'
@@ -465,9 +479,10 @@ Settings:
     Hide Videos on Watch: 'Fela myndskeið eftir áhorf'
     Fetch Feeds from RSS: 'Ná í streymi úr RSS'
     Fetch Automatically: Sækja streymi sjálfvirkt
-    Only Show Latest Video for Each Channel: Aðeins birta nýjasta myndskeið fyrir
-      hverja myndskeiðarás
     Confirm Before Unsubscribing: Staðfesta uppsögn áskriftar
+    To: Við
+    'Limit the number of videos displayed for each channel': Takmarka fjölda myndskeiða
+      sem birt eru fyrir hverja rás
   Distraction Free Settings:
     Distraction Free Settings: 'Truflanaminnkandi'
     Hide Video Views: 'Fela fjölda áhorfa á myndskeið'
@@ -496,12 +511,12 @@ Settings:
       Watch Page: Áhorfssíða
       General: Almennt
       Subscriptions Page: Áskriftasíða
-    Hide Channel Shorts: Fela stuttmyndir rása
-    Hide Channel Playlists: Fela spilunarlista rása
-    Hide Channel Community: Fela samfélag rása
+    Hide Channel Shorts: Fela stuttmyndaflipa rása
+    Hide Channel Playlists: Fela spilunarlistaflipa rása
+    Hide Channel Community: Fela samfélagsflipa rása
     Hide Featured Channels: Fela rásir í deiglunni
-    Hide Channel Podcasts: Fela hlaðvörp rása
-    Hide Channel Releases: Fela útgáfur rása
+    Hide Channel Podcasts: Fela hlaðvarpsflipa rása
+    Hide Channel Releases: Fela útgáfuflipa rása
     Hide Subscriptions Shorts: Fela stuttmyndir áskrifta
     Hide Subscriptions Live: Fela bein streymi áskrifta
     Hide Subscriptions Videos: Fela myndskeið áskrifta
@@ -517,6 +532,7 @@ Settings:
     Hide Videos and Playlists Containing Text: Fela myndskeið og spilunarlista sem
       innihalda texta
     Hide Videos and Playlists Containing Text Placeholder: Orð, orðhluti eða setning
+    Hide Channel Home: Fela "Heim"-flipa rása
   Data Settings:
     Data Settings: 'Gögn'
     Select Import Type: 'Veldu tegund innflutnings'
@@ -585,6 +601,11 @@ Settings:
     City: 'Borg/Sveitarfélag'
     Error getting network information. Is your proxy configured properly?: 'Það tókst
       ekki að sækja upplýsingar um netkerfið. Er milliþjónninn rétt uppsettur?'
+    Proxy Warning: FreeTube er ekki með innbyggðan milliþjón en getur tengst við utanaðkomandi
+      milliþjóna, til dæmis einhvern sem keyrir á vélinni þinni eins og Tor eða fjartengdan
+      milliþjón á borð við SOCKS5-milliþjóna sem sumar VPN-þjónustur bjóða. Ef þetta
+      er virkt skaltu ganga úr skugga um að milliþjónninn/Tor sé rétt stillt, annars
+      mun FreeTube ekki geta sótt nein gögn.
   SponsorBlock Settings:
     Notify when sponsor segment is skipped: Láta vita þegar kostaður hluti er hunsaður
     'SponsorBlock API Url (Default is https://sponsor.ajay.app)': SponsorBlock API-slóð
@@ -787,6 +808,9 @@ Channel:
     Podcasts: Hlaðvörp
     This channel does not currently have any podcasts: Þessi rás er ekki með nein
       hlaðvörp í augnablikinu
+  Home:
+    Home: Heim
+    View Playlist: Skoða spilunarlista
 Video:
   Mark As Watched: 'Merkja sem búið að horfa á'
   Remove From History: 'Fjarlægja úr áhorfsferli'
@@ -914,6 +938,9 @@ Video:
     sem þau krefjast innskráningar á Google og notkunar á aldursvottuðum YouTube-reikningi.
   IP block: YouTube hefur útilokað IP-vistfang þitt frá því að horfa á myndskeið.
     Prófaðu að skipta yfir á annan VPN eða milliþjón.
+  DeArrow:
+    Show Original Details: Birta upprunalegar nánari upplýsingar
+    Show Modified Details: Birta breyttar nánari upplýsingar
 Videos:
   #& Sort By
   Sort By:
@@ -1020,6 +1047,9 @@ Tooltips:
     External Link Handling: "Veldu sjálfgefna hegðun þegar smellt er á tengil sem
       ekki er hægt að opna í FreeTube.\nSjálfgefið mun FreeTube opna viðkomandi tengil
       í sjálfgefna vafranum þínum.\n"
+    Open Deep Links In New Window: Slóðir sem beint er til FreeTube, til dæmis með
+      endurbeiningum vafraviðbóta eða skipanalínuviðföngum, verða opnaðar í nýjum
+      glugga.
   Player Settings:
     Proxy Videos Through Invidious: 'Mun tengjast við Invidious til að miðla myndskeiðum
       í stað þess að tengjast beint við YouTube.'
@@ -1045,8 +1075,8 @@ Tooltips:
     Fetch Automatically: Þegar þetta er virkt, mun FreeTube sækja sjálfkrafa áskriftarstreymin
       þín þegar nýr gluggi er opnaður og þegar skipt er um notkunarsnið.
   External Player Settings:
-    Custom External Player Arguments: Öll sérsniðin skipanaviðföng og rofar, aðskilin
-      með semíkommum (';'), sem beina á til utanaðkomandi spilarans.
+    Custom External Player Arguments: Öll sérsniðin skipanaviðföng og rofar, sem beina
+      á til utanaðkomandi spilarans.
     Ignore Warnings: Hunsa aðvarinir þegar valinn utanaðkomandi spilari styður ekki
       viðkomandi aðgerð (t.d. að snúa við spilunarlista, o.s.frv.).
     Custom External Player Executable: Sjálfgefið gengur FreeTube út frá því að valinn
@@ -1185,3 +1215,18 @@ Search Listing:
     360 Video: 360°
     New: Nýtt
     3D: 3D
+Keys:
+  arrowright: Hægri-ör
+  arrowleft: Vinstri-ör
+  alt: Alt
+  ctrl: Ctrl
+  arrowdown: Niður-ör
+  arrowup: Upp-ör
+Right-click or hold to see history: Hægri-smelltu til að sjá feril
+KeyboardShortcutTemplate: '{label} ({shortcut})'
+shortcutJoinOperator: +
+Autoplay Interruption Timer: Hætt sjálfvirkri spilun vegna {autoplayInterruptionIntervalHours}
+  klst án aðgerða
+Description:
+  Expand Description: '...meira'
+  Collapse Description: Birta minna

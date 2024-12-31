@@ -1,6 +1,6 @@
 import { defineComponent } from 'vue'
 import { mapActions } from 'vuex'
-import FtSettingsSection from '../ft-settings-section/ft-settings-section.vue'
+import FtSettingsSection from '../FtSettingsSection/FtSettingsSection.vue'
 import FtSelect from '../ft-select/ft-select.vue'
 import FtToggleSwitch from '../ft-toggle-switch/ft-toggle-switch.vue'
 import FtSlider from '../ft-slider/ft-slider.vue'
@@ -52,11 +52,13 @@ export default defineComponent({
       ],
       screenshotFormatNames: [
         'PNG',
-        'JPEG'
+        'JPEG',
+        'WebP'
       ],
       screenshotFormatValues: [
         'png',
-        'jpg'
+        'jpg',
+        'webp'
       ],
       screenshotFolderPlaceholder: '',
       screenshotFilenameExample: '',
@@ -94,6 +96,10 @@ export default defineComponent({
 
     showProxyVideosAsDisabled: function () {
       return this.backendPreference !== 'invidious' && !this.backendFallback
+    },
+
+    defaultAutoplayInterruptionIntervalHours: function () {
+      return parseInt(this.$store.getters.getDefaultAutoplayInterruptionIntervalHours)
     },
 
     defaultSkipInterval: function () {
@@ -287,6 +293,7 @@ export default defineComponent({
     ...mapActions([
       'updateAutoplayVideos',
       'updateAutoplayPlaylists',
+      'updateDefaultAutoplayInterruptionIntervalHours',
       'updatePlayNextVideo',
       'updateEnableSubtitlesByDefault',
       'updateProxyVideos',

@@ -1,4 +1,3 @@
-import fs from 'fs/promises'
 
 import { IpcChannels } from '../../constants'
 import FtToastEvents from '../components/ft-toast/ft-toast-events'
@@ -99,26 +98,6 @@ export function calculatePublishedDate(publishedText, isLive = false, isUpcoming
   }
 
   return date.getTime() - timeSpan
-}
-
-/**
- * @param {{
- *  liveNow: boolean,
- *  isUpcoming: boolean,
- *  premiereTimestamp: number,
- *  published: number
- * }[]} videos
- */
-export function setPublishedTimestampsInvidious(videos) {
-  videos.forEach(video => {
-    if (video.liveNow) {
-      video.published = new Date().getTime()
-    } else if (video.isUpcoming) {
-      video.published = video.premiereTimestamp * 1000
-    } else if (typeof video.published === 'number') {
-      video.published *= 1000
-    }
-  })
 }
 
 /**
@@ -273,76 +252,188 @@ export function openInternalPath({ path, query = {}, doCreateNewWindow, searchQu
   }
 }
 
-export async function showOpenDialog (options) {
-  if (process.env.IS_ELECTRON) {
-    const { ipcRenderer } = require('electron')
-    return await ipcRenderer.invoke(IpcChannels.SHOW_OPEN_DIALOG, options)
+/**
+ * @param {string} fileTypeDescription
+ * @param {{[key: string]: string | string[]}} acceptedTypes
+ * @param {string} [rememberDirectoryId]
+ * @param {'desktop' | 'documents' | 'downloads' | 'music' | 'pictures' | 'videos'} [startInDirectory]
+ * @returns {Promise<{ content: string, filename: string } | null>}
+ */
+export async function readFileWithPicker(
+  fileTypeDescription,
+  acceptedTypes,
+  rememberDirectoryId,
+  startInDirectory
+) {
+  let file
+
+  // Only supported in Electron and desktop Chromium browsers
+  // https://developer.mozilla.org/en-US/docs/Web/API/Window/showOpenFilePicker#browser_compatibility
+  // As we know it is supported in Electron, adding the build flag means we can skip the runtime check in Electron
+  // and allow terser to remove the unused else block
+  if (process.env.IS_ELECTRON || 'showOpenFilePicker' in window) {
+    try {
+      /** @type {FileSystemFileHandle[]} */
+      const [handle] = await window.showOpenFilePicker({
+        excludeAcceptAllOption: true,
+        multiple: false,
+        id: rememberDirectoryId,
+        startIn: startInDirectory,
+        types: [{
+          description: fileTypeDescription,
+          accept: acceptedTypes
+        }],
+      })
+
+      file = await handle.getFile()
+    } catch (error) {
+      // user pressed cancel in the file picker
+      if (error.name === 'AbortError') {
+        return null
+      }
+
+      throw error
+    }
   } else if (process.env.IS_ANDROID) {
-    return await requestOpenDialog(options.filters[0].extensions)
+    const extensions = []
+    const values = Object.values(acceptedTypes)
+    for (const value of values) {
+      if (Array.isArray(value)) {
+        extensions.push(...value.map(extension => extension.substring(1)))
+      } else {
+        extensions.push(value.substring(1))
+      }
+    }
+    const dialogResponse = await requestOpenDialog(extensions)
+    if (!dialogResponse.canceled) {
+      file = dialogResponse
+    }
   } else {
-    return await new Promise((resolve) => {
+    /** @type {File|null} */
+    const fallbackFile = await new Promise((resolve) => {
+      const joinedExtensions = Object.values(acceptedTypes)
+        .flat()
+        .join(',')
+
       const fileInput = document.createElement('input')
       fileInput.setAttribute('type', 'file')
-      if (options?.filters[0]?.extensions !== undefined) {
-        // this will map the given extensions from the options to the accept attribute of the input
-        fileInput.setAttribute('accept', options.filters[0].extensions.map((extension) => { return `.${extension}` }).join(', '))
-      }
+      fileInput.setAttribute('accept', joinedExtensions)
       fileInput.onchange = () => {
-        const files = Array.from(fileInput.files)
-        resolve({ canceled: false, files, filePaths: files.map(({ name }) => { return name }) })
-        delete fileInput.onchange
+        resolve(fileInput.files[0])
+        fileInput.onchange = null
       }
+
       const listenForEnd = () => {
-        window.removeEventListener('focus', listenForEnd)
         // 1 second timeout on the response from the file picker to prevent awaiting forever
         setTimeout(() => {
           if (fileInput.files.length === 0 && typeof fileInput.onchange === 'function') {
             // if there are no files and the onchange has not been triggered, the file-picker was canceled
-            resolve({ canceled: true })
-            delete fileInput.onchange
+            resolve(null)
+            fileInput.onchange = null
           }
         }, 1000)
       }
-      window.addEventListener('focus', listenForEnd)
+      window.addEventListener('focus', listenForEnd, { once: true })
       fileInput.click()
     })
+
+    if (fallbackFile === null) {
+      return null
+    }
+
+    file = fallbackFile
+  }
+
+  return {
+    content: await file.text(),
+    filename: file.name
   }
 }
 
 /**
- * @param {object} response the response from `showOpenDialog`
- * @param {number} index which file to read (defaults to the first in the response)
- * @returns {string} the text contents of the selected file
+ * @param {string} fileName
+ * @param {string | Blob} content
+ * @param {string} fileTypeDescription
+ * @param {string} mimeType
+ * @param {string} fileExtension
+ * @param {string} [rememberDirectoryId]
+ * @param {'desktop' | 'documents' | 'downloads' | 'music' | 'pictures' | 'videos'} [startInDirectory]
+ * @returns {Promise<boolean>}
  */
-export function readFileFromDialog(response, index = 0) {
-  return new Promise((resolve, reject) => {
-    if (process.env.IS_ELECTRON) {
-      // if this is Electron, use fs
-      fs.readFile(response.filePaths[index])
-        .then(data => {
-          resolve(new TextDecoder('utf-8').decode(data))
-        })
-        .catch(reject)
-    } else if (process.env.IS_ANDROID) {
-      const { uri } = response
-      try {
-        resolve(readFile(uri))
-      } catch (err) {
-        reject(err)
+export async function writeFileWithPicker(
+  fileName,
+  content,
+  fileTypeDescription,
+  mimeType,
+  fileExtension,
+  rememberDirectoryId,
+  startInDirectory
+) {
+  // Only supported in Electron and desktop Chromium browsers
+  // https://developer.mozilla.org/en-US/docs/Web/API/Window/showOpenFilePicker#browser_compatibility
+  // As we know it is supported in Electron, adding the build flag means we can skip the runtime check in Electron
+  // and allow terser to remove the unused else block
+  if (process.env.IS_ELECTRON || 'showSaveFilePicker' in window) {
+    let writableFileStream
+
+    try {
+      /** @type {FileSystemFileHandle} */
+      const handle = await window.showSaveFilePicker({
+        suggestedName: fileName,
+        excludeAcceptAllOption: true,
+        multiple: false,
+        id: rememberDirectoryId,
+        startIn: startInDirectory,
+        types: [{
+          description: fileTypeDescription,
+          accept: {
+            [mimeType]: [fileExtension]
+          }
+        }],
+      })
+
+      writableFileStream = await handle.createWritable()
+      await writableFileStream.write(content)
+    } catch (error) {
+      // user pressed cancel in the file picker
+      if (error.name === 'AbortError') {
+        return false
       }
-    } else {
-      // if this is web, use FileReader
-      try {
-        const reader = new FileReader()
-        reader.onload = function (file) {
-          resolve(file.currentTarget.result)
-        }
-        reader.readAsText(response.files[index])
-      } catch (exception) {
-        reject(exception)
+
+      throw error
+    } finally {
+      if (writableFileStream) {
+        await writableFileStream.close()
       }
     }
-  })
+
+    return true
+  } else if (process.env.IS_ANDROID) {
+    const response = await requestSaveDialog(fileName, 'application/octet-stream')
+    if (!response.canceled) {
+      await writeFile(response.uri, content)
+      return true
+    }
+    return false
+  } else {
+    if (typeof content === 'string') {
+      content = new Blob([content], { type: mimeType })
+    }
+
+    const url = URL.createObjectURL(content)
+
+    const downloadLink = document.createElement('a')
+    downloadLink.setAttribute('download', encodeURIComponent(fileName))
+    downloadLink.setAttribute('href', url)
+    downloadLink.click()
+
+    // Small timeout to give the browser time to react to the click on the link
+    setTimeout(() => {
+      URL.revokeObjectURL(url)
+    }, 1000)
+
+    return true
+  }
 }
 
 /**
@@ -373,40 +464,6 @@ export async function showSaveDialog (options) {
       }
     } else {
       return { canceled: false, filePath: options.defaultPath }
-    }
-  }
-}
-
-/**
- * Write to a file picked out from the `showSaveDialog` picker
- * @param {object} response the response from `showSaveDialog`
- * @param {string} content the content to be written to the file selected by the dialog
- */
-export async function writeFileFromDialog (response, content) {
-  if (process.env.IS_ELECTRON) {
-    const { filePath } = response
-    return await fs.writeFile(filePath, content)
-  } else if (process.env.IS_ANDROID) {
-    /** @type {import('./android').SaveDialogResponse} */
-    const saveDialogResponse = response
-    if (!writeFile(saveDialogResponse.uri, content)) {
-      throw new Error(saveDialogResponse.uri)
-    }
-  } else {
-    if ('showOpenFilePicker' in window) {
-      const { handle } = response
-      const writableStream = await handle.createWritable()
-      await writableStream.write(content)
-      await writableStream.close()
-    } else {
-      // If the native filesystem api is not available,
-      const { filePath } = response
-      const filename = filePath.split('/').at(-1)
-      const a = document.createElement('a')
-      const url = URL.createObjectURL(new Blob([content], { type: 'application/octet-stream' }))
-      a.setAttribute('href', url)
-      a.setAttribute('download', encodeURI(filename))
-      a.click()
     }
   }
 }
@@ -904,4 +961,83 @@ export function getChannelPlaylistId(channelId, type, sortBy) {
     case 'all':
       return channelId.replace(/^UC/, 'UU')
   }
+}
+
+function getIndividualLocalizedShortcut(shortcut) {
+  switch (shortcut) {
+    case 'alt':
+      return i18n.t('Keys.alt')
+    case 'ctrl':
+      return i18n.t('Keys.ctrl')
+    case 'arrowleft':
+      return i18n.t('Keys.arrowleft')
+    case 'arrowright':
+      return i18n.t('Keys.arrowright')
+    case 'arrowup':
+      return i18n.t('Keys.arrowup')
+    case 'arrowdown':
+      return i18n.t('Keys.arrowdown')
+    default:
+      return shortcut
+  }
+}
+
+function getMacIconForShortcut(shortcut) {
+  switch (shortcut) {
+    case 'option':
+    case 'alt':
+      return '⌥'
+    case 'cmd':
+    case 'ctrl':
+      return '⌘'
+    case 'arrowleft':
+      return '←'
+    case 'arrowright':
+      return '→'
+    case 'arrowup':
+      return '↑'
+    case 'arrowdown':
+      return '↓'
+    default:
+      return shortcut
+  }
+}
+
+/**
+ * @param {string} shortcut
+ * @returns {string} the localized and recombined shortcut
+ */
+function getLocalizedShortcut(shortcut) {
+  const shortcuts = shortcut.split('+')
+
+  if (process.platform === 'darwin') {
+    const shortcutsAsIcons = shortcuts.map(shortCut => getMacIconForShortcut(shortCut))
+    return shortcutsAsIcons.join('')
+  } else {
+    const localizedShortcuts = shortcuts.map((shortcut) => getIndividualLocalizedShortcut(shortcut))
+    const shortcutJoinOperator = i18n.t('shortcutJoinOperator')
+    return localizedShortcuts.join(shortcutJoinOperator)
+  }
+}
+
+/**
+ * @param {string} actionTitle
+ * @param {string} shortcut
+ * @returns {string} the localized action title with keyboard shortcut
+ */
+export function addKeyboardShortcutToActionTitle(actionTitle, shortcut) {
+  return i18n.t('KeyboardShortcutTemplate', {
+    label: actionTitle,
+    shortcut
+  })
+}
+
+/**
+ * @param {string} localizedActionTitle
+ * @param {string} unlocalizedShortcut
+ * @returns {string} the localized action title with keyboard shortcut
+ */
+export function localizeAndAddKeyboardShortcutToActionTitle(localizedActionTitle, unlocalizedShortcut) {
+  const localizedShortcut = getLocalizedShortcut(unlocalizedShortcut)
+  return addKeyboardShortcutToActionTitle(localizedActionTitle, localizedShortcut)
 }

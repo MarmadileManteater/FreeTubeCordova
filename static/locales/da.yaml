@@ -397,7 +397,6 @@ Settings:
     Subscription Settings: 'Abonnementsindstillinger'
     Hide Videos on Watch: 'Skjul Videoer på Se'
     Fetch Feeds from RSS: 'Hent Feeds fra RSS'
-    Only Show Latest Video for Each Channel: Vis Kun Seneste Video for Hver Kanal
     Fetch Automatically: Hent Feed Automatisk
     Confirm Before Unsubscribing: Bekræft Før Afmelding
   Data Settings:
@@ -910,7 +909,7 @@ Tooltips:
       kan blive angivet her hvis det er nødvendigt.
     DefaultCustomArgumentsTemplate: "(Standard: '{defaultCustomArguments}')"
     Custom External Player Arguments: Alle brugerdefinerede kommandolinjeargumenter,
-      opdelt med semikoloner (';'), du ønsker viderebragt til den eksterne afspiller.
+      du ønsker viderebragt til den eksterne afspiller.
     External Player: 'Valg af ekstern afspiller vil fremvise et ikon, for åbning af
       videoen (playliste hvis understøttet) i den eksterne afspiller, på miniaturebilledet.
       Advarsel: Invidious-indstillinger har ingen effekt på eksterne afspillere.'

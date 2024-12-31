@@ -16,7 +16,8 @@ export const FILE_TYPES = Object.fromEntries(Object.entries(MIME_TYPES).map(([ke
  * @property {boolean} canceled
  * @property {'SUCCESS'|'USER_CANCELED'} type
  * @property {string?} uri
- * @property {string[]} filePaths
+ * @property {string?} name
+ * @property {Function?} text
  */
 
 /**
@@ -52,9 +53,10 @@ async function handleDialogResponse(promiseId) {
   if (response === 'USER_CANCELED') {
     return {
       canceled: true,
-      type: null,
+      type: 'USER_CANCELED',
       uri: null,
-      filePaths: []
+      name: null,
+      text: null
     }
   } else {
     response = JSON.parse(response)
@@ -66,7 +68,10 @@ async function handleDialogResponse(promiseId) {
       canceled: false,
       type: 'SUCCESS',
       uri: response.uri,
-      filePaths: [typedUri]
+      name: response.fileName,
+      async text() {
+        return await readFile(response.uri)
+      }
     }
   }
 }

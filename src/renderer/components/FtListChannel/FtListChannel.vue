@@ -16,7 +16,7 @@
       >
         <img
           :src="thumbnail"
-          class="channelImage"
+          :class="!isGame ? 'channelImage' : 'gameImage'"
           alt=""
         >
       </router-link>
@@ -61,6 +61,7 @@
         />
       </div>
       <FtSubscribeButton
+        v-if="!hideUnsubscribeButton"
         class="channelSubscribeButton"
         :channel-id="id"
         :channel-name="name"
@@ -106,6 +107,11 @@ const hideChannelSubscriptions = computed(() => {
   return store.getters.getHideChannelSubscriptions
 })
 
+/** @type {import('vue').ComputedRef<boolean>} */
+const hideUnsubscribeButton = computed(() => {
+  return store.getters.getHideUnsubscribeButton
+})
+
 let id = ''
 let thumbnail = ''
 let name = ''
@@ -116,6 +122,7 @@ let videoCount = null
 /** @type {string?} */
 let handle = null
 let description = ''
+let isGame = null
 
 if (process.env.SUPPORTS_LOCAL_API && props.data.dataSource === 'local') {
   parseLocalData()
@@ -157,6 +164,7 @@ function parseLocalData() {
   }
 
   description = props.data.descriptionShort
+  isGame = props.data.isGame
 }
 
 function parseInvidiousData() {

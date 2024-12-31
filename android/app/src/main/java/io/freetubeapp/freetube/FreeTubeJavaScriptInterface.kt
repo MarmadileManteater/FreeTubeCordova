@@ -15,6 +15,7 @@ import android.media.session.PlaybackState
 import android.media.session.PlaybackState.STATE_PAUSED
 import android.net.Uri
 import android.os.Build
+import android.provider.OpenableColumns
 import android.view.WindowManager
 import android.webkit.JavascriptInterface
 import androidx.activity.result.ActivityResult
@@ -465,6 +466,29 @@ class FreeTubeJavaScriptInterface {
     context.activityResultLauncher.launch(saveDialogIntent)
     return promise
   }
+
+  @JavascriptInterface
+  fun getFileNameFromUri(uri: String): String {
+    var result: String? = null
+    val cursor = context.contentResolver.query(Uri.parse(uri),  null, null, null, null)
+    try {
+      if (cursor != null && cursor.moveToFirst()) {
+        val index = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+        if (index != -1) {
+          result = cursor.getString(index)
+        }
+      }
+    } finally {
+      cursor!!.close()
+    }
+
+    if (result == null) {
+      result = uri.split(Regex("(/)|(%2F)")).last()
+    }
+
+    return result
+  }
+
   @JavascriptInterface
   fun requestOpenDialog(fileTypes: String): String {
     val promise = jsPromise()
@@ -480,8 +504,8 @@ class FreeTubeJavaScriptInterface {
       try {
         val uri = result!!.data!!.data
         var mimeType = context.contentResolver.getType(uri!!)
-
-        resolve(promise, "{ \"uri\": \"${uri}\", \"type\": \"${mimeType}\" }")
+        val fileName = getFileNameFromUri(uri.toString())
+        resolve(promise, "{ \"uri\": \"${uri}\", \"type\": \"${mimeType}\", \"fileName\": \"${fileName}\" }")
       } catch (ex: Exception) {
         reject(promise, ex.toString())
       }

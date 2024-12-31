@@ -119,7 +119,7 @@ Trending:
   Movies: 映画
   Gaming: ゲーム
   Music: 音楽
-  Default: 既定
+  Default: デフォルト
 Most Popular: '人気'
 Playlists: '再生リスト'
 User Playlists:
@@ -271,6 +271,7 @@ Settings:
     Auto Load Next Page:
       Label: 次のページを自動で読み込む
       Tooltip: 追加のページやコメント欄の続きを自動的に読み込みます。
+    Open Deep Links In New Window: FreeTube に渡された URL を新しいウィンドウで開く
   Theme Settings:
     Theme Settings: 'テーマ'
     Match Top Bar with Main Color: '上部のバーをメインカラーに合わせる'
@@ -287,6 +288,8 @@ Settings:
       Nordic: ノルディック
       Solarized Dark: ソラライズド・ダーク
       Solarized Light: ソラライズド・ライト
+      Gruvbox Dark: Gruvbox ダーク
+      Gruvbox Light: Gruvbox ライト
     Main Color Theme:
       Main Color Theme: 'テーマのメイン カラー'
       Red: '赤'
@@ -334,6 +337,16 @@ Settings:
       Solarized Cyan: ソラライズド・シアン
       Solarized Green: ソラライズド・グリーン
       Solarized Blue: ソラライズド・ブルー
+      Gruvbox Dark Green: Gruvbox ダークグリーン
+      Gruvbox Dark Blue: Gruvbox ダークブルー
+      Gruvbox Dark Aqua: Gruvbox ダークアクア
+      Gruvbox Light Red: Gruvbox ライトレッド
+      Gruvbox Light Blue: Gruvbox ライトブルー
+      Gruvbox Light Purple: Gruvbox ライトパープル
+      Gruvbox Dark Orange: Gruvbox ダークオレンジ
+      Gruvbox Dark Yellow: Gruvbox ダークイエロー
+      Gruvbox Dark Purple: Gruvbox ダークパープル
+      Gruvbox Light Orange: Gruvbox ライトオレンジ
     Secondary Color Theme: 'テーマのアクセント カラー'
         #* Main Color Theme
     UI Scale: UIの拡大率
@@ -369,7 +382,7 @@ Settings:
       4k: '4K'
       8k: '8K'
     Playlist Next Video Interval: 次の再生リストを再生する間隔
-    Next Video Interval: 次の動画までの間隔
+    Next Video Interval: 自動再生カウントダウンタイマー
     Fast-Forward / Rewind Interval: 早送り/巻き戻し間隔
     Display Play Button In Video Player: 動画プレーヤーに再生ボタンを表示する
     Scroll Volume Over Video Player: 動画プレーヤーをスクロールして音量を変更
@@ -391,14 +404,15 @@ Settings:
       Folder Button: フォルダの選択
     Enter Fullscreen on Display Rotate: 画面の回転時に全画面表示にする
     Skip by Scrolling Over Video Player: 動画プレーヤーをスクロールして動画をスキップ
+    Autoplay Interruption Timer: 自動再生の停止タイマー
   Subscription Settings:
     Subscription Settings: '登録チャンネル'
     Hide Videos on Watch: '視聴済みの動画を非表示にする'
     Fetch Feeds from RSS: RSS から情報取得
     Fetch Automatically: フィードの自動取得
     Confirm Before Unsubscribing: 登録解除する前に確認画面を表示する
-    Only Show Latest Video for Each Channel: 各チャンネルの最新動画のみを表示する
-
+    'Limit the number of videos displayed for each channel': 各チャンネルに表示する動画の数を制限する
+    To: 上限
   Privacy Settings:
     Save Watched Progress: 再生位置の保存
     Remember History: 履歴の保存
@@ -475,8 +489,8 @@ Settings:
     Hide Channels: チャンネルから動画を非表示にする
     Hide Channels Placeholder: チャンネル ID
     Display Titles Without Excessive Capitalisation: 過剰な大文字や句読点のないタイトルの表示
-    Hide Channel Playlists: チャンネル再生リストの非表示
-    Hide Channel Community: チャンネルコミュニティの非表示
+    Hide Channel Playlists: チャンネルの「再生リスト」タブを隠す
+    Hide Channel Community: チャンネルの「コミュニティ」タブを隠す
     Sections:
       Side Bar: サイドバー
       Channel Page: チャンネル ページ
@@ -484,12 +498,12 @@ Settings:
       General: 一般
       Subscriptions Page: 登録チャンネル ページ
     Hide Featured Channels: おすすめチャンネルの非表示
-    Hide Channel Shorts: ショート動画チャンネルの非表示
-    Hide Channel Podcasts: ポッドキャスト チャンネルの非表示
+    Hide Channel Shorts: チャンネルの「ショート動画」タブを隠す
+    Hide Channel Podcasts: チャンネルの「ポッドキャスト」タブを隠す
     Hide Subscriptions Shorts: 登録チャンネルのショート動画の非表示
     Hide Subscriptions Live: 登録チャンネルのライブ配信の非表示
     Hide Subscriptions Videos: 登録チャンネルの動画の非表示
-    Hide Channel Releases: チャンネルの新着情報の非表示
+    Hide Channel Releases: チャンネルの「新着情報」タブを隠す
     Hide Profile Pictures in Comments: コメント欄のプロフィール写真を隠す
     Hide Subscriptions Community: 登録チャンネルのコミュニティの非表示
     Hide Channels Invalid: 提供されたチャンネル ID が無効です
@@ -498,6 +512,7 @@ Settings:
     Hide Channels API Error: 指定されたIDのユーザーを検索する際にエラーが発生しました。IDが正しいかもう一度確認してください。
     Hide Videos and Playlists Containing Text Placeholder: 単語、単語の一部、またはフレーズ
     Hide Videos and Playlists Containing Text: 特定のテキストを含む動画と再生リストを非表示にする
+    Hide Channel Home: チャンネルの「ホーム」タブを隠す
   The app needs to restart for changes to take effect. Restart and apply change?: 変更の反映には、アプリの再起動が必要です。再起動して変更を適用しますか？
   Proxy Settings:
     Error getting network information. Is your proxy configured properly?: ネットワーク情報の取得中にエラーが発生しました。プロキシーを正しく設定してますか?
@@ -513,6 +528,9 @@ Settings:
     Proxy Protocol: プロキシのプロトコル
     Enable Tor / Proxy: Tor / プロキシの有効化
     Proxy Settings: プロキシ
+    Proxy Warning: FreeTube にはプロキシは内蔵されていませんが、Tor のようなご使用のマシン上で動作するものや、一部の VPN が提供する
+      SOCKS5 プロキシのような外部プロキシに接続することができます。有効にした場合は、プロキシ/Tor が適切に設定されていることを確認してください。そうでないと、FreeTube
+      はデータを取得できなくなります。
   SponsorBlock Settings:
     Notify when sponsor segment is skipped: スポンサーセグメントがスキップされたときに通知する
     'SponsorBlock API Url (Default is https://sponsor.ajay.app)': スポンサーブロック APIのURL（デフォルト
@@ -657,6 +675,9 @@ Channel:
   Podcasts:
     This channel does not currently have any podcasts: このチャンネルにはポッドキャストがありません
     Podcasts: ポッドキャスト
+  Home:
+    View Playlist: 再生リストを表示
+    Home: ホーム
 Video:
   Open in YouTube: 'YouTube で表示'
   Copy YouTube Link: 'YouTube リンクのコピー'
@@ -770,6 +791,9 @@ Video:
   MembersOnly: メンバー限定動画は Google にログインし、投稿チャンネルに課金する必要があるので FreeTube から直接見ることはできません。
   AgeRestricted: 年齢制限がかかっている 動画 は Google にログインしておりかつ年齢確認を済ましている YouTube アカウントが必要なため、FreeTube
     から直接見ることはできません。
+  DeArrow:
+    Show Original Details: 元の情報を表示
+    Show Modified Details: 変更された詳細を表示
 Videos:
   #& Sort By
   Sort By:
@@ -939,8 +963,9 @@ Tooltips:
     Region for Trending: 急上昇の地域設定では、急上昇動画を表示する国を選択できます。
     External Link Handling: "FreeTube で開けないリンクをクリックしたときのデフォルトの動作を選択します。\nデフォルトでは、FreeTube
       はクリックしたリンクをデフォルトのブラウザで開きます。\n"
+    Open Deep Links In New Window: FreeTube に渡された URL は、ブラウザの拡張機能やコマンドライン引数などによって、新しいウィンドウで開かれます。
   External Player Settings:
-    Custom External Player Arguments: '";"、セミコロンで区切られたカスタム コマンド ライン引数を外部プレーヤーに渡します。'
+    Custom External Player Arguments: '外部プレイヤーに渡したいカスタムコマンドライン引数。'
     Ignore Warnings: 現在の外部プレーヤーが、現在のアクションに未対応の場合（再生リストを逆順にするなど）に警告を抑制します。
     Custom External Player Executable: デフォルトでは、FreeTube は選択した外部プレーヤーが PATH 環境変数を介して見つかると想定します。必要に応じて、カスタム
       パスをここで設定できます。
@@ -994,6 +1019,7 @@ Chapters:
     {chapterName}'
   'Chapters list hidden, current chapter: {chapterName}': 'チャプター リストを非表示、現在のチャプター：
     {chapterName}'
+  Key Moments: ハイライト
 Preferences: 環境設定
 Ok: オーケー
 Hashtag:
@@ -1033,3 +1059,17 @@ Trimmed input must be at least N characters long: トリミングされた入力
   | トリミングされた入力は少なくとも {length} 文字以上でなければなりません
 'Blocked opening potentially unsafe URL': '安全でない可能性のあるURLをブロックしました： "{url}"。'
 Display Label: '{label}：{value}'
+KeyboardShortcutTemplate: '{label} （{shortcut}）'
+shortcutJoinOperator: +
+Keys:
+  alt: Alt
+  ctrl: Ctrl
+  arrowdown: 下矢印
+  arrowleft: 左矢印
+  arrowright: 右矢印
+  arrowup: 上矢印
+Right-click or hold to see history: 右クリックまたは長押しで 履歴 を表示
+Autoplay Interruption Timer: '{autoplayInterruptionIntervalHours} 時間の無操作状態が続いたため、自動再生をキャンセルしました'
+Description:
+  Expand Description: '...もっと見る'
+  Collapse Description: 表示を減らす

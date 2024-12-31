@@ -355,8 +355,6 @@ Settings:
     Hide Videos on Watch: 'Piilota katsotut videot'
     Fetch Feeds from RSS: Nouda RSS-syöte
     Fetch Automatically: Nouda syöte automaattisesti
-    Only Show Latest Video for Each Channel: Näytä vain jokaisen kanavan uusin video
-
   Privacy Settings:
     Watch history has been cleared: Katseluhistoria poistettiin
     Are you sure you want to remove your entire watch history?: Haluatko varmasti
@@ -892,8 +890,7 @@ Tooltips:
       MPV-tyyliin.
   External Player Settings:
     Custom External Player Arguments: Kaikki ne omavalintaiset komentorivin määreet,
-      puolipisteillä eroteltuina (';'), jotka haluat siirtää eteenpäin ulkoiselle
-      toisto-ohjelmalle.
+      jotka haluat siirtää eteenpäin ulkoiselle toisto-ohjelmalle.
     Ignore Warnings: Estä varoitukset, kun käytetty ulkoinen toisto-ohjelma ei tue
       määrättyä toimintamallia (kuten käänteiset soittoluettelot, jne.).
     Custom External Player Executable: Vakiollisesti FreeTube olettaa, että valittu

@@ -14,7 +14,7 @@
           appearance="result"
         />
       </FtCard>
-      <WatchVideoComments
+      <CommentSection
         :id="post.postId"
         :channel-name="post.author"
         :post-author-id="authorId"
@@ -30,13 +30,17 @@
 
 <script setup>
 import { computed, onMounted, ref, shallowRef, watch } from 'vue'
-import FtCard from '../../components/ft-card/ft-card.vue'
-import FtCommunityPost from '../../components/FtCommunityPost/FtCommunityPost.vue'
-import FtLoader from '../../components/ft-loader/ft-loader.vue'
-import WatchVideoComments from '../../components/watch-video-comments/watch-video-comments.vue'
-import store from '../../store/index'
 import { useRoute, useRouter } from 'vue-router/composables'
-import { getInvidiousCommunityPost } from '../../helpers/api/invidious'
+import packageDetails from '../../../package.json'
+
+import FtCard from '../components/ft-card/ft-card.vue'
+import FtCommunityPost from '../components/FtCommunityPost/FtCommunityPost.vue'
+import FtLoader from '../components/ft-loader/ft-loader.vue'
+import CommentSection from '../components/CommentSection/CommentSection.vue'
+
+import store from '../store/index'
+
+import { getInvidiousCommunityPost } from '../helpers/api/invidious'
 
 const router = useRouter()
 const route = useRoute()
@@ -71,6 +75,8 @@ onMounted(async () => {
 async function loadDataInvidiousAsync() {
   post.value = await getInvidiousCommunityPost(id.value, authorId.value)
   authorId.value = post.value.authorId
+
+  store.dispatch('setAppTitle', `${post.value.author} - ${packageDetails.productName}`)
   isLoading.value = false
 
   // If the authorId is missing from the URL we should add it,

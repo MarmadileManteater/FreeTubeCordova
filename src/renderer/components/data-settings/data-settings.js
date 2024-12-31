@@ -1,5 +1,5 @@
 import { defineComponent } from 'vue'
-import FtSettingsSection from '../ft-settings-section/ft-settings-section.vue'
+import FtSettingsSection from '../FtSettingsSection/FtSettingsSection.vue'
 import { mapActions, mapMutations } from 'vuex'
 import FtButton from '../ft-button/ft-button.vue'
 import FtFlexBox from '../ft-flex-box/ft-flex-box.vue'
@@ -12,14 +12,15 @@ import {
   deepCopy,
   escapeHTML,
   getTodayDateStrLocalTimezone,
-  readFileFromDialog,
-  showOpenDialog,
-  showSaveDialog,
+  readFileWithPicker,
   showToast,
-  writeFileFromDialog,
+  writeFileWithPicker,
 } from '../../helpers/utils'
 import { handleAmbigiousContent, initalizeDatabasesInDirectory, readFile, requestDirectory, writeFile } from '../../helpers/android'
 import android from 'android'
+
+const IMPORT_DIRECTORY_ID = 'data-settings-import'
+const START_IN_DIRECTORY = 'downloads'
 
 export default defineComponent({
   name: 'DataSettings',
@@ -177,47 +178,47 @@ export default defineComponent({
     },
 
     importSubscriptions: async function () {
-      const options = {
-        properties: ['openFile'],
-        filters: [
-          {
-            name: this.$t('Settings.Data Settings.Subscription File'),
-            extensions: ['db', 'csv', 'json', 'opml', 'xml']
-          }
-        ]
-      }
-
-      const response = await showOpenDialog(options)
-      if (response.canceled || response.filePaths?.length === 0) {
-        return
-      }
-      let textDecode
+      let response
       try {
-        textDecode = await readFileFromDialog(response)
+        response = await readFileWithPicker(
+          this.$t('Settings.Data Settings.Subscription File'),
+          {
+            'application/x-freetube-db': '.db',
+            'text/csv': '.csv',
+            'application/json': '.json',
+            'application/xml': ['.xml', '.opml']
+          },
+          IMPORT_DIRECTORY_ID,
+          START_IN_DIRECTORY
+        )
       } catch (err) {
         const message = this.$t('Settings.Data Settings.Unable to read file')
         showToast(`${message}: ${err}`)
         return
       }
-      response.filePaths.forEach(filePath => {
-        if (process.env.IS_ANDROID) {
-          filePath = handleAmbigiousContent(textDecode, filePath)
+
+      if (response === null) {
+        return
+      }
+
+      let { filename, content } = response
+      if (process.env.IS_ANDROID) {
+        filename = handleAmbigiousContent(content, filename)
+      }
+      if (filename.endsWith('.csv')) {
+        this.importCsvYouTubeSubscriptions(content)
+      } else if (filename.endsWith('.db')) {
+        this.importFreeTubeSubscriptions(content)
+      } else if (filename.endsWith('.opml') || filename.endsWith('.xml')) {
+        this.importOpmlYouTubeSubscriptions(content)
+      } else if (filename.endsWith('.json')) {
+        const jsonContent = JSON.parse(content)
+        if (jsonContent.subscriptions) {
+          this.importNewPipeSubscriptions(jsonContent)
+        } else {
+          this.importYouTubeSubscriptions(jsonContent)
         }
-        if (filePath.endsWith('.csv')) {
-          this.importCsvYouTubeSubscriptions(textDecode)
-        } else if (filePath.endsWith('.db')) {
-          this.importFreeTubeSubscriptions(textDecode)
-        } else if (filePath.endsWith('.opml') || filePath.endsWith('.xml')) {
-          this.importOpmlYouTubeSubscriptions(textDecode)
-        } else if (filePath.endsWith('.json')) {
-          textDecode = JSON.parse(textDecode)
-          if (textDecode.subscriptions) {
-            this.importNewPipeSubscriptions(textDecode)
-          } else {
-            this.importYouTubeSubscriptions(textDecode)
-          }
-        }
-      })
+      }
     },
 
     importFreeTubeSubscriptions: function (textDecode) {
@@ -531,32 +532,19 @@ export default defineComponent({
       const dateStr = getTodayDateStrLocalTimezone()
       const exportFileName = 'freetube-subscriptions-' + dateStr + '.db'
 
-      const options = {
-        defaultPath: exportFileName,
-        filters: [
-          {
-            name: this.$t('Settings.Data Settings.Subscription File'),
-            extensions: ['db']
-          }
-        ]
-      }
-
-      await this.promptAndWriteToFile(options, subscriptionsDb, this.$t('Settings.Data Settings.Subscriptions have been successfully exported'))
+      await this.promptAndWriteToFile(
+        exportFileName,
+        subscriptionsDb,
+        this.$t('Settings.Data Settings.Subscription File'),
+        'application/x-freetube-db',
+        '.db',
+        this.$t('Settings.Data Settings.Subscriptions have been successfully exported')
+      )
     },
 
     exportYouTubeSubscriptions: async function () {
       const dateStr = getTodayDateStrLocalTimezone()
       const exportFileName = 'youtube-subscriptions-' + dateStr + '.json'
-
-      const options = {
-        defaultPath: exportFileName,
-        filters: [
-          {
-            name: this.$t('Settings.Data Settings.Subscription File'),
-            extensions: ['json']
-          }
-        ]
-      }
 
       const subscriptionsObject = this.profileList[0].subscriptions.map((channel) => {
         const object = {
@@ -594,22 +582,19 @@ export default defineComponent({
         return object
       })
 
-      await this.promptAndWriteToFile(options, JSON.stringify(subscriptionsObject), this.$t('Settings.Data Settings.Subscriptions have been successfully exported'))
+      await this.promptAndWriteToFile(
+        exportFileName,
+        JSON.stringify(subscriptionsObject),
+        this.$t('Settings.Data Settings.Subscription File'),
+        'application/json',
+        '.json',
+        this.$t('Settings.Data Settings.Subscriptions have been successfully exported')
+      )
     },
 
     exportOpmlYouTubeSubscriptions: async function () {
       const dateStr = getTodayDateStrLocalTimezone()
       const exportFileName = 'youtube-subscriptions-' + dateStr + '.opml'
-
-      const options = {
-        defaultPath: exportFileName,
-        filters: [
-          {
-            name: this.$t('Settings.Data Settings.Subscription File'),
-            extensions: ['opml']
-          }
-        ]
-      }
 
       let opmlData = '<opml version="1.1"><body><outline text="YouTube Subscriptions" title="YouTube Subscriptions">'
 
@@ -622,22 +607,20 @@ export default defineComponent({
 
       opmlData += '</outline></body></opml>'
 
-      await this.promptAndWriteToFile(options, opmlData, this.$t('Settings.Data Settings.Subscriptions have been successfully exported'))
+      await this.promptAndWriteToFile(
+        exportFileName,
+        opmlData,
+        this.$t('Settings.Data Settings.Subscription File'),
+        'application/xml',
+        '.opml',
+        this.$t('Settings.Data Settings.Subscriptions have been successfully exported')
+      )
     },
 
     exportCsvYouTubeSubscriptions: async function () {
       const dateStr = getTodayDateStrLocalTimezone()
       const exportFileName = 'youtube-subscriptions-' + dateStr + '.csv'
 
-      const options = {
-        defaultPath: exportFileName,
-        filters: [
-          {
-            name: this.$t('Settings.Data Settings.Subscription File'),
-            extensions: ['csv']
-          }
-        ]
-      }
       let exportText = 'Channel ID,Channel URL,Channel title\n'
       this.profileList[0].subscriptions.forEach((channel) => {
         const channelUrl = `https://www.youtube.com/channel/${channel.id}`
@@ -648,22 +631,19 @@ export default defineComponent({
       })
       exportText += '\n'
 
-      await this.promptAndWriteToFile(options, exportText, this.$t('Settings.Data Settings.Subscriptions have been successfully exported'))
+      await this.promptAndWriteToFile(
+        exportFileName,
+        exportText,
+        this.$t('Settings.Data Settings.Subscription File'),
+        'text/csv',
+        '.csv',
+        this.$t('Settings.Data Settings.Subscriptions have been successfully exported')
+      )
     },
 
     exportNewPipeSubscriptions: async function () {
       const dateStr = getTodayDateStrLocalTimezone()
       const exportFileName = 'newpipe-subscriptions-' + dateStr + '.json'
-
-      const options = {
-        defaultPath: exportFileName,
-        filters: [
-          {
-            name: this.$t('Settings.Data Settings.Subscription File'),
-            extensions: ['json']
-          }
-        ]
-      }
 
       const newPipeObject = {
         app_version: '0.19.8',
@@ -682,44 +662,45 @@ export default defineComponent({
         newPipeObject.subscriptions.push(subscription)
       })
 
-      await this.promptAndWriteToFile(options, JSON.stringify(newPipeObject), this.$t('Settings.Data Settings.Subscriptions have been successfully exported'))
+      await this.promptAndWriteToFile(
+        exportFileName,
+        JSON.stringify(newPipeObject),
+        this.$t('Settings.Data Settings.Subscription File'),
+        'application/json',
+        '.json',
+        this.$t('Settings.Data Settings.Subscriptions have been successfully exported')
+      )
     },
 
     importHistory: async function () {
-      const options = {
-        properties: ['openFile'],
-        filters: [
-          {
-            name: this.$t('Settings.Data Settings.History File'),
-            extensions: ['db', 'json']
-          }
-        ]
-      }
-
-      const response = await showOpenDialog(options)
-      if (response.canceled || response.filePaths?.length === 0) {
-        return
-      }
-      let textDecode
+      let response
       try {
-        textDecode = await readFileFromDialog(response)
+        response = await readFileWithPicker(
+          this.$t('Settings.Data Settings.History File'),
+          {
+            'application/x-freetube-db': '.db',
+            'application/json': '.json'
+          },
+          IMPORT_DIRECTORY_ID,
+          START_IN_DIRECTORY
+        )
       } catch (err) {
         const message = this.$t('Settings.Data Settings.Unable to read file')
         showToast(`${message}: ${err}`)
         return
       }
 
-      response.filePaths.forEach(filePath => {
-        // db and opml are the same mime type in android
-        if (process.env.IS_ANDROID) {
-          filePath = handleAmbigiousContent(textDecode, filePath)
-        }
-        if (filePath.endsWith('.db')) {
-          this.importFreeTubeHistory(textDecode.split('\n'))
-        } else if (filePath.endsWith('.json')) {
-          this.importYouTubeHistory(JSON.parse(textDecode))
-        }
-      })
+      if (response === null) {
+        return
+      }
+
+      const { filename, content } = response
+
+      if (filename.endsWith('.db')) {
+        this.importFreeTubeHistory(content.split('\n'))
+      } else if (filename.endsWith('.json')) {
+        this.importYouTubeHistory(JSON.parse(content))
+      }
     },
 
     async importFreeTubeHistory(textDecode) {
@@ -880,42 +861,39 @@ export default defineComponent({
       const dateStr = getTodayDateStrLocalTimezone()
       const exportFileName = 'freetube-history-' + dateStr + '.db'
 
-      const options = {
-        defaultPath: exportFileName,
-        filters: [
-          {
-            name: this.$t('Settings.Data Settings.Playlist File'),
-            extensions: ['db']
-          }
-        ]
-      }
-
-      await this.promptAndWriteToFile(options, historyDb, this.$t('Settings.Data Settings.All watched history has been successfully exported'))
+      await this.promptAndWriteToFile(
+        exportFileName,
+        historyDb,
+        this.$t('Settings.Data Settings.History File'),
+        'application/x-freetube-db',
+        '.db',
+        this.$t('Settings.Data Settings.All watched history has been successfully exported')
+      )
     },
 
     importPlaylists: async function () {
-      const options = {
-        properties: ['openFile'],
-        filters: [
-          {
-            name: this.$t('Settings.Data Settings.Playlist File'),
-            extensions: ['db']
-          }
-        ]
-      }
-
-      const response = await showOpenDialog(options)
-      if (response.canceled || response.filePaths?.length === 0) {
-        return
-      }
-      let data
+      let response
       try {
-        data = await readFileFromDialog(response)
+        response = await readFileWithPicker(
+          this.$t('Settings.Data Settings.Playlist File'),
+          {
+            'application/x-freetube-db': '.db'
+          },
+          IMPORT_DIRECTORY_ID,
+          START_IN_DIRECTORY
+        )
       } catch (err) {
         const message = this.$t('Settings.Data Settings.Unable to read file')
         showToast(`${message}: ${err}`)
         return
       }
+
+      if (response === null) {
+        return
+      }
+
+      let data = response.content
+
       let playlists = null
 
       // for the sake of backwards compatibility,
@@ -1080,21 +1058,18 @@ export default defineComponent({
       const dateStr = getTodayDateStrLocalTimezone()
       const exportFileName = 'freetube-playlists-' + dateStr + '.db'
 
-      const options = {
-        defaultPath: exportFileName,
-        filters: [
-          {
-            name: 'Database File',
-            extensions: ['db']
-          }
-        ]
-      }
-
       const playlistsDb = this.allPlaylists.map(playlist => {
         return JSON.stringify(playlist)
       }).join('\n') + '\n'// a trailing line is expected
 
-      await this.promptAndWriteToFile(options, playlistsDb, this.$t('Settings.Data Settings.All playlists has been successfully exported'))
+      await this.promptAndWriteToFile(
+        exportFileName,
+        playlistsDb,
+        this.$t('Settings.Data Settings.Playlist File'),
+        'application/x-freetube-db',
+        '.db',
+        this.$t('Settings.Data Settings.All playlists has been successfully exported')
+      )
     },
 
     exportPlaylistsForOlderVersionsSometimes: function () {
@@ -1108,16 +1083,6 @@ export default defineComponent({
     exportPlaylistsForOlderVersions: async function () {
       const dateStr = getTodayDateStrLocalTimezone()
       const exportFileName = 'freetube-playlists-as-single-favorites-playlist-' + dateStr + '.db'
-
-      const options = {
-        defaultPath: exportFileName,
-        filters: [
-          {
-            name: 'Database File',
-            extensions: ['db']
-          }
-        ]
-      }
 
       const favoritesPlaylistData = {
         playlistName: 'Favorites',
@@ -1143,7 +1108,14 @@ export default defineComponent({
         })
       })
 
-      await this.promptAndWriteToFile(options, JSON.stringify([favoritesPlaylistData]), this.$t('Settings.Data Settings.All playlists has been successfully exported'))
+      await this.promptAndWriteToFile(
+        exportFileName,
+        JSON.stringify([favoritesPlaylistData]),
+        this.$t('Settings.Data Settings.Playlist File'),
+        'application/x-freetube-db',
+        '.db',
+        this.$t('Settings.Data Settings.All playlists has been successfully exported')
+      )
     },
 
     convertOldFreeTubeFormatToNew(oldData) {
@@ -1177,22 +1149,32 @@ export default defineComponent({
       return convertedData
     },
 
-    promptAndWriteToFile: async function (saveOptions, content, successMessage) {
-      const response = await showSaveDialog(saveOptions)
-      if (response.canceled || response.filePath === '') {
-        // User canceled the save dialog
-        return
-      }
-
+    promptAndWriteToFile: async function (
+      fileName,
+      content,
+      fileTypeDescription,
+      mimeType,
+      fileExtension,
+      successMessage
+    ) {
       try {
-        await writeFileFromDialog(response, content)
-      } catch (writeErr) {
-        const message = this.$t('Settings.Data Settings.Unable to write file')
-        showToast(`${message}: ${writeErr}`)
-        return
-      }
+        const response = await writeFileWithPicker(
+          fileName,
+          content,
+          fileTypeDescription,
+          mimeType,
+          fileExtension,
+          'data-settings-export',
+          START_IN_DIRECTORY
+        )
 
-      showToast(successMessage)
+        if (response) {
+          showToast(successMessage)
+        }
+      } catch (error) {
+        const message = this.$t('Settings.Data Settings.Unable to write file')
+        showToast(`${message}: ${error}`)
+      }
     },
 
     isChannelSubscribed(channelId, subscriptions) {
