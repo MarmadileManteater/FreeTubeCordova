@@ -73,6 +73,8 @@ The first build with a green check mark is the latest build. You will need to ha
 ```bash
 # 📦 Packs the project using `webpack.android.config.js`
 yarn pack:android
+# 🤖 Packs the botguard script
+yarn pack:botGuardScript:android
 # 🚧 for development
 yarn pack:android:dev
 ```

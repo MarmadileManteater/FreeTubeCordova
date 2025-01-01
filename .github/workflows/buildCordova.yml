@@ -96,7 +96,9 @@ jobs:
         path: dist/web
 
     - name: 📦 Pack for 📱Android
-      run: yarn pack:android:dev
+      run: |
+        yarn pack:botGuardScript:android
+        yarn pack:android:dev
 
     - name: 🦴 Fetch keystore from secrets
       run: |

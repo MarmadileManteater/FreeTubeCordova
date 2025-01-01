@@ -100,7 +100,9 @@ jobs:
       working-directory: dist/web/
 
     - name: 📦 Pack for 📱Android with Node.js & Cordova
-      run: yarn pack:android
+      run: |
+        yarn pack:botGuardScript:android
+        yarn pack:android
 
     - name: 🦴 Fetch keystore from secrets
       run: |
