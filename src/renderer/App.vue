@@ -51,6 +51,9 @@
     <ft-search-filters
       v-if="showSearchFilters"
     />
+    <ft-keyboard-shortcut-prompt
+      v-if="isKeyboardShortcutPromptShown"
+    />
     <ft-playlist-add-video-prompt
       v-if="showAddToPlaylistPrompt"
     />

@@ -67,7 +67,7 @@ export default defineComponent({
     this.lastActiveElement = document.activeElement
     nextTick(() => {
       document.addEventListener('keydown', this.closeEventFunction, true)
-      this.promptButtons = Array.from(this.$refs.promptCard.$el.querySelectorAll('.btn.ripple'))
+      this.promptButtons = Array.from(this.$refs.promptCard.$el.querySelectorAll('.btn.ripple, .iconButton'))
       this.focusItem(0)
     })
     if (process.env.IS_ANDROID) {
@@ -136,9 +136,7 @@ export default defineComponent({
       }
     },
     arrowKeys: function(e) {
-      const currentIndex = this.promptButtons.findIndex((cur) => {
-        return cur === e.target
-      })
+      const currentIndex = this.promptButtons.indexOf(e.target)
 
       // Only react if a button was focused when the arrow key was pressed
       if (currentIndex === -1) {
@@ -148,7 +146,7 @@ export default defineComponent({
       e.preventDefault()
 
       const direction = (e.key === 'ArrowLeft') ? -1 : 1
-      this.focusItem(parseInt(currentIndex) + direction)
+      this.focusItem(currentIndex + direction)
     },
 
     ...mapActions([

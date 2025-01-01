@@ -64,7 +64,6 @@ jobs:
         field: name
         value: ${{ steps.appId.outputs.result }}
 
-
     - name: ⬆ Update package.json product name
       uses: jossef/action-set-json-field@v2.1
       with:

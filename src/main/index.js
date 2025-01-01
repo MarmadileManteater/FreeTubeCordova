@@ -209,14 +209,6 @@ function runApp() {
   let mainWindow
   let startupUrl
 
-  if (process.platform === 'linux') {
-    // Enable hardware acceleration via VA-API with OpenGL if no other feature flags are found
-    // https://chromium.googlesource.com/chromium/src/+/refs/heads/main/docs/gpu/vaapi.md
-    if (!app.commandLine.hasSwitch('enable-features')) {
-      app.commandLine.appendSwitch('enable-features', 'VaapiVideoDecodeLinuxGL')
-    }
-  }
-
   const userDataPath = app.getPath('userData')
 
   // command line switches need to be added before the app ready event first
@@ -655,6 +647,8 @@ function runApp() {
           return '#282828'
         case 'gruvbox-light':
           return '#fbf1c7'
+        case 'catppuccin-frappe':
+          return '#303446'
         case 'system':
         default:
           return nativeTheme.shouldUseDarkColors ? '#212121' : '#f1f1f1'

@@ -336,6 +336,7 @@ Settings:
       System Default: System Default
       Light: Light
       Dracula: Dracula
+      Catppuccin Frappe: Catppuccin Frappe
       Catppuccin Mocha: Catppuccin Mocha
       Pastel Pink: Pastel Pink
       Hot Pink: Hot Pink
@@ -369,6 +370,20 @@ Settings:
       Dracula Purple: Dracula Purple
       Dracula Red: Dracula Red
       Dracula Yellow: Dracula Yellow
+      Catppuccin Frappe Rosewater: Catppuccin Frappe Rosewater
+      Catppuccin Frappe Flamingo: Catppuccin Frappe Flamingo
+      Catppuccin Frappe Pink: Catppuccin Frappe Pink
+      Catppuccin Frappe Mauve: Catppuccin Frappe Mauve
+      Catppuccin Frappe Red: Catppuccin Frappe Red
+      Catppuccin Frappe Maroon: Catppuccin Frappe Maroon
+      Catppuccin Frappe Peach: Catppuccin Frappe Peach
+      Catppuccin Frappe Yellow: Catppuccin Frappe Yellow
+      Catppuccin Frappe Green: Catppuccin Frappe Green
+      Catppuccin Frappe Teal: Catppuccin Frappe Teal
+      Catppuccin Frappe Sky: Catppuccin Frappe Sky
+      Catppuccin Frappe Sapphire: Catppuccin Frappe Sapphire
+      Catppuccin Frappe Blue: Catppuccin Frappe Blue
+      Catppuccin Frappe Lavender: Catppuccin Frappe Lavender
       Catppuccin Mocha Rosewater: Catppuccin Mocha Rosewater
       Catppuccin Mocha Flamingo: Catppuccin Mocha Flamingo
       Catppuccin Mocha Pink: Catppuccin Mocha Pink
@@ -791,6 +806,7 @@ Video:
   IP block: 'YouTube has blocked your IP address from watching videos. Please try switching to a different VPN or proxy.'
   MembersOnly: Members-only videos cannot be watched with FreeTube as they require Google login and paid membership to the uploader's channel.
   AgeRestricted: Age-restricted videos cannot be watched with FreeTube as they require Google login and using an age-verified YouTube account.
+  DRMProtected: DRM protected videos cannot be played in FreeTube, as they require proprietary, closed source components. If you want to watch this video please watch it on the official YouTube website in a DRM enabled web browser.
   More Options: More Options
   Mark As Watched: Mark As Watched
   Remove From History: Remove From History
@@ -921,6 +937,8 @@ Playlist:
     Sort By: Sort By
     DateAddedNewest: Latest added first
     DateAddedOldest: Earliest added first
+    PublishedNewest: Latest published first
+    PublishedOldest: Earliest published first
     AuthorAscending: Author (A-Z)
     AuthorDescending: Author (Z-A)
     VideoTitleAscending: Title (A-Z)
@@ -1127,7 +1145,59 @@ shortcutJoinOperator: +
 Keys:
   alt: Alt
   ctrl: Ctrl
+  shift: Shift
+  enter: Enter
+  plus: Plus
   arrowdown: Down Arrow
   arrowleft: Left Arrow
   arrowright: Right Arrow
   arrowup: Up Arrow
+KeyboardShortcutPrompt:
+  Keyboard Shortcuts: Keyboard Shortcuts
+  Sections:
+    Video:
+      Playback: Video: Playback
+      General: Video: General
+    App:
+      Situational: 'App: Situational'
+      General: App: General
+  Show Keyboard Shortcuts: Show keyboard shortcuts
+  History Backward: Go back one page
+  History Forward: Go forward one page
+  New Window: Create a new window
+  Navigate to Settings: Navigate to the Settings page
+  Navigate to History: Navigate to the History page
+  Refresh: Refresh feed with latest content
+  Focus Secondary Search: Focus on the secondary search bar (if one is present)
+  Captions: Toggle captions ON/OFF
+  Stats: Show video statistics
+  Fullscreen: Toggle fullscreen
+  Picture in Picture: Toggle Picture-in-Picture mode
+  Large Rewind: 'Rewind 10 seconds / Rewind video based on current Video Playback Rate'
+  Play: Toggle play/pause
+  Large Fast Forward: 'Forward 10 seconds / Fast-Forward video based on current Video Playback Rate'
+  Mute: Toggle mute
+  Decrease Video Speed: 'Decrease video speed based on Video Playback Rate Interval'
+  Increase Video Speed: 'Increase video speed based on Video Playback Rate Interval'
+  Full Window: Toggle full window
+  Theatre Mode: Toggle theater mode
+  Take Screenshot: Take screenshot
+  Minimize Window: Miminize window
+  Close Window: Close window
+  Restart Window: Restart window
+  Force Restart Window: Force restart window
+  Toggle Developer Tools: Toggle developer tools
+  Reset Zoom: Reset zoom level / UI scale
+  Zoom In: Zoom in
+  Zoom Out: Zoom out
+  Focus Search: Focus on the search bar
+  Search in New Window: Search in a new window
+  Last Frame: Previous frame (while paused)
+  Next Frame: Next frame (while paused)
+  Volume Up: Increase volume
+  Volume Down: Decrease volume
+  Small Rewind: 'Rewind X seconds based on the Rewind Interval and current Video Playback Rate'
+  Small Fast Forward: 'Fast-Forward X seconds based on the Fast-Forward Interval and current Video Playback Rate'
+  Last Chapter: Last Chapter
+  Next Chapter: Next Chapter
+  Skip by Tenths: Skip through video by percentage (3 skips to 30% of duration)
