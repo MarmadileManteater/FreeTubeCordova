@@ -15,6 +15,7 @@
                 body = arg.body
               }
               if ('headers' in arg) {
+                // TODO refactor this code to help move away from file uris
                 if ('append' in arg.headers) {
                   if (arg.headers.get('x-youtube-client-name') == 5) {
                     arg.headers.append('x-fta-request-id', requestId)

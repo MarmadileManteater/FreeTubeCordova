@@ -203,24 +203,24 @@ config.plugins.push(
     'process.env.SHAKA_LOCALES_PREBUNDLED': JSON.stringify(SHAKA_LOCALES_PREBUNDLED)
   }),
   new CopyWebpackPlugin({
-      patterns: [
-        {
-          from: path.join(__dirname, '../static/pwabuilder-sw.js'),
-          to: path.join(__dirname, '../android/app/src/main/assets/pwabuilder-sw.js'),
+    patterns: [
+      {
+        from: path.join(__dirname, '../static/pwabuilder-sw.js'),
+        to: path.join(__dirname, '../android/app/src/main/assets/pwabuilder-sw.js'),
+      },
+      {
+        from: path.join(__dirname, '../static'),
+        to: path.join(__dirname, '../android/app/src/main/assets/static'),
+        globOptions: {
+          dot: true,
+          ignore: ['**/.*', '**/locales/**', '**/locales-android/**', '**/pwabuilder-sw.js', '**/dashFiles/**', '**/storyboards/**'],
         },
-        {
-          from: path.join(__dirname, '../static'),
-          to: path.join(__dirname, '../android/app/src/main/assets/static'),
-          globOptions: {
-            dot: true,
-            ignore: ['**/.*', '**/locales/**', '**/locales-android/**', '**/pwabuilder-sw.js', '**/dashFiles/**', '**/storyboards/**'],
-          },
-        },
-        {
-          from: path.join(__dirname, '../node_modules/shaka-player/ui/locales', `{${SHAKA_LOCALES_TO_BE_BUNDLED.join(',')}}.json`).replaceAll('\\', '/'),
-          to: path.join(__dirname, '../android/app/src/main/assets/static/shaka-player-locales'),
-          context: path.join(__dirname, '../node_modules/shaka-player/ui/locales')
-        }
+      },
+      {
+        from: path.join(__dirname, '../node_modules/shaka-player/ui/locales', `{${SHAKA_LOCALES_TO_BE_BUNDLED.join(',')}}.json`).replaceAll('\\', '/'),
+        to: path.join(__dirname, '../android/app/src/main/assets/static/shaka-player-locales'),
+        context: path.join(__dirname, '../node_modules/shaka-player/ui/locales')
+      }
     ]
   })
 )

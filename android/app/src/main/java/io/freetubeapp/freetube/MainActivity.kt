@@ -27,6 +27,9 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import io.freetubeapp.freetube.databinding.ActivityMainBinding
 import org.json.JSONObject
+import java.io.BufferedReader
+import java.io.IOException
+import java.io.InputStreamReader
 import java.io.Serializable
 import java.net.HttpURLConnection
 import java.net.URL
@@ -49,7 +52,9 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
   private lateinit var keepAliveIntent: Intent
   private var fullscreenView: View? = null
   lateinit var webView: BackgroundPlayWebView
+  lateinit var bgWebView: BotGuardWebView
   lateinit var jsInterface: FreeTubeJavaScriptInterface
+  lateinit var bgJsInterface: BotGuardJavascriptInterface
   lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
   lateinit var content: View
   var consoleMessages: MutableList<JSONObject> = mutableListOf()
@@ -82,6 +87,7 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
     workQueue
   )
 
+  @SuppressLint("SetJavaScriptEnabled")
   @Suppress("DEPRECATION")
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -210,6 +216,7 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
       }
     }
     webView.webViewClient = object: WebViewClient() {
+      // TODO refactor this to work for video streaming
       override fun shouldInterceptRequest(
         view: WebView?,
         request: WebResourceRequest?
@@ -306,6 +313,11 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
     } else {
       webView.loadUrl("file:///android_asset/index.html")
     }
+
+    bgWebView = binding.botGuardWebView
+    bgJsInterface = BotGuardJavascriptInterface(this)
+    bgWebView.addJavascriptInterface(bgJsInterface, "Android")
+    bgWebView.settings.javaScriptEnabled = true
   }
 
   fun listenForPermissionsCallbacks(listener: (Int, Array<String?>, IntArray) -> Unit) {
@@ -344,6 +356,27 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
     } else {
       "`${message}`"
     }
+  }
+
+  fun readTextAsset(assetName: String) : String {
+    val lines = mutableListOf<String>()
+    val reader: BufferedReader = BufferedReader(InputStreamReader(assets.open(assetName)))
+    try {
+      var line = reader.readLine()
+      while(line != null) {
+        lines.add(line)
+        line = reader.readLine()
+      }
+    } catch (ex: Exception) {
+      // pass
+    } finally {
+      try {
+        reader.close()
+      } catch (ex: Exception) {
+        // pass
+      }
+    }
+    return lines.joinToString("\n")
   }
 
   override fun onConfigurationChanged(newConfig: Configuration) {

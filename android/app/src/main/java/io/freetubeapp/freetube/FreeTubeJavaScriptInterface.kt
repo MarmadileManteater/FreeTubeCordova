@@ -701,6 +701,39 @@ class FreeTubeJavaScriptInterface {
   }
 
   @JavascriptInterface
+  fun generatePOTokenFromVisitorData(visitorData: String): String {
+    val promise = jsPromise()
+    val bgWv = context.bgWebView
+    val script = context.readTextAsset("botGuardScript.js")
+    try {
+      val functionName = script.split("export{")[1].split(" as default};")[0]
+      val exportSection = "export{${functionName} as default};"
+      context.bgJsInterface.onReturnToken {
+        run {
+          context.runOnUiThread {
+            resolve(promise, it)
+            bgWv.loadUrl("about:blank")
+          }
+        }
+      }
+      val bakedScript =
+        script.replace(exportSection, "; ${functionName}(\"${visitorData}\").then((TOKEN_RESULT) => { console.log(`Your potoken is \${TOKEN_RESULT}`) ; Android.returnToken(TOKEN_RESULT) })")
+      context.runOnUiThread {
+        bgWv.loadDataWithBaseURL(
+          "https://www.youtube.com",
+          "<script>${bakedScript}</script>",
+          "text/html",
+          "utf-8",
+          null
+        )
+      }
+    } catch (exception: Exception) {
+      reject(promise, exception.message!!)
+    }
+    return promise
+  }
+
+  @JavascriptInterface
   fun queueFetchBody(id: String, body: String) {
     if (body != "undefined") {
       context.pendingRequestBodies[id] = body

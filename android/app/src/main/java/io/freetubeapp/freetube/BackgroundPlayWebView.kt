@@ -5,7 +5,7 @@ import android.util.AttributeSet
 import android.view.View
 import android.webkit.WebView
 
-class BackgroundPlayWebView @JvmOverloads constructor(
+open class BackgroundPlayWebView @JvmOverloads constructor(
   context: Context, attrs: AttributeSet? = null
 ) : WebView(context, attrs) {
   private var once: Boolean = false

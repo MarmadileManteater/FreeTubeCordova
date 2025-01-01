@@ -90,7 +90,7 @@ export function requestSaveDialog(fileName, fileType) {
 
 /**
  * Requests an open file dialog
- * @param {string[]} fileType mime type of acceptable inputs
+ * @param {string[]} fileTypes mime type of acceptable inputs
  * @returns {Promise<SaveDialogResponse>} either a uri based on the user's input or a cancelled response
  */
 export function requestOpenDialog(fileTypes) {
@@ -331,4 +331,8 @@ export function updateAndroidTheme(usesMain = false) {
 
 export function getConsoleLogs() {
   return JSON.parse(android.getLogs())
+}
+
+export function generatePOTokenFromVisitorData(visitorData) {
+  return window.awaitAsyncResult(android.generatePOTokenFromVisitorData(visitorData))
 }
