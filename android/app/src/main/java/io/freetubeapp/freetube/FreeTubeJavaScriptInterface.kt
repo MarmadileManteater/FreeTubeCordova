@@ -300,6 +300,7 @@ class FreeTubeJavaScriptInterface {
         override fun onSkipToPrevious() {
           super.onSkipToPrevious()
           context.runOnUiThread {
+            // TODO replace with dispatch event
             context.webView.loadUrl("javascript: window.notifyMediaSessionListeners('previous')")
           }
         }
