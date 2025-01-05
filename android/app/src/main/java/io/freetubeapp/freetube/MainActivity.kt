@@ -129,6 +129,7 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
 
     MediaControlsReceiver.notifyMediaSessionListeners = {
         action ->
+      // TODO replace with `dispatchEvent`
       webView.loadUrl(String.format("javascript: window.notifyMediaSessionListeners('%s')", action))
     }
 
@@ -156,6 +157,7 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
     onBackPressedDispatcher.addCallback {
       if (isInAPrompt) {
         webView.post {
+          // TODO standardise all calls to dispatch event
           webView.loadUrl("javascript: window.dispatchEvent(new Event(\"exit-prompt\"))")
           jsInterface.exitPromptMode()
         }
@@ -190,6 +192,7 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
         messageData.put("sourceId", consoleMessage.sourceId())
         messageData.put("lineNumber", consoleMessage.lineNumber())
         consoleMessages.add(messageData)
+        // TODO standarise calls to dispatch event
         webView.loadUrl("javascript: var event = new Event(\"console-message\"); event.data = JSON.parse(${btoa(messageData.toString())}); window.dispatchEvent(event)")
         return super.onConsoleMessage(consoleMessage);
       }
@@ -201,7 +204,7 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
         this@MainActivity.binding.root.addView(view)
         webView.visibility = View.GONE
         this@MainActivity.binding.root.fitsSystemWindows = false
-
+        // TODO standarise calls to dispatch event
         webView.loadUrl("javascript: window.dispatchEvent(new Event(\"start-fullscreen\"))")
       }
 
@@ -211,7 +214,7 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
         fullscreenView = null
         windowInsetsController.show(WindowInsetsCompat.Type.systemBars())
         this@MainActivity.binding.root.fitsSystemWindows = true
-
+        // TODO standarise calls to dispatch event
         webView.loadUrl("javascript: window.dispatchEvent(new Event(\"end-fullscreen\"))")
       }
     }
@@ -291,6 +294,7 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
         val regex = """^https?:\/\/((www\.)?youtube\.com(\/embed)?|youtu\.be)\/.*$"""
 
         if (Regex(regex).containsMatchIn(request!!.url!!.toString())) {
+          // TODO replace with dispatchEvent
           webView.loadUrl("javascript: window.notifyYoutubeLinkHandlers(\"${request!!.url}\")")
           return true
         }
@@ -385,12 +389,14 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
       Configuration.UI_MODE_NIGHT_NO -> {
         darkMode = false
         webView.post {
+          // TODO standarise calls to dispatch event
           webView.loadUrl("javascript: window.dispatchEvent(new Event(\"enabled-light-mode\"))")
         }
       }
       Configuration.UI_MODE_NIGHT_YES -> {
         darkMode = true
         webView.post {
+          // TODO standarise calls to dispatch event
           webView.loadUrl("javascript: window.dispatchEvent(new Event(\"enabled-dark-mode\"))")
         }
       }
@@ -422,6 +428,7 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
       } else {
         uri
       }
+      // TODO replace with dispatch event
       webView.loadUrl("javascript: window.notifyYoutubeLinkHandlers(\"${url}\")")
     }
   }
@@ -429,12 +436,14 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
   override fun onPause() {
     super.onPause()
     paused = true
+    // TODO standarise calls to dispatch event
     webView.loadUrl("javascript: window.dispatchEvent(new Event(\"app-pause\"))")
   }
 
   override fun onResume() {
     super.onResume()
     paused = false
+    // TODO standarise calls to dispatch event
     webView.loadUrl("javascript: window.dispatchEvent(new Event(\"app-resume\"))")
   }
 

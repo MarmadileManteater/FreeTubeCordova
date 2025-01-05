@@ -292,6 +292,7 @@ class FreeTubeJavaScriptInterface {
         override fun onSkipToNext() {
           super.onSkipToNext()
           context.runOnUiThread {
+            // TODO replace with dispatch event
             context.webView.loadUrl("javascript: window.notifyMediaSessionListeners('next')")
           }
         }
@@ -309,6 +310,7 @@ class FreeTubeJavaScriptInterface {
           context.runOnUiThread {
             context.webView.loadUrl(
               String.format(
+                // TODO replace with dispatch event
                 "javascript: window.notifyMediaSessionListeners('seek', %s)",
                 pos
               )
@@ -319,6 +321,7 @@ class FreeTubeJavaScriptInterface {
         override fun onPlay() {
           super.onPlay()
           context.runOnUiThread {
+            // TODO replace with dispatch event
             context.webView.loadUrl("javascript: window.notifyMediaSessionListeners('play')")
           }
         }
@@ -326,6 +329,7 @@ class FreeTubeJavaScriptInterface {
         override fun onPause() {
           super.onPause()
           context.runOnUiThread {
+            // TODO replace with dispatch event
             context.webView.loadUrl("javascript: window.notifyMediaSessionListeners('pause')")
           }
         }
