@@ -52,23 +52,6 @@
           }
           return await window.ofetch(...args)
         }
-        // needed for media-session listeners atm
-        // tODO figure out better solution
-        const _addEventListener = window.addEventListener
-        const eventListeners = {}
-        window.addEventListener = function (type, f) {
-          if (!(type in eventListeners)) {
-            eventListeners[type] = []
-          }
-          eventListeners[type].push(f)
-          _addEventListener(type, f)
-        }
-        window.removeAllEventListeners = function (type) {
-          for (const f of eventListeners[type]) {
-            window.removeEventListener(type, f)
-          }
-          delete eventListeners[type]
-        }
         window.awaitAsyncResult = function (id, callbacks = {}) {
           return new Promise((resolve, reject) => {
             const interval = setInterval(async () => {

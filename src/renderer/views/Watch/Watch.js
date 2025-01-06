@@ -319,61 +319,60 @@ export default defineComponent({
     this.currentPlaybackRate = this.$store.getters.getDefaultPlayback
   },
   mounted: function () {
-    if (process.env.IS_ANDROID) {
-      window.addEventListener('media-seek', ({ position }) => {
-        this.$refs.player.setCurrentTime(position / 1000)
-      })
-      window.addEventListener('media-next', () => {
-        this.previousHistoryOffset = 1
-        if (this.playlistId != null) {
-          // Let `watchVideoPlaylist` handle end of playlist, no countdown needed
-          this.$refs.watchVideoPlaylist.playNextVideo()
-          return
-        }
-        let nextVideoId = null
-        if (!this.watchingPlaylist) {
-          const forbiddenTitles = this.forbiddenTitles
-          const channelsHidden = this.channelsHidden
-          nextVideoId = this.recommendedVideos.find((video) =>
-            !this.isHiddenVideo(forbiddenTitles, channelsHidden, video)
-          )?.videoId
-          if (!nextVideoId) {
-            return
-          }
-        }
-        this.$router.push({
-          path: `/watch/${nextVideoId}`
-        })
-      })
-      window.addEventListener('media-previous', () => {
-        if (this.playlistId != null) {
-          if (this.$refs.watchVideoPlaylist.videoIndexInPlaylistItems === 0) {
-            // don't do anything
-            return
-          }
-          // Let `watchVideoPlaylist` handle end of playlist, no countdown needed
-          this.$refs.watchVideoPlaylist.playPreviousVideo()
-          return
-        }
-        this.$router.push({
-          path: `/watch/${this.$store.getters.getHistoryCacheSorted[this.previousHistoryOffset].videoId}`
-        })
-        this.previousHistoryOffset++
-      })
-    }
+    window.addEventListener('media-next', this.mediaNext)
+    window.addEventListener('media-previous', this.mediaPrevious)
+    window.addEventListener('media-seek', this.mediaSeek)
     this.onMountedDependOnLocalStateLoading()
   },
   beforeDestroy() {
     if (process.env.IS_ANDROID) {
-      window.removeAllEventListeners("media-next")
-      window.removeAllEventListeners("media-previous")
-      window.removeAllEventListeners("media-seek")
-      window.removeAllEventListeners("media-play")
-      window.removeAllEventListeners("media-pause")
+      window.removeEventListener('media-next', this.mediaNext)
+      window.removeEventListener('media-previous', this.mediaPrevious)
+      window.removeEventListener('media-seek', this.mediaSeek)
       android.cancelMediaNotification()
     }
   },
   methods: {
+    mediaSeek({ position }) {
+      this.$refs.player.setCurrentTime(position / 1000)
+    },
+    mediaNext() {
+      this.previousHistoryOffset = 1
+      if (this.playlistId != null) {
+        // Let `watchVideoPlaylist` handle end of playlist, no countdown needed
+        this.$refs.watchVideoPlaylist.playNextVideo()
+        return
+      }
+      let nextVideoId = null
+      if (!this.watchingPlaylist) {
+        const forbiddenTitles = this.forbiddenTitles
+        const channelsHidden = this.channelsHidden
+        nextVideoId = this.recommendedVideos.find((video) =>
+          !this.isHiddenVideo(forbiddenTitles, channelsHidden, video)
+        )?.videoId
+        if (!nextVideoId) {
+          return
+        }
+      }
+      this.$router.push({
+        path: `/watch/${nextVideoId}`
+      })
+    },
+    mediaPrevious() {
+      if (this.playlistId != null) {
+        if (this.$refs.watchVideoPlaylist.videoIndexInPlaylistItems === 0) {
+          // don't do anything
+          return
+        }
+        // Let `watchVideoPlaylist` handle end of playlist, no countdown needed
+        this.$refs.watchVideoPlaylist.playPreviousVideo()
+        return
+      }
+      this.$router.push({
+        path: `/watch/${this.$store.getters.getHistoryCacheSorted[this.previousHistoryOffset].videoId}`
+      })
+      this.previousHistoryOffset++
+    },
     onMountedDependOnLocalStateLoading() {
       // Prevent running twice
       if (this.onMountedRun) { return }

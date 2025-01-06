@@ -2354,15 +2354,18 @@ export default defineComponent({
 
     // #region setup
 
+    const mediaPlay = () => {
+      video.value.play()
+    }
+    const mediaPause = () => {
+      video.value.pause()
+    }
+
     onMounted(async () => {
       const videoElement = video.value
       if (process.env.IS_ANDROID) {
-        window.addEventListener('media-play', () => {
-          videoElement.play()
-        })
-        window.addEventListener('media-pause', () => {
-          videoElement.pause()
-        })
+        window.addEventListener('media-play', mediaPlay)
+        window.addEventListener('media-pause', mediaPause)
         videoElement.addEventListener('play', () => {
           android.enableKeepScreenOn()
           updateMediaSessionState(STATE_PLAYING.toString())
@@ -2809,6 +2812,9 @@ export default defineComponent({
 
       window.removeEventListener('online', onlineHandler)
       window.removeEventListener('offline', offlineHandler)
+
+      window.removeEventListener('media-play', mediaPlay)
+      window.removeEventListener('media-pause', mediaPause)
     })
 
     // #endregion tear down
