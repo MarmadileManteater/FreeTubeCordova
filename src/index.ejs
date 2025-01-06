@@ -85,15 +85,6 @@
             }, 1)
           })
         }
-        window.youtubeLinkHandlers = window.youtubeLinkHandlers || []
-        window.addYoutubeLinkHandler = function (handler) {
-          const i = window.youtubeLinkHandlers.length
-          window.youtubeLinkHandlers.push(handler)
-          return i
-        }
-        window.notifyYoutubeLinkHandlers = function (message) {
-          window.youtubeLinkHandlers.forEach((handler) => handler(message))
-        }
       </script>
     <% } %>
     <meta charset="utf-8" />

@@ -214,8 +214,7 @@ export default defineComponent({
           await this.checkExternalPlayer()
         }
         if (process.env.IS_ANDROID) {
-          // function defined on webview window
-          window.addYoutubeLinkHandler((link) => {
+          window.addEventListener('youtube-link', ({ link }) => {
             this.handleYoutubeLink(link)
           })
           if (location.search.indexOf('?intent=') !== -1) {

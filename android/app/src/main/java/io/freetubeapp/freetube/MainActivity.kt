@@ -290,8 +290,9 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
         val regex = """^https?:\/\/((www\.)?youtube\.com(\/embed)?|youtu\.be)\/.*$"""
 
         if (Regex(regex).containsMatchIn(request!!.url!!.toString())) {
-          // TODO replace with dispatchEvent
-          webView.loadUrl("javascript: window.notifyYoutubeLinkHandlers(\"${request!!.url}\")")
+          val data = JSONObject()
+          data.put("link", request!!.url!!.toString())
+          dispatchEvent("youtube-link", data)
           return true
         }
         // send all requests to a real web browser
@@ -344,11 +345,8 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
 
   fun dispatchEvent(eventName: String, event: JSONObject) {
     var js = "var tempVar = new Event(\"$eventName\");"
-    for (key in event.keys()) {
-      val jsonVal = event[key]
-      js += "tempVar[\"$key\"] = JSON.parse(${btoa(jsonVal.toString())});"
-    }
-    js += "window.dispatchEvent(tempVar)"
+    js += "Object.assign(tempVar, $event);"
+    js += "window.dispatchEvent(tempVar);"
     fafJS(js)
   }
 
@@ -442,8 +440,9 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
       } else {
         uri
       }
-      // TODO replace with dispatch event
-      webView.loadUrl("javascript: window.notifyYoutubeLinkHandlers(\"${url}\")")
+      val data = JSONObject()
+      data.put("link", url)
+      dispatchEvent("youtube-link", data)
     }
   }
 
