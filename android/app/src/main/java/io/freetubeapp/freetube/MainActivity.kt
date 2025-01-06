@@ -188,9 +188,7 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
         messageData.put("sourceId", consoleMessage.sourceId())
         messageData.put("lineNumber", consoleMessage.lineNumber())
         consoleMessages.add(messageData)
-        val wrapperObject= JSONObject()
-        wrapperObject.put("data", messageData)
-        dispatchEvent("console-message", wrapperObject)
+        dispatchEvent("console-message", "data", messageData)
         return super.onConsoleMessage(consoleMessage);
       }
 
@@ -349,6 +347,24 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
     fafJS(js)
   }
 
+  fun dispatchEvent(eventName: String, keyName: String, data: String) {
+    val wrapper = JSONObject()
+    wrapper.put(keyName, data)
+    dispatchEvent(eventName, wrapper)
+  }
+
+  fun dispatchEvent(eventName: String, keyName: String, data: Long) {
+    val wrapper = JSONObject()
+    wrapper.put(keyName, data)
+    dispatchEvent(eventName, wrapper)
+  }
+
+  fun dispatchEvent(eventName: String, keyName: String, data: JSONObject) {
+    val wrapper = JSONObject()
+    wrapper.put(keyName, data)
+    dispatchEvent(eventName, wrapper)
+  }
+
   /**
    * encodes a string message for transport across the java bridge
    * @param message the message to be encoded
@@ -439,9 +455,7 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
       } else {
         uri
       }
-      val data = JSONObject()
-      data.put("link", url)
-      dispatchEvent("youtube-link", data)
+      dispatchEvent("youtube-link", "link", url.toString())
     }
   }
 

@@ -302,11 +302,7 @@ class FreeTubeJavaScriptInterface {
 
         override fun onSeekTo(pos: Long) {
           super.onSeekTo(pos)
-          lastPosition = pos
-
-          val data = JSONObject()
-          data.put("position", pos)
-          context.dispatchEvent("media-seek", data)
+          context.dispatchEvent("media-seek", "position", pos)
         }
 
         override fun onPlay() {
