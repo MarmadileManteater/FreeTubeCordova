@@ -23,6 +23,7 @@ import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.view.WindowCompat
 import androidx.documentfile.provider.DocumentFile
+import org.json.JSONObject
 import java.io.File
 import java.io.FileInputStream
 import java.net.URL
@@ -291,49 +292,33 @@ class FreeTubeJavaScriptInterface {
       session.setCallback(object : MediaSession.Callback() {
         override fun onSkipToNext() {
           super.onSkipToNext()
-          context.runOnUiThread {
-            // TODO replace with dispatch event
-            context.webView.loadUrl("javascript: window.notifyMediaSessionListeners('next')")
-          }
+          context.dispatchEvent("media-next")
         }
 
         override fun onSkipToPrevious() {
           super.onSkipToPrevious()
-          context.runOnUiThread {
-            // TODO replace with dispatch event
-            context.webView.loadUrl("javascript: window.notifyMediaSessionListeners('previous')")
-          }
+          context.dispatchEvent("media-previous")
         }
 
         override fun onSeekTo(pos: Long) {
           super.onSeekTo(pos)
           lastPosition = pos
-          context.runOnUiThread {
-            context.webView.loadUrl(
-              String.format(
-                // TODO replace with dispatch event
-                "javascript: window.notifyMediaSessionListeners('seek', %s)",
-                pos
-              )
-            )
-          }
+
+          val data = JSONObject()
+          data.put("position", pos)
+          context.dispatchEvent("media-seek", data)
         }
 
         override fun onPlay() {
           super.onPlay()
-          context.runOnUiThread {
-            // TODO replace with dispatch event
-            context.webView.loadUrl("javascript: window.notifyMediaSessionListeners('play')")
-          }
+          context.dispatchEvent("media-play")
         }
 
         override fun onPause() {
           super.onPause()
-          context.runOnUiThread {
-            // TODO replace with dispatch event
-            context.webView.loadUrl("javascript: window.notifyMediaSessionListeners('pause')")
-          }
+          context.dispatchEvent("media-pause")
         }
+
       })
     } else {
       session = mediaSession!!

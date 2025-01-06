@@ -2357,10 +2357,10 @@ export default defineComponent({
     onMounted(async () => {
       const videoElement = video.value
       if (process.env.IS_ANDROID) {
-        window.addMediaSessionEventListener('play', () => {
+        window.addEventListener('media-play', () => {
           videoElement.play()
         })
-        window.addMediaSessionEventListener('pause', () => {
+        window.addEventListener('media-pause', () => {
           videoElement.pause()
         })
         videoElement.addEventListener('play', () => {

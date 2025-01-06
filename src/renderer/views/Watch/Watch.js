@@ -319,11 +319,11 @@ export default defineComponent({
     this.currentPlaybackRate = this.$store.getters.getDefaultPlayback
   },
   mounted: function () {
-  if (process.env.IS_ANDROID) {
-      window.addMediaSessionEventListener('seek', (position) => {
+    if (process.env.IS_ANDROID) {
+      window.addEventListener('media-seek', ({ position }) => {
         this.$refs.player.setCurrentTime(position / 1000)
       })
-      window.addMediaSessionEventListener('next', () => {
+      window.addEventListener('media-next', () => {
         this.previousHistoryOffset = 1
         if (this.playlistId != null) {
           // Let `watchVideoPlaylist` handle end of playlist, no countdown needed
@@ -345,7 +345,7 @@ export default defineComponent({
           path: `/watch/${nextVideoId}`
         })
       })
-      window.addMediaSessionEventListener('previous', () => {
+      window.addEventListener('media-previous', () => {
         if (this.playlistId != null) {
           if (this.$refs.watchVideoPlaylist.videoIndexInPlaylistItems === 0) {
             // don't do anything
@@ -365,7 +365,11 @@ export default defineComponent({
   },
   beforeDestroy() {
     if (process.env.IS_ANDROID) {
-      window.clearAllMediaSessionEventListeners()
+      window.removeAllEventListeners("media-next")
+      window.removeAllEventListeners("media-previous")
+      window.removeAllEventListeners("media-seek")
+      window.removeAllEventListeners("media-play")
+      window.removeAllEventListeners("media-pause")
       android.cancelMediaNotification()
     }
   },

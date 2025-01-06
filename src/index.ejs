@@ -52,20 +52,22 @@
           }
           return await window.ofetch(...args)
         }
-        window.mediaSessionListeners = window.mediaSessionListeners || {}
-        window.addMediaSessionEventListener = function (eventName, listener) {
-          if (!(eventName in window.mediaSessionListeners)) {
-            window.mediaSessionListeners[eventName] = [];
+        // needed for media-session listeners atm
+        // tODO figure out better solution
+        const _addEventListener = window.addEventListener
+        const eventListeners = {}
+        window.addEventListener = function (type, f) {
+          if (!(type in eventListeners)) {
+            eventListeners[type] = []
           }
-          window.mediaSessionListeners[eventName].push(listener)
+          eventListeners[type].push(f)
+          _addEventListener(type, f)
         }
-        window.notifyMediaSessionListeners = function (eventName, ...message) {
-          if ((eventName in window.mediaSessionListeners)) {
-            window.mediaSessionListeners[eventName].forEach(listener => listener(...message));
+        window.removeAllEventListeners = function (type) {
+          for (const f of eventListeners[type]) {
+            window.removeEventListener(type, f)
           }
-        }
-        window.clearAllMediaSessionEventListeners = function () {
-          window.mediaSessionListeners = {}
+          delete eventListeners[type]
         }
         window.awaitAsyncResult = function (id, callbacks = {}) {
           return new Promise((resolve, reject) => {

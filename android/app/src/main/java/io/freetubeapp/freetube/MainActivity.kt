@@ -129,8 +129,7 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
 
     MediaControlsReceiver.notifyMediaSessionListeners = {
         action ->
-      // TODO replace with `dispatchEvent`
-      webView.loadUrl(String.format("javascript: window.notifyMediaSessionListeners('%s')", action))
+      dispatchEvent("media-$action")
     }
 
     // this keeps android from shutting off the app to conserve battery
