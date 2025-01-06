@@ -156,11 +156,8 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
     // bind the back button to the web-view history
     onBackPressedDispatcher.addCallback {
       if (isInAPrompt) {
-        webView.post {
-          // TODO standardise all calls to dispatch event
-          webView.loadUrl("javascript: window.dispatchEvent(new Event(\"exit-prompt\"))")
-          jsInterface.exitPromptMode()
-        }
+        dispatchEvent("exit-prompt")
+        jsInterface.exitPromptMode()
       } else {
         if (webView.canGoBack()) {
           webView.goBack()
@@ -192,8 +189,9 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
         messageData.put("sourceId", consoleMessage.sourceId())
         messageData.put("lineNumber", consoleMessage.lineNumber())
         consoleMessages.add(messageData)
-        // TODO standarise calls to dispatch event
-        webView.loadUrl("javascript: var event = new Event(\"console-message\"); event.data = JSON.parse(${btoa(messageData.toString())}); window.dispatchEvent(event)")
+        val wrapperObject= JSONObject()
+        wrapperObject.put("data", messageData)
+        dispatchEvent("console-message", wrapperObject)
         return super.onConsoleMessage(consoleMessage);
       }
 
@@ -204,8 +202,7 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
         this@MainActivity.binding.root.addView(view)
         webView.visibility = View.GONE
         this@MainActivity.binding.root.fitsSystemWindows = false
-        // TODO standarise calls to dispatch event
-        webView.loadUrl("javascript: window.dispatchEvent(new Event(\"start-fullscreen\"))")
+        dispatchEvent("start-fullscreen")
       }
 
       override fun onHideCustomView() {
@@ -214,8 +211,7 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
         fullscreenView = null
         windowInsetsController.show(WindowInsetsCompat.Type.systemBars())
         this@MainActivity.binding.root.fitsSystemWindows = true
-        // TODO standarise calls to dispatch event
-        webView.loadUrl("javascript: window.dispatchEvent(new Event(\"end-fullscreen\"))")
+        dispatchEvent("end-fullscreen")
       }
     }
     webView.webViewClient = object: WebViewClient() {
@@ -327,26 +323,33 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
   fun listenForPermissionsCallbacks(listener: (Int, Array<String?>, IntArray) -> Unit) {
     permissionsListeners.add(listener)
   }
+
   fun listenForActivityResults(listener: (ActivityResult?) -> Unit) {
     activityResultListeners.add(listener)
   }
 
-  fun consoleError(message: String) {
-    consoleLog(message, "error")
-  }
-
-  fun consoleWarn(message: String) {
-    consoleLog(message, "warn")
-  }
-
+  // #region webview methods
   /**
-   * @param message the message to log
-   * @param level used in js as "console.$level" (ex: log, warn, error)
+   * fires and forgets JS
    */
-  fun consoleLog(message: String, level: String = "log") {
+  fun fafJS(js: String) {
     webView.post {
-      webView.loadUrl("javascript: console.$level(${btoa(message)})")
+      webView.loadUrl("javascript: $js")
     }
+  }
+
+  fun dispatchEvent(eventName: String) {
+    fafJS("window.dispatchEvent(new Event(\"$eventName\"))")
+  }
+
+  fun dispatchEvent(eventName: String, event: JSONObject) {
+    var js = "var tempVar = new Event(\"$eventName\");"
+    for (key in event.keys()) {
+      val jsonVal = event[key]
+      js += "tempVar[\"$key\"] = JSON.parse(${btoa(jsonVal.toString())});"
+    }
+    js += "window.dispatchEvent(tempVar)"
+    fafJS(js)
   }
 
   /**
@@ -361,6 +364,23 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
       "`${message}`"
     }
   }
+
+  /**
+   * @param message the message to log
+   * @param level used in js as "console.$level" (ex: log, warn, error)
+   */
+  fun consoleLog(message: String, level: String = "log") {
+    fafJS("console.$level(${btoa(message)})")
+  }
+
+  fun consoleError(message: String) {
+    consoleLog(message, "error")
+  }
+
+  fun consoleWarn(message: String) {
+    consoleLog(message, "warn")
+  }
+  // #endregion
 
   fun readTextAsset(assetName: String) : String {
     val lines = mutableListOf<String>()
@@ -388,17 +408,11 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
     when (newConfig.uiMode and Configuration.UI_MODE_NIGHT_MASK) {
       Configuration.UI_MODE_NIGHT_NO -> {
         darkMode = false
-        webView.post {
-          // TODO standarise calls to dispatch event
-          webView.loadUrl("javascript: window.dispatchEvent(new Event(\"enabled-light-mode\"))")
-        }
+        dispatchEvent("enabled-light-mode")
       }
       Configuration.UI_MODE_NIGHT_YES -> {
         darkMode = true
-        webView.post {
-          // TODO standarise calls to dispatch event
-          webView.loadUrl("javascript: window.dispatchEvent(new Event(\"enabled-dark-mode\"))")
-        }
+        dispatchEvent("enabled-dark-mode")
       }
     }
   }
@@ -436,15 +450,13 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
   override fun onPause() {
     super.onPause()
     paused = true
-    // TODO standarise calls to dispatch event
-    webView.loadUrl("javascript: window.dispatchEvent(new Event(\"app-pause\"))")
+    dispatchEvent("app-pause")
   }
 
   override fun onResume() {
     super.onResume()
     paused = false
-    // TODO standarise calls to dispatch event
-    webView.loadUrl("javascript: window.dispatchEvent(new Event(\"app-resume\"))")
+    dispatchEvent("app-resume")
   }
 
   override fun onDestroy() {
