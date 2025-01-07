@@ -287,9 +287,7 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
         val regex = """^https?:\/\/((www\.)?youtube\.com(\/embed)?|youtu\.be)\/.*$"""
 
         if (Regex(regex).containsMatchIn(request!!.url!!.toString())) {
-          val data = JSONObject()
-          data.put("link", request!!.url!!.toString())
-          webView.dispatchEvent("youtube-link", data)
+          webView.dispatchEvent("youtube-link", "link", request!!.url!!.toString())
           return true
         }
         // send all requests to a real web browser
