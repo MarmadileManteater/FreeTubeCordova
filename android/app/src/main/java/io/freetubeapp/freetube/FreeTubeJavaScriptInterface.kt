@@ -726,24 +726,12 @@ class FreeTubeJavaScriptInterface {
     }
   }
 
-  private fun addNamedCallbackToPromise(promise: String, name: String) {
-    context.runOnUiThread {
-      context.webView.loadUrl("javascript: window['${promise}'].callbacks = window['${promise}'].callbacks || {};  window['${promise}'].callbacks.notify = (key, message) => window['${promise}'].callbacks[key].forEach(callback => callback(message)); window['${promise}'].callbacks['${name}'] = window['${promise}'].callbacks['${name}'] || []")
-    }
-  }
-
-  private fun notifyNamedCallback(promise: String, name: String, message: String) {
-    context.webView.loadUrl("javascript: window['${promise}'].callbacks.notify(${btoa(name)}, ${btoa(message)})")
-  }
-
   /**
    * @return the id of a promise on the window
    */
   private fun jsPromise(): String {
     val id = "${randomUUID()}"
-    context.webView.post {
-      context.webView.loadUrl("javascript: window['${id}'] = {}; window['${id}'].promise = new Promise((resolve, reject) => { window['${id}'].resolve = resolve; window['${id}'].reject = reject })")
-    }
+    context.webView.fafJS("window['${id}'] = {}; window['${id}'].promise = new Promise((resolve, reject) => { window['${id}'].resolve = resolve; window['${id}'].reject = reject })")
     return id
   }
 
@@ -751,19 +739,15 @@ class FreeTubeJavaScriptInterface {
    * resolves a js promise given the id
    */
   private fun resolve(id: String, message: String) {
-    context.webView.post {
-      syncMessages[id] = message
-      context.webView.loadUrl("javascript: window['${id}'].resolve()")
-    }
+    syncMessages[id] = message
+    context.webView.fafJS("window['${id}'].resolve()")
   }
 
   /**
    * rejects a js promise given the id
    */
   private fun reject(id: String, message: String) {
-    context.webView.post {
-      syncMessages[id] = message
-      context.webView.loadUrl("javascript: window['${id}'].reject(new Error())")
-    }
+    syncMessages[id] = message
+    context.webView.fafJS("window['${id}'].reject(new Error())")
   }
 }
