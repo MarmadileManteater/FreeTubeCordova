@@ -31,14 +31,13 @@ import java.net.URLDecoder
 import java.util.UUID.*
 
 
-class FreeTubeJavaScriptInterface {
+class FreeTubeJavaScriptInterface: JavascriptPromiseInterface {
   private var context: MainActivity
   private var mediaSession: MediaSession?
   private var lastPosition: Long
   private var lastState: Int
   private var lastNotification: Notification? = null
   private var keepScreenOn: Boolean = false
-  var syncMessages: MutableMap<String, String> = HashMap()
 
   companion object {
     private const val DATA_DIRECTORY = "data://"
@@ -47,7 +46,7 @@ class FreeTubeJavaScriptInterface {
     private val NOTIFICATION_TAG = String.format("%s", randomUUID())
   }
 
-  constructor(main: MainActivity) {
+  constructor(main: MainActivity) : super(main.webView) {
     context = main
     mediaSession = null
     lastPosition = 0
@@ -724,30 +723,5 @@ class FreeTubeJavaScriptInterface {
     if (body != "undefined") {
       context.pendingRequestBodies[id] = body
     }
-  }
-
-  /**
-   * @return the id of a promise on the window
-   */
-  private fun jsPromise(): String {
-    val id = "${randomUUID()}"
-    context.webView.fafJS("window['${id}'] = {}; window['${id}'].promise = new Promise((resolve, reject) => { window['${id}'].resolve = resolve; window['${id}'].reject = reject })")
-    return id
-  }
-
-  /**
-   * resolves a js promise given the id
-   */
-  private fun resolve(id: String, message: String) {
-    syncMessages[id] = message
-    context.webView.fafJS("window['${id}'].resolve()")
-  }
-
-  /**
-   * rejects a js promise given the id
-   */
-  private fun reject(id: String, message: String) {
-    syncMessages[id] = message
-    context.webView.fafJS("window['${id}'].reject(new Error())")
   }
 }
