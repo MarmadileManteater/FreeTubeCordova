@@ -6,11 +6,11 @@
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
     tools:context=".MainActivity">
-    <io.freetubeapp.freetube.BackgroundPlayWebView
+    <io.freetubeapp.freetube.webviews.BackgroundPlayWebView
         android:id="@+id/web_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
-    <io.freetubeapp.freetube.BotGuardWebView
+    <io.freetubeapp.freetube.webviews.BotGuardWebView
       android:id="@+id/bot_guard_web_view"
       android:layout_width="1920px"
       android:layout_height="1080px"

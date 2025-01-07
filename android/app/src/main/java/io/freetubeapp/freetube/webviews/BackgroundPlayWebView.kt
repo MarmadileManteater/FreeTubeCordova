@@ -1,4 +1,4 @@
-package io.freetubeapp.freetube
+package io.freetubeapp.freetube.webviews
 
 import android.content.Context
 import android.util.AttributeSet

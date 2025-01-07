@@ -1,4 +1,4 @@
-package io.freetubeapp.freetube
+package io.freetubeapp.freetube.javascript
 
 import android.webkit.WebView
 import org.json.JSONObject

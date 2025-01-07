@@ -1,8 +1,7 @@
-package io.freetubeapp.freetube
+package io.freetubeapp.freetube.javascript
 
-import android.media.session.PlaybackState
 import android.webkit.JavascriptInterface
-import androidx.activity.result.ActivityResult
+import io.freetubeapp.freetube.MainActivity
 
 class BotGuardJavascriptInterface(main: MainActivity) {
   private var poToken: String? = null

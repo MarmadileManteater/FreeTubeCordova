@@ -1,6 +1,5 @@
-package io.freetubeapp.freetube
+package io.freetubeapp.freetube.javascript
 
-import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import java.util.UUID.randomUUID
 

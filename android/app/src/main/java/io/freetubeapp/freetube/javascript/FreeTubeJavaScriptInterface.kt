@@ -1,4 +1,4 @@
-package io.freetubeapp.freetube
+package io.freetubeapp.freetube.javascript
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -23,7 +23,9 @@ import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.view.WindowCompat
 import androidx.documentfile.provider.DocumentFile
-import org.json.JSONObject
+import io.freetubeapp.freetube.MainActivity
+import io.freetubeapp.freetube.MediaControlsReceiver
+import io.freetubeapp.freetube.R
 import java.io.File
 import java.io.FileInputStream
 import java.net.URL
