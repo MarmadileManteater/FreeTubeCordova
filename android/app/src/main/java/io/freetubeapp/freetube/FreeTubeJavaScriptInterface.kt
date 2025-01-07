@@ -31,7 +31,7 @@ import java.net.URLDecoder
 import java.util.UUID.*
 
 
-class FreeTubeJavaScriptInterface: JavascriptPromiseInterface {
+class FreeTubeJavaScriptInterface: AsyncJSCommunication {
   private var context: MainActivity
   private var mediaSession: MediaSession?
   private var lastPosition: Long

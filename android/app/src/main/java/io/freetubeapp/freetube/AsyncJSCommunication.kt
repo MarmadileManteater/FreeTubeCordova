@@ -4,7 +4,7 @@ import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import java.util.UUID.randomUUID
 
-open class JavascriptPromiseInterface(givenWebView: WebView) {
+open class AsyncJSCommunication(givenWebView: WebView) {
   protected val webView = givenWebView
   protected var syncMessages: MutableMap<String, String> = HashMap()
 
