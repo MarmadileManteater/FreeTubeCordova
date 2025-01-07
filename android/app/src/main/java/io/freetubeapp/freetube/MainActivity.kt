@@ -129,7 +129,7 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
 
     MediaControlsReceiver.notifyMediaSessionListeners = {
         action ->
-      dispatchEvent("media-$action")
+      webView.dispatchEvent("media-$action")
     }
 
     // this keeps android from shutting off the app to conserve battery
@@ -155,7 +155,7 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
     // bind the back button to the web-view history
     onBackPressedDispatcher.addCallback {
       if (isInAPrompt) {
-        dispatchEvent("exit-prompt")
+        webView.dispatchEvent("exit-prompt")
         jsInterface.exitPromptMode()
       } else {
         if (webView.canGoBack()) {
@@ -188,7 +188,7 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
         messageData.put("sourceId", consoleMessage.sourceId())
         messageData.put("lineNumber", consoleMessage.lineNumber())
         consoleMessages.add(messageData)
-        dispatchEvent("console-message", "data", messageData)
+        webView.dispatchEvent("console-message", "data", messageData)
         return super.onConsoleMessage(consoleMessage);
       }
 
@@ -199,7 +199,7 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
         this@MainActivity.binding.root.addView(view)
         webView.visibility = View.GONE
         this@MainActivity.binding.root.fitsSystemWindows = false
-        dispatchEvent("start-fullscreen")
+        webView.dispatchEvent("start-fullscreen")
       }
 
       override fun onHideCustomView() {
@@ -208,7 +208,7 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
         fullscreenView = null
         windowInsetsController.show(WindowInsetsCompat.Type.systemBars())
         this@MainActivity.binding.root.fitsSystemWindows = true
-        dispatchEvent("end-fullscreen")
+        webView.dispatchEvent("end-fullscreen")
       }
     }
     webView.webViewClient = object: WebViewClient() {
@@ -289,7 +289,7 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
         if (Regex(regex).containsMatchIn(request!!.url!!.toString())) {
           val data = JSONObject()
           data.put("link", request!!.url!!.toString())
-          dispatchEvent("youtube-link", data)
+          webView.dispatchEvent("youtube-link", data)
           return true
         }
         // send all requests to a real web browser
@@ -326,74 +326,9 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
     activityResultListeners.add(listener)
   }
 
-  // #region webview methods
-  /**
-   * fires and forgets JS
-   */
-  fun fafJS(js: String) {
-    webView.post {
-      webView.loadUrl("javascript: $js")
-    }
-  }
+  // region webview methods
 
-  fun dispatchEvent(eventName: String) {
-    fafJS("window.dispatchEvent(new Event(\"$eventName\"))")
-  }
-
-  fun dispatchEvent(eventName: String, event: JSONObject) {
-    var js = "var tempVar = new Event(\"$eventName\");"
-    js += "Object.assign(tempVar, $event);"
-    js += "window.dispatchEvent(tempVar);"
-    fafJS(js)
-  }
-
-  fun dispatchEvent(eventName: String, keyName: String, data: String) {
-    val wrapper = JSONObject()
-    wrapper.put(keyName, data)
-    dispatchEvent(eventName, wrapper)
-  }
-
-  fun dispatchEvent(eventName: String, keyName: String, data: Long) {
-    val wrapper = JSONObject()
-    wrapper.put(keyName, data)
-    dispatchEvent(eventName, wrapper)
-  }
-
-  fun dispatchEvent(eventName: String, keyName: String, data: JSONObject) {
-    val wrapper = JSONObject()
-    wrapper.put(keyName, data)
-    dispatchEvent(eventName, wrapper)
-  }
-
-  /**
-   * encodes a string message for transport across the java bridge
-   * @param message the message to be encoded
-   */
-  fun btoa(message: String): String {
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-      val encoder = Base64.getEncoder()
-      "atob(\"${encoder.encodeToString(message.encodeToByteArray())}\")"
-    } else {
-      "`${message}`"
-    }
-  }
-
-  /**
-   * @param message the message to log
-   * @param level used in js as "console.$level" (ex: log, warn, error)
-   */
-  fun consoleLog(message: String, level: String = "log") {
-    fafJS("console.$level(${btoa(message)})")
-  }
-
-  fun consoleError(message: String) {
-    consoleLog(message, "error")
-  }
-
-  fun consoleWarn(message: String) {
-    consoleLog(message, "warn")
-  }
-  // #endregion
+  //endregion
 
   fun readTextAsset(assetName: String) : String {
     val lines = mutableListOf<String>()
@@ -421,11 +356,11 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
     when (newConfig.uiMode and Configuration.UI_MODE_NIGHT_MASK) {
       Configuration.UI_MODE_NIGHT_NO -> {
         darkMode = false
-        dispatchEvent("enabled-light-mode")
+        webView.dispatchEvent("enabled-light-mode")
       }
       Configuration.UI_MODE_NIGHT_YES -> {
         darkMode = true
-        dispatchEvent("enabled-dark-mode")
+        webView.dispatchEvent("enabled-dark-mode")
       }
     }
   }
@@ -455,20 +390,20 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
       } else {
         uri
       }
-      dispatchEvent("youtube-link", "link", url.toString())
+      webView.dispatchEvent("youtube-link", "link", url.toString())
     }
   }
 
   override fun onPause() {
     super.onPause()
     paused = true
-    dispatchEvent("app-pause")
+    webView.dispatchEvent("app-pause")
   }
 
   override fun onResume() {
     super.onResume()
     paused = false
-    dispatchEvent("app-resume")
+    webView.dispatchEvent("app-resume")
   }
 
   override fun onDestroy() {

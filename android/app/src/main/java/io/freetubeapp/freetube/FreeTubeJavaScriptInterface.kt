@@ -292,27 +292,27 @@ class FreeTubeJavaScriptInterface {
       session.setCallback(object : MediaSession.Callback() {
         override fun onSkipToNext() {
           super.onSkipToNext()
-          context.dispatchEvent("media-next")
+          context.webView.dispatchEvent("media-next")
         }
 
         override fun onSkipToPrevious() {
           super.onSkipToPrevious()
-          context.dispatchEvent("media-previous")
+          context.webView.dispatchEvent("media-previous")
         }
 
         override fun onSeekTo(pos: Long) {
           super.onSeekTo(pos)
-          context.dispatchEvent("media-seek", "position", pos)
+          context.webView.dispatchEvent("media-seek", "position", pos)
         }
 
         override fun onPlay() {
           super.onPlay()
-          context.dispatchEvent("media-play")
+          context.webView.dispatchEvent("media-play")
         }
 
         override fun onPause() {
           super.onPause()
-          context.dispatchEvent("media-pause")
+          context.webView.dispatchEvent("media-pause")
         }
 
       })
@@ -733,7 +733,7 @@ class FreeTubeJavaScriptInterface {
   }
 
   private fun notifyNamedCallback(promise: String, name: String, message: String) {
-    context.webView.loadUrl("javascript: window['${promise}'].callbacks.notify(${context.btoa(name)}, ${context.btoa(message)})")
+    context.webView.loadUrl("javascript: window['${promise}'].callbacks.notify(${btoa(name)}, ${btoa(message)})")
   }
 
   /**
