@@ -4,6 +4,10 @@ import android.webkit.WebView
 import org.json.JSONObject
 import java.nio.charset.StandardCharsets
 
+/**
+ * fires and forgets javascript
+ * @param js javascript string to be evaluated
+ */
 fun WebView.fafJS(js: String) {
   post {
     loadUrl("javascript: $js")
