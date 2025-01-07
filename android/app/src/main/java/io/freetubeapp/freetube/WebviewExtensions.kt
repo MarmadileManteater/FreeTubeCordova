@@ -14,10 +14,16 @@ fun WebView.fafJS(js: String) {
   }
 }
 
+/**
+ * calls `window.dispatchEvent` with just the event name
+ */
 fun WebView.dispatchEvent(eventName: String) {
   fafJS("window.dispatchEvent(new Event(\"$eventName\"))")
 }
 
+/**
+ * calls `window.dispatchEvent` with the given json assigned to the event which is dispatched
+ */
 fun WebView.dispatchEvent(eventName: String, event: JSONObject) {
   var js = "var tempVar = new Event(\"$eventName\");"
   js += "Object.assign(tempVar, $event);"
@@ -25,18 +31,27 @@ fun WebView.dispatchEvent(eventName: String, event: JSONObject) {
   fafJS(js)
 }
 
+/**
+ * calls `window.dispatchEvent` with an event with a single custom key with a string value
+ */
 fun WebView.dispatchEvent(eventName: String, keyName: String, data: String) {
   val wrapper = JSONObject()
   wrapper.put(keyName, data)
   dispatchEvent(eventName, wrapper)
 }
 
+/**
+ * calls `window.dispatchEvent` with an event with a single custom key with a long value
+ */
 fun WebView.dispatchEvent(eventName: String, keyName: String, data: Long) {
   val wrapper = JSONObject()
   wrapper.put(keyName, data)
   dispatchEvent(eventName, wrapper)
 }
 
+/**
+ * calls `window.dispatchEvent` with an event with a single custom key with a JSON value
+ */
 fun WebView.dispatchEvent(eventName: String, keyName: String, data: JSONObject) {
   val wrapper = JSONObject()
   wrapper.put(keyName, data)
