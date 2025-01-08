@@ -151,7 +151,7 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
     setContentView(binding.root)
     webView = binding.webView
     webView.setBackgroundColor(Color.TRANSPARENT)
-
+    webView.setInitialScale(400)
     // bind the back button to the web-view history
     onBackPressedDispatcher.addCallback {
       if (isInAPrompt) {

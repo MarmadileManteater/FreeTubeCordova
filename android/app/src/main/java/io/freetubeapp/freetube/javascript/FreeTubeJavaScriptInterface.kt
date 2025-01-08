@@ -699,4 +699,9 @@ class FreeTubeJavaScriptInterface {
       context.pendingRequestBodies[id] = body
     }
   }
+
+  @JavascriptInterface
+  fun setScale(scale: Int) {
+    context.webView.setScale(scale / 100.0)
+  }
 }

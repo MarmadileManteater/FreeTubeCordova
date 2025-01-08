@@ -84,3 +84,9 @@ fun WebView.consoleError(message: String) {
 fun WebView.consoleWarn(message: String) {
   consoleLog(message, "warn")
 }
+
+fun WebView.setScale(scale: Double) {
+  post {
+    setInitialScale((400 * scale).toInt())
+  }
+}
