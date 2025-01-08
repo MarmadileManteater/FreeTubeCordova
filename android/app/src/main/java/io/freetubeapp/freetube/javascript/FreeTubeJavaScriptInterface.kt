@@ -526,32 +526,6 @@ class FreeTubeJavaScriptInterface {
     return promise
   }
 
-  private fun findTreeFileFromUri(uri: String): DocumentFile {
-    val directory = DocumentFile.fromTreeUri(context, Uri.parse(uri))
-    val parsedTreeUri = directory!!.uri.toString()
-    if (parsedTreeUri != uri && uri.contains("%2F")) {
-      val difference = uri.replace(parsedTreeUri, "")
-      val path = URLDecoder.decode(difference, "utf-8")
-      var subDirectories = path.split("/").filter { it != "" }
-      var currentDirectory = directory!!
-      while (subDirectories.isNotEmpty()) {
-        // we need to navigate down the tree
-        val files = currentDirectory.listFiles()
-        val matchedSubDirectories = files.filter {
-          it.name == subDirectories[0]
-        }
-        if (matchedSubDirectories.isNotEmpty()) {
-          currentDirectory = matchedSubDirectories[0]
-          subDirectories = subDirectories.subList(1, subDirectories.count())
-        } else {
-          throw Exception("File not found. :(")
-        }
-      }
-      return currentDirectory!!
-    }
-    return directory!!
-  }
-
   @JavascriptInterface
   fun revokePermissionForTree(treeUri: String) {
     context.revokeUriPermission(Uri.parse(treeUri), Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
@@ -559,7 +533,7 @@ class FreeTubeJavaScriptInterface {
 
   @JavascriptInterface
   fun listFilesInTree(tree: String): String {
-    val directory = findTreeFileFromUri(tree)
+    val directory = DocumentFile.fromTreeUri(context, Uri.parse(tree))
     val files = directory!!.listFiles().joinToString(",") { file ->
       "{ \"uri\": \"${file.uri}\", \"fileName\": \"${file.name}\", \"isFile\": ${file.isFile}, \"isDirectory\": ${file.isDirectory} }"
     }
@@ -568,19 +542,19 @@ class FreeTubeJavaScriptInterface {
 
   @JavascriptInterface
   fun createFileInTree(tree: String, fileName: String): String {
-    val directory = findTreeFileFromUri(tree)
+    val directory = DocumentFile.fromTreeUri(context, Uri.parse(tree))
     return directory!!.createFile("*/*", fileName)!!.uri.toString()
   }
 
   @JavascriptInterface
   fun createDirectoryInTree(tree: String, fileName: String): String {
-    val directory = findTreeFileFromUri(tree)
+    val directory = DocumentFile.fromTreeUri(context, Uri.parse(tree))
     return directory!!.createDirectory(fileName)!!.uri.toString()
   }
 
   @JavascriptInterface
   fun deleteFileInTree(fileUri: String): Boolean {
-    val file = findTreeFileFromUri(fileUri)
+    val file = DocumentFile.fromTreeUri(context, Uri.parse(fileUri))
     return file!!.delete()
   }
 
