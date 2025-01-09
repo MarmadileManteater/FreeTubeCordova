@@ -33,14 +33,14 @@ import java.net.URLDecoder
 import java.util.UUID.*
 
 
-class FreeTubeJavaScriptInterface: AsyncJSCommunication {
+class FreeTubeJavaScriptInterface {
   private var context: MainActivity
   private var mediaSession: MediaSession?
   private var lastPosition: Long
   private var lastState: Int
   private var lastNotification: Notification? = null
   private var keepScreenOn: Boolean = false
-
+  private val jsCommunicator: AsyncJSCommunication
   companion object {
     private const val DATA_DIRECTORY = "data://"
     private const val CHANNEL_ID = "media_controls"
@@ -48,11 +48,12 @@ class FreeTubeJavaScriptInterface: AsyncJSCommunication {
     private val NOTIFICATION_TAG = String.format("%s", randomUUID())
   }
 
-  constructor(main: MainActivity) : super(main.webView) {
+  constructor(main: MainActivity)  {
     context = main
     mediaSession = null
     lastPosition = 0
     lastState = PlaybackState.STATE_PLAYING
+    jsCommunicator = AsyncJSCommunication(main.webView)
   }
 
   @JavascriptInterface
@@ -374,21 +375,21 @@ class FreeTubeJavaScriptInterface: AsyncJSCommunication {
    */
   @JavascriptInterface
   fun readFile(basedir: String, filename: String): String {
-    val promise = jsPromise()
+    val promise = jsCommunicator.jsPromise()
     context.threadPoolExecutor.execute {
       try {
         if (basedir.startsWith("content://")) {
           val stream = context.contentResolver.openInputStream(Uri.parse(basedir))
           val content = String(stream!!.readBytes())
           stream!!.close()
-          resolve(promise, content)
+          jsCommunicator.resolve(promise, content)
         } else {
           val path = getDirectory(basedir)
           val file = File(path, filename)
-          resolve(promise, FileInputStream(file).bufferedReader().use { it.readText() })
+          jsCommunicator.resolve(promise, FileInputStream(file).bufferedReader().use { it.readText() })
         }
       } catch (ex: Exception) {
-        reject(promise, ex.stackTraceToString())
+        jsCommunicator.reject(promise, ex.stackTraceToString())
       }
     }
     return promise
@@ -399,7 +400,7 @@ class FreeTubeJavaScriptInterface: AsyncJSCommunication {
    */
   @JavascriptInterface
   fun writeFile(basedir: String, filename: String, content: String): String {
-    val promise = jsPromise()
+    val promise = jsCommunicator.jsPromise()
     context.threadPoolExecutor.execute {
       try {
         if (basedir.startsWith("content://")) {
@@ -408,7 +409,7 @@ class FreeTubeJavaScriptInterface: AsyncJSCommunication {
           stream!!.write(content.toByteArray())
           stream!!.flush()
           stream!!.close()
-          resolve(promise, "true")
+          jsCommunicator.resolve(promise, "true")
         } else {
           val path = getDirectory(basedir)
           var file = File(path, filename)
@@ -416,10 +417,10 @@ class FreeTubeJavaScriptInterface: AsyncJSCommunication {
             file.createNewFile()
           }
           file.writeText(content)
-          resolve(promise, "true")
+          jsCommunicator.resolve(promise, "true")
         }
       } catch (ex: Exception) {
-        reject(promise, ex.stackTraceToString())
+        jsCommunicator.reject(promise, ex.stackTraceToString())
       }
     }
     return promise
@@ -431,7 +432,7 @@ class FreeTubeJavaScriptInterface: AsyncJSCommunication {
    */
   @JavascriptInterface
   fun requestSaveDialog(fileName: String, fileType: String): String {
-    val promise = jsPromise()
+    val promise = jsCommunicator.jsPromise()
     val saveDialogIntent = Intent(Intent.ACTION_CREATE_DOCUMENT)
       .addCategory(Intent.CATEGORY_OPENABLE)
       .setType(fileType)
@@ -439,15 +440,15 @@ class FreeTubeJavaScriptInterface: AsyncJSCommunication {
     context.listenForActivityResults {
       result: ActivityResult? ->
       if (result!!.resultCode == Activity.RESULT_CANCELED) {
-        resolve(promise, "USER_CANCELED")
+        jsCommunicator.resolve(promise, "USER_CANCELED")
       }
       try {
         val uri = result!!.data!!.data
         var stringUri =  uri.toString()
         // something about the java bridge url decodes all strings, so I am going to double encode this one
-        resolve(promise, "{ \"uri\": \"$stringUri\" }")
+        jsCommunicator.resolve(promise, "{ \"uri\": \"$stringUri\" }")
       } catch (ex: Exception) {
-        reject(promise, ex.toString())
+        jsCommunicator.reject(promise, ex.toString())
       }
     }
     context.activityResultLauncher.launch(saveDialogIntent)
@@ -478,7 +479,7 @@ class FreeTubeJavaScriptInterface: AsyncJSCommunication {
 
   @JavascriptInterface
   fun requestOpenDialog(fileTypes: String): String {
-    val promise = jsPromise()
+    val promise = jsCommunicator.jsPromise()
     val openDialogIntent = Intent(Intent.ACTION_GET_CONTENT)
       .setType("*/*")
       .putExtra(Intent.EXTRA_MIME_TYPES, fileTypes.split(",").toTypedArray())
@@ -486,15 +487,15 @@ class FreeTubeJavaScriptInterface: AsyncJSCommunication {
     context.listenForActivityResults {
         result: ActivityResult? ->
       if (result!!.resultCode == Activity.RESULT_CANCELED) {
-        resolve(promise, "USER_CANCELED")
+        jsCommunicator.resolve(promise, "USER_CANCELED")
       }
       try {
         val uri = result!!.data!!.data
         var mimeType = context.contentResolver.getType(uri!!)
         val fileName = getFileNameFromUri(uri.toString())
-        resolve(promise, "{ \"uri\": \"${uri}\", \"type\": \"${mimeType}\", \"fileName\": \"${fileName}\" }")
+        jsCommunicator.resolve(promise, "{ \"uri\": \"${uri}\", \"type\": \"${mimeType}\", \"fileName\": \"${fileName}\" }")
       } catch (ex: Exception) {
-        reject(promise, ex.toString())
+        jsCommunicator.reject(promise, ex.toString())
       }
     }
     context.activityResultLauncher.launch(openDialogIntent)
@@ -503,12 +504,12 @@ class FreeTubeJavaScriptInterface: AsyncJSCommunication {
 
   @JavascriptInterface
   fun requestDirectoryAccessDialog(): String {
-    val promise = jsPromise()
+    val promise = jsCommunicator.jsPromise()
     val openDialogIntent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
     context.listenForActivityResults {
         result: ActivityResult? ->
       if (result!!.resultCode == Activity.RESULT_CANCELED) {
-        resolve(promise, "USER_CANCELED")
+        jsCommunicator.resolve(promise, "USER_CANCELED")
       }
       try {
         val uri = result!!.data!!.data!!
@@ -516,9 +517,9 @@ class FreeTubeJavaScriptInterface: AsyncJSCommunication {
           uri,
           Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
         )
-        resolve(promise, uri.toString())
+        jsCommunicator.resolve(promise, uri.toString())
       } catch (ex: Exception) {
-        reject(promise, ex.toString())
+        jsCommunicator.reject(promise, ex.toString())
       }
     }
     context.activityResultLauncher.launch(openDialogIntent)
@@ -601,9 +602,7 @@ class FreeTubeJavaScriptInterface: AsyncJSCommunication {
 
   @JavascriptInterface
   fun getSyncMessage(promise: String): String {
-    val value = syncMessages[promise]
-    syncMessages.remove(promise)
-    return value!!
+    return jsCommunicator.getSyncMessage(promise)
   }
 
   @JavascriptInterface
@@ -689,7 +688,7 @@ class FreeTubeJavaScriptInterface: AsyncJSCommunication {
 
   @JavascriptInterface
   fun generatePOTokenFromVisitorData(visitorData: String): String {
-    val promise = jsPromise()
+    val promise = jsCommunicator.jsPromise()
     val bgWv = context.bgWebView
     val script = context.readTextAsset("botGuardScript.js")
     try {
@@ -698,7 +697,7 @@ class FreeTubeJavaScriptInterface: AsyncJSCommunication {
       context.bgJsInterface.onReturnToken {
         run {
           context.runOnUiThread {
-            resolve(promise, it)
+            jsCommunicator.resolve(promise, it)
             bgWv.loadUrl("about:blank")
           }
         }
@@ -715,7 +714,7 @@ class FreeTubeJavaScriptInterface: AsyncJSCommunication {
         )
       }
     } catch (exception: Exception) {
-      reject(promise, exception.message!!)
+      jsCommunicator.reject(promise, exception.message!!)
     }
     return promise
   }
