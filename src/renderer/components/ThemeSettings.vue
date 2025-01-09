@@ -44,7 +44,7 @@
         <FtSlider
           :label="$t('Settings.Theme Settings.UI Scale')"
           :default-value="uiScale"
-          :min-value="50"
+          :min-value="25"
           :max-value="300"
           :step="5"
           value-extension="%"
