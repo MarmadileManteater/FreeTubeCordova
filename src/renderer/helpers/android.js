@@ -11,6 +11,21 @@ export const MIME_TYPES = {
 }
 export const FILE_TYPES = Object.fromEntries(Object.entries(MIME_TYPES).map(([key, value]) => [value, key]))
 
+export function awaitAsyncResult(id) {
+  return new Promise((resolve, reject) => {
+    const resolveWrapper = () => {
+      resolve(android.getSyncMessage(id))
+      window.removeEventListener(`${id}-resolve`, resolveWrapper)
+    }
+    window.addEventListener(`${id}-resolve`, resolveWrapper)
+    const rejectWrapper = () => {
+      reject(android.getSyncMessage(id))
+      window.removeEventListener(`${id}-reject`, rejectWrapper)
+    }
+    window.addEventListener(`${id}-reject`, rejectWrapper)
+  })
+}
+
 /**
  * @typedef SaveDialogResponse
  * @property {boolean} canceled
@@ -48,7 +63,7 @@ export function updateMediaSessionState(state, position = null) {
  */
 async function handleDialogResponse(promiseId) {
   // await the promise returned from the ☕ bridge
-  let response = await window.awaitAsyncResult(promiseId)
+  let response = await awaitAsyncResult(promiseId)
   // handle case if user cancels prompt
   if (response === 'USER_CANCELED') {
     return {
@@ -119,7 +134,7 @@ export async function writeFile(arg1, arg2, arg3 = undefined) {
     content = arg3
   }
   try {
-    await window.awaitAsyncResult(android.writeFile(baseUri, path, content))
+    await awaitAsyncResult(android.writeFile(baseUri, path, content))
     return true
   } catch (exception) {
     console.error(exception)
@@ -135,7 +150,7 @@ export async function writeFile(arg1, arg2, arg3 = undefined) {
  */
 export async function readFile(baseUri, path = '') {
   try {
-    return await window.awaitAsyncResult(android.readFile(baseUri, path))
+    return await awaitAsyncResult(android.readFile(baseUri, path))
   } catch (exception) {
     console.warn(exception)
     return ''
@@ -246,7 +261,7 @@ export function handleAmbigiousContent(content, filePath) {
  * @returns {Promise<DirectoryHandle>}
  */
 export async function requestDirectory() {
-  const uri = await window.awaitAsyncResult(android.requestDirectoryAccessDialog())
+  const uri = await awaitAsyncResult(android.requestDirectoryAccessDialog())
   if (uri === 'USER_CANCELED') {
     return {
       canceled: true
@@ -334,5 +349,5 @@ export function getConsoleLogs() {
 }
 
 export function generatePOTokenFromVisitorData(visitorData) {
-  return window.awaitAsyncResult(android.generatePOTokenFromVisitorData(visitorData))
+  return awaitAsyncResult(android.generatePOTokenFromVisitorData(visitorData))
 }

@@ -52,24 +52,6 @@
           }
           return await window.ofetch(...args)
         }
-        window.awaitAsyncResult = function (id, callbacks = {}) {
-          return new Promise((resolve, reject) => {
-            const interval = setInterval(async () => {
-              if (id in window) {
-                clearInterval(interval)
-                try {
-                  if ('callbacks' in window[id]) {
-                    Object.assign(window[id].callbacks, callbacks)
-                  }
-                  const result = await window[id].promise
-                  resolve(Android.getSyncMessage(id))
-                } catch (ex) {
-                  reject(Android.getSyncMessage(id))
-                }
-              }
-            }, 1)
-          })
-        }
       </script>
     <% } %>
     <meta charset="utf-8" />

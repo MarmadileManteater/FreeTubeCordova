@@ -11,9 +11,7 @@ class AsyncJSCommunication(givenWebView: WebView) {
    * @return the id of a promise on the window
    */
   fun jsPromise(): String {
-    val id = "${randomUUID()}"
-    webView.fafJS("window['${id}'] = {}; window['${id}'].promise = new Promise((resolve, reject) => { window['${id}'].resolve = resolve; window['${id}'].reject = reject })")
-    return id
+    return "${randomUUID()}"
   }
 
   /**
@@ -21,7 +19,7 @@ class AsyncJSCommunication(givenWebView: WebView) {
    */
   fun resolve(id: String, message: String) {
     syncMessages[id] = message
-    webView.fafJS("window['${id}'].resolve()")
+    webView.dispatchEvent("$id-resolve")
   }
 
   /**
@@ -29,7 +27,7 @@ class AsyncJSCommunication(givenWebView: WebView) {
    */
   fun reject(id: String, message: String) {
     syncMessages[id] = message
-    webView.fafJS("window['${id}'].reject(new Error())")
+    webView.dispatchEvent("$id-reject")
   }
 
   fun getSyncMessage(promise: String): String {
