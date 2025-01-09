@@ -401,6 +401,8 @@ const sideEffectHandlers = {
     if (process.env.IS_ELECTRON) {
       const { webFrame } = require('electron')
       webFrame.setZoomFactor(value / 100)
+    } else if (process.env.IS_ANDROID) {
+      android.setScale(value)
     }
   }
 }

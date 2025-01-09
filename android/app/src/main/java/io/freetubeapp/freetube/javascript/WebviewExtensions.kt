@@ -87,6 +87,6 @@ fun WebView.consoleWarn(message: String) {
 
 fun WebView.setScale(scale: Double) {
   post {
-    setInitialScale((400 * scale).toInt())
+    setInitialScale((350 * scale).toInt())
   }
 }
