@@ -16,10 +16,12 @@ export function awaitAsyncResult(id) {
     const resolveWrapper = () => {
       resolve(android.getSyncMessage(id))
       window.removeEventListener(`${id}-resolve`, resolveWrapper)
+      window.removeEventListener(`${id}-reject`, rejectWrapper)
     }
     window.addEventListener(`${id}-resolve`, resolveWrapper)
     const rejectWrapper = () => {
       reject(android.getSyncMessage(id))
+      window.removeEventListener(`${id}-resolve`, resolveWrapper)
       window.removeEventListener(`${id}-reject`, rejectWrapper)
     }
     window.addEventListener(`${id}-reject`, rejectWrapper)
