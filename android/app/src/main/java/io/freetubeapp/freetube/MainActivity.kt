@@ -1,13 +1,17 @@
 package io.freetubeapp.freetube
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
+import android.util.DisplayMetrics
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
+import android.view.WindowMetrics
 import android.webkit.ConsoleMessage
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
@@ -19,6 +23,7 @@ import androidx.activity.addCallback
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat.OnRequestPermissionsResultCallback
 import androidx.core.view.WindowCompat
@@ -67,25 +72,6 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
    * Gets the number of available cores
    * (not always the same as the maximum number of cores)
    */
-  private val NUMBER_OF_CORES = Runtime.getRuntime().availableProcessors()
-
-  // Instantiates the queue of Runnables as a LinkedBlockingQueue
-  private val workQueue: BlockingQueue<Runnable> = LinkedBlockingQueue()
-
-  // Sets the amount of time an idle thread waits before terminating
-  private val KEEP_ALIVE_TIME = 1
-
-  // Sets the Time Unit to seconds
-  private val KEEP_ALIVE_TIME_UNIT: TimeUnit = TimeUnit.SECONDS
-
-  // Creates a thread pool manager
-  var threadPoolExecutor = ThreadPoolExecutor(
-    NUMBER_OF_CORES,  // Initial pool size
-    NUMBER_OF_CORES,  // Max pool size
-    KEEP_ALIVE_TIME.toLong(),
-    KEEP_ALIVE_TIME_UNIT,
-    workQueue
-  )
 
   @SuppressLint("SetJavaScriptEnabled")
   @Suppress("DEPRECATION")
@@ -323,10 +309,6 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
   fun listenForActivityResults(listener: (ActivityResult?) -> Unit) {
     activityResultListeners.add(listener)
   }
-
-  // region webview methods
-
-  //endregion
 
   fun readTextAsset(assetName: String) : String {
     val lines = mutableListOf<String>()

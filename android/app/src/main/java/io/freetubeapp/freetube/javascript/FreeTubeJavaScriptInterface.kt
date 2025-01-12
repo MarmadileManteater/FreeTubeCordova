@@ -1,5 +1,6 @@
 package io.freetubeapp.freetube.javascript
 
+import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Notification
@@ -15,21 +16,29 @@ import android.media.session.PlaybackState
 import android.media.session.PlaybackState.STATE_PAUSED
 import android.net.Uri
 import android.os.Build
+import android.os.Build.VERSION.SDK_INT
+import android.os.Environment
 import android.provider.OpenableColumns
+import android.provider.Settings
 import android.view.WindowManager
 import android.webkit.JavascriptInterface
+import android.webkit.PermissionRequest
 import androidx.activity.result.ActivityResult
 import androidx.annotation.RequiresApi
+import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat.startActivity
 import androidx.core.view.WindowCompat
 import androidx.documentfile.provider.DocumentFile
 import io.freetubeapp.freetube.MainActivity
 import io.freetubeapp.freetube.MediaControlsReceiver
 import io.freetubeapp.freetube.R
+import io.freetubeapp.freetube.helpers.EasyThreadPoolExecutor
+import io.freetubeapp.freetube.readFile
+import io.freetubeapp.freetube.writeFile
 import java.io.File
 import java.io.FileInputStream
 import java.net.URL
-import java.net.URLDecoder
 import java.util.UUID.*
 
 
@@ -376,22 +385,15 @@ class FreeTubeJavaScriptInterface {
   @JavascriptInterface
   fun readFile(basedir: String, filename: String): String {
     val promise = jsCommunicator.jsPromise()
-    context.threadPoolExecutor.execute {
-      try {
-        if (basedir.startsWith("content://")) {
-          val stream = context.contentResolver.openInputStream(Uri.parse(basedir))
-          val content = String(stream!!.readBytes())
-          stream!!.close()
-          jsCommunicator.resolve(promise, content)
-        } else {
-          val path = getDirectory(basedir)
-          val file = File(path, filename)
-          jsCommunicator.resolve(promise, FileInputStream(file).bufferedReader().use { it.readText() })
-        }
-      } catch (ex: Exception) {
-        context.webView.consoleError(ex.stackTraceToString())
-        jsCommunicator.reject(promise, ex.stackTraceToString())
-      }
+    context.contentResolver.readFile(getDirectory(basedir), filename).then {
+      result
+      ->
+      jsCommunicator.resolve(promise, result)
+    }.catch {
+      exception
+      ->
+      context.webView.consoleError(exception.get("stackTrace").toString())
+      jsCommunicator.reject(promise, exception.get("stackTrace").toString())
     }
     return promise
   }
@@ -402,28 +404,13 @@ class FreeTubeJavaScriptInterface {
   @JavascriptInterface
   fun writeFile(basedir: String, filename: String, content: String): String {
     val promise = jsCommunicator.jsPromise()
-    context.threadPoolExecutor.execute {
-      try {
-        if (basedir.startsWith("content://")) {
-          // urls created by save dialog
-          val stream = context.contentResolver.openOutputStream(Uri.parse(basedir), "wt")
-          stream!!.write(content.toByteArray())
-          stream!!.flush()
-          stream!!.close()
-          jsCommunicator.resolve(promise, "true")
-        } else {
-          val path = getDirectory(basedir)
-          var file = File(path, filename)
-          if (!file.exists()) {
-            file.createNewFile()
-          }
-          file.writeText(content)
-          jsCommunicator.resolve(promise, "true")
-        }
-      } catch (ex: Exception) {
-        context.webView.consoleError(ex.stackTraceToString())
-        jsCommunicator.reject(promise, ex.stackTraceToString())
-      }
+
+    context.contentResolver.writeFile(getDirectory(basedir), filename, content, "wt").then {
+      jsCommunicator.resolve(promise, "true")
+    }.catch {
+      exception ->
+      context.webView.consoleError(exception.get("stackTrace").toString())
+      jsCommunicator.reject(promise, exception.get("stackTrace").toString())
     }
     return promise
   }
@@ -440,7 +427,7 @@ class FreeTubeJavaScriptInterface {
       .setType(fileType)
       .putExtra(Intent.EXTRA_TITLE, fileName)
     context.listenForActivityResults {
-      result: ActivityResult? ->
+        result: ActivityResult? ->
       if (result!!.resultCode == Activity.RESULT_CANCELED) {
         jsCommunicator.resolve(promise, "USER_CANCELED")
       }
@@ -600,6 +587,7 @@ class FreeTubeJavaScriptInterface {
       }
     }
   }
+
   private fun hexToColour(hex: String) : Int {
     return if (hex.length === 7) {
       Color.rgb(
