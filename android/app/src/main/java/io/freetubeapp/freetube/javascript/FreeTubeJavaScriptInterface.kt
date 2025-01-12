@@ -389,6 +389,7 @@ class FreeTubeJavaScriptInterface {
           jsCommunicator.resolve(promise, FileInputStream(file).bufferedReader().use { it.readText() })
         }
       } catch (ex: Exception) {
+        context.webView.consoleError(ex.stackTraceToString())
         jsCommunicator.reject(promise, ex.stackTraceToString())
       }
     }
@@ -420,6 +421,7 @@ class FreeTubeJavaScriptInterface {
           jsCommunicator.resolve(promise, "true")
         }
       } catch (ex: Exception) {
+        context.webView.consoleError(ex.stackTraceToString())
         jsCommunicator.reject(promise, ex.stackTraceToString())
       }
     }
