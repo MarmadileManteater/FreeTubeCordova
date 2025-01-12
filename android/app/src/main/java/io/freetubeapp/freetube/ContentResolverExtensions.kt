@@ -46,7 +46,12 @@ fun ContentResolver.writeFile(directoryName: String, fileName: String, content: 
         if (!file.exists()) {
           file.createNewFile()
         }
-        file.writeText(content)
+        if (mode == "wt") {
+          file.writeText(content)
+        }
+        if (mode == "wa") {
+          file.appendText(content)
+        }
         resolve(null)
       }
     } catch (ex: Exception) {
