@@ -33,7 +33,6 @@ import androidx.documentfile.provider.DocumentFile
 import io.freetubeapp.freetube.MainActivity
 import io.freetubeapp.freetube.MediaControlsReceiver
 import io.freetubeapp.freetube.R
-import io.freetubeapp.freetube.helpers.EasyThreadPoolExecutor
 import io.freetubeapp.freetube.readFile
 import io.freetubeapp.freetube.writeFile
 import java.io.File
