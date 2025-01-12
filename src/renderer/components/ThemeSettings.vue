@@ -37,6 +37,13 @@
           :default-value="hideHeaderLogo"
           @change="updateHideHeaderLogo"
         />
+        <FtToggleSwitch
+          v-if="usingAndroid"
+          :label="$t('Theme Settings.Enable Ui Scale')"
+          compact
+          :default-value="useUiScale"
+          @change="updateUseUiScale"
+        />
       </div>
     </div>
     <template v-if="usingElectron || usingAndroid">
@@ -263,6 +270,12 @@ const uiScale = computed(() => store.getters.getUiScale)
  */
 function updateUiScale(value) {
   store.dispatch('updateUiScale', value)
+}
+
+const useUiScale = computed(() => store.getters.getUseUiScale)
+
+function updateUseUiScale(value) {
+  store.dispatch('updateUseUiScale', value)
 }
 
 /** @type {boolean} */
