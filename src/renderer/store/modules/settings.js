@@ -417,7 +417,7 @@ const sideEffectHandlers = {
       if (!value) {
         android.setScale(0)
       } else {
-        android.setScale(state.uiScale)
+        android.setScale(state.uiScaleAndroid)
       }
     }
   }
