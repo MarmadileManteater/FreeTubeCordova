@@ -306,6 +306,7 @@ const state = {
   defaultInvidiousInstance: '',
   defaultVolume: 1,
   uiScale: 100,
+  uiScaleAndroid: 100,
   useUiScale: false
 }
 
@@ -402,10 +403,12 @@ const sideEffectHandlers = {
     if (process.env.IS_ELECTRON) {
       const { webFrame } = require('electron')
       webFrame.setZoomFactor(value / 100)
-    } else if (process.env.IS_ANDROID) {
-      if (state.useUiScale) {
-        android.setScale(value)
-      }
+    }
+  },
+
+  uiScaleAndroid: (_, value) => {
+    if (state.useUiScale) {
+      android.setScale(value)
     }
   },
 

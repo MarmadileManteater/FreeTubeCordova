@@ -263,13 +263,23 @@ function updateHideHeaderLogo(value) {
 }
 
 /** @type {import('vue').ComputedRef<number>} */
-const uiScale = computed(() => store.getters.getUiScale)
+const uiScale = computed(() => {
+  if (process.env.IS_ANDROID) {
+    return store.getters.getUiScaleAndroid
+  } else {
+    return store.getters.getUiScale
+  }
+})
 
 /**
  * @param {number} value
  */
 function updateUiScale(value) {
-  store.dispatch('updateUiScale', value)
+  if (process.env.IS_ANDROID) {
+    store.dispatch('updateUiScaleAndroid', value)
+  } else {
+    store.dispatch('updateUiScale', value)
+  }
 }
 
 const useUiScale = computed(() => store.getters.getUseUiScale)
