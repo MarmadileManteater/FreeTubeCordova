@@ -1,8 +1,34 @@
 package io.freetubeapp.freetube.helpers
 
 import org.json.JSONObject
+import java.util.concurrent.BlockingQueue
+import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.ThreadPoolExecutor
+import java.util.concurrent.TimeUnit
 
 class Promise<T>(given: ((T) -> Unit, (JSONObject) -> Unit) -> Unit) {
+  companion object {
+    private val NUMBER_OF_CORES = Runtime.getRuntime().availableProcessors()
+
+    // Instantiates the queue of Runnables as a LinkedBlockingQueue
+    private val workQueue: BlockingQueue<Runnable> = LinkedBlockingQueue()
+
+    // Sets the amount of time an idle thread waits before terminating
+    private val KEEP_ALIVE_TIME = 1
+
+    // Sets the Time Unit to seconds
+    private val KEEP_ALIVE_TIME_UNIT: TimeUnit = TimeUnit.SECONDS
+
+    // Creates a thread pool manager
+    private var threadPoolExecutor = ThreadPoolExecutor(
+      NUMBER_OF_CORES,  // Initial pool size
+      NUMBER_OF_CORES,  // Max pool size
+      KEEP_ALIVE_TIME.toLong(),
+      KEEP_ALIVE_TIME_UNIT,
+      workQueue
+    )
+  }
+
   private val successListeners: MutableList<(T) -> Unit> = mutableListOf()
   private val failureListeners: MutableList<(JSONObject) -> Unit> = mutableListOf()
   var result: T? = null
@@ -21,7 +47,7 @@ class Promise<T>(given: ((T) -> Unit, (JSONObject) -> Unit) -> Unit) {
   }
 
   init {
-    EasyThreadPoolExecutor.threadPoolExecutor.execute {
+    threadPoolExecutor.execute {
       given({ result ->
         notifySuccess(result)
       }) { result ->
