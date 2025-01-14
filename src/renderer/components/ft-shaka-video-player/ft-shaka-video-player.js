@@ -13,6 +13,7 @@ import { LegacyQualitySelection } from './player-components/LegacyQualitySelecti
 import { ScreenshotButton } from './player-components/ScreenshotButton'
 import { StatsButton } from './player-components/StatsButton'
 import { TheatreModeButton } from './player-components/TheatreModeButton'
+import { AutoplayToggle } from './player-components/AutoplayToggle'
 import {
   findMostSimilarAudioBandwidth,
   getSponsorBlockSegments,
@@ -36,7 +37,7 @@ import android from 'android'
 // The UTF-8 characters "h", "t", "t", and "p".
 const HTTP_IN_HEX = 0x68747470
 
-const USE_OVERFLOW_MENU_WIDTH_THRESHOLD = 600
+const USE_OVERFLOW_MENU_WIDTH_THRESHOLD = 634
 
 const RequestType = shaka.net.NetworkingEngine.RequestType
 const AdvancedRequestType = shaka.net.NetworkingEngine.AdvancedRequestType
@@ -123,6 +124,14 @@ export default defineComponent({
       type: Boolean,
       default: false
     },
+    autoplayPossible: {
+      type: Boolean,
+      default: false
+    },
+    autoplayEnabled: {
+      type: Boolean,
+      default: false
+    },
     vrProjection: {
       type: String,
       default: null
@@ -137,6 +146,7 @@ export default defineComponent({
     'loaded',
     'ended',
     'timeupdate',
+    'toggle-autoplay',
     'toggle-theatre-mode',
     'playback-rate-updated'
   ],
@@ -774,6 +784,7 @@ export default defineComponent({
       if (useOverFlowMenu.value) {
         uiConfig.overflowMenuButtons = [
           'ft_screenshot',
+          'ft_autoplay_toggle',
           'playback_rate',
           'loop',
           'ft_audio_tracks',
@@ -793,6 +804,7 @@ export default defineComponent({
           'recenter_vr',
           'toggle_stereoscopic',
           'ft_screenshot',
+          'ft_autoplay_toggle',
           'playback_rate',
           'loop',
           'ft_audio_tracks',
@@ -819,6 +831,11 @@ export default defineComponent({
         if (index !== -1) {
           elementList.splice(index, 1)
         }
+      }
+
+      if (!props.autoplayPossible) {
+        const index = elementList.indexOf('ft_autoplay_toggle')
+        elementList.splice(index, 1)
       }
 
       if (props.format === 'audio') {
@@ -995,6 +1012,14 @@ export default defineComponent({
     watch(videoSkipMouseScroll, (newValue, oldValue) => {
       if (newValue !== oldValue && ui) {
         configureUI()
+      }
+    })
+
+    watch(() => props.autoplayEnabled, (newValue, oldValue) => {
+      if (newValue !== oldValue) {
+        events.dispatchEvent(new CustomEvent('setAutoplay', {
+          detail: newValue
+        }))
       }
     })
 
@@ -1666,6 +1691,24 @@ export default defineComponent({
       shakaOverflowMenu.registerElement('ft_audio_tracks', new AudioTrackSelectionFactory())
     }
 
+    function registerAutoplayToggle() {
+      events.addEventListener('toggleAutoplay', () => {
+        emit('toggle-autoplay')
+      })
+
+      /**
+       * @implements {shaka.extern.IUIElement.Factory}
+       */
+      class AutoplayToggleFactory {
+        create(rootElement, controls) {
+          return new AutoplayToggle(props.autoplayEnabled, events, rootElement, controls)
+        }
+      }
+
+      shakaControls.registerElement('ft_autoplay_toggle', new AutoplayToggleFactory())
+      shakaOverflowMenu.registerElement('ft_autoplay_toggle', new AutoplayToggleFactory())
+    }
+
     function registerTheatreModeButton() {
       events.addEventListener('toggleTheatreMode', () => {
         emit('toggle-theatre-mode')
@@ -1794,6 +1837,9 @@ export default defineComponent({
     function cleanUpCustomPlayerControls() {
       shakaControls.registerElement('ft_audio_tracks', null)
       shakaOverflowMenu.registerElement('ft_audio_tracks', null)
+
+      shakaControls.registerElement('ft_autoplay_toggle', null)
+      shakaOverflowMenu.registerElement('ft_autoplay_toggle', null)
 
       shakaControls.registerElement('ft_theatre_mode', null)
       shakaOverflowMenu.registerElement('ft_theatre_mode', null)
@@ -2439,6 +2485,8 @@ export default defineComponent({
 
       registerScreenshotButton()
       registerAudioTrackSelection()
+      registerAutoplayToggle()
+
       registerTheatreModeButton()
       registerFullWindowButton()
       registerLegacyQualitySelection()
