@@ -123,18 +123,7 @@ const config = {
       'process.env.IS_ANDROID': true,
       'process.env.IS_RELEASE': !isDevMode,
       'process.env.SUPPORTS_LOCAL_API': true,
-      'process.env.SWIPER_VERSION': `'${swiperVersion}'`,
-      // video.js' vhs-utils supports both atob() in web browsers and Buffer in node
-      // As the FreeTube web build only runs in web browsers, we can override their check for atob() here: https://github.com/videojs/vhs-utils/blob/main/src/decode-b64-to-uint8-array.js#L3
-      // overriding that check means we don't need to include a Buffer polyfill
-      // https://caniuse.com/atob-btoa
-
-      // NOTE FOR THE FUTURE: this override won't work with vite as their define does a find and replace in the code for production builds,
-      // but uses globals in development builds to save build time, so this would replace the actual atob() function with true if used with vite
-      // this works in webpack as webpack does a find and replace in the source code for both development and production builds
-      // https://vitejs.dev/config/shared-options.html#define
-      // https://webpack.js.org/plugins/define-plugin/
-      'window.atob': true
+      'process.env.SWIPER_VERSION': `'${swiperVersion}'`
     }),
     new webpack.ProvidePlugin({
       process: 'process/browser.js'
