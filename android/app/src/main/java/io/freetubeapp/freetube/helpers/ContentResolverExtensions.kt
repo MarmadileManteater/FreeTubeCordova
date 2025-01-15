@@ -1,12 +1,7 @@
-package io.freetubeapp.freetube
+package io.freetubeapp.freetube.helpers
 
 import android.content.ContentResolver
 import android.net.Uri
-import io.freetubeapp.freetube.helpers.Promise
-import io.freetubeapp.freetube.helpers.toJSON
-import io.freetubeapp.freetube.javascript.consoleError
-import java.io.File
-import java.io.FileInputStream
 
 fun ContentResolver.readFile(contentTreeUri: Uri): Promise<ByteArray> {
   return Promise {

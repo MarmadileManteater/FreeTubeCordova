@@ -1,7 +1,6 @@
 package io.freetubeapp.freetube
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Color
@@ -32,6 +31,8 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.documentfile.provider.DocumentFile
 import io.freetubeapp.freetube.databinding.ActivityMainBinding
+import io.freetubeapp.freetube.helpers.readText
+import io.freetubeapp.freetube.helpers.writeFile
 import io.freetubeapp.freetube.javascript.BotGuardJavascriptInterface
 import io.freetubeapp.freetube.javascript.FreeTubeJavaScriptInterface
 import io.freetubeapp.freetube.javascript.dispatchEvent
@@ -47,10 +48,6 @@ import java.net.URLEncoder
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.UUID
-import java.util.concurrent.BlockingQueue
-import java.util.concurrent.LinkedBlockingQueue
-import java.util.concurrent.ThreadPoolExecutor
-import java.util.concurrent.TimeUnit
 
 
 class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {

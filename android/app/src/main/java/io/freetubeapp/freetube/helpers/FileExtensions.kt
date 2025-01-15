@@ -1,7 +1,5 @@
-package io.freetubeapp.freetube
+package io.freetubeapp.freetube.helpers
 
-import io.freetubeapp.freetube.helpers.Promise
-import io.freetubeapp.freetube.helpers.toJSON
 import java.io.File
 import java.io.FileInputStream
 
