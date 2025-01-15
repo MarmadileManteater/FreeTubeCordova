@@ -66,14 +66,7 @@ class FreeTubeJavaScriptInterface {
 
   @JavascriptInterface
   fun getLogs(): String {
-    var logs = "["
-    for (message in context.consoleMessages) {
-      logs += "${message},"
-    }
-    // get rid of trailing comma
-    logs = logs.substring(0, logs.length - 1)
-    logs += "]"
-    return logs
+    return "${context.consoleMessages}"
   }
 
   /**
@@ -98,7 +91,7 @@ class FreeTubeJavaScriptInterface {
   private fun getActions(state: Int = lastState): Array<Notification.Action> {
     var neutralAction = arrayOf("Pause", "pause")
     var neutralIcon = androidx.media3.ui.R.drawable.exo_icon_pause
-    if (state == PlaybackState.STATE_PAUSED) {
+    if (state == STATE_PAUSED) {
       neutralAction = arrayOf("Play", "play")
       neutralIcon = androidx.media3.ui.R.drawable.exo_icon_play
     }
@@ -186,7 +179,7 @@ class FreeTubeJavaScriptInterface {
    */
   @SuppressLint("MissingPermission")
   private fun pushNotification(notification: Notification) {
-    if (lastNotification !== null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+    if (lastNotification !== null && SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
       // always set notifications to pause before sending another on android 13+
       setState(mediaSession!!, STATE_PAUSED)
     }
@@ -204,7 +197,7 @@ class FreeTubeJavaScriptInterface {
   private fun setState(session: MediaSession, state: Int, position: Long? = null) {
 
     if (state != lastState) {
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+      if (SDK_INT >= Build.VERSION_CODES.O && SDK_INT < Build.VERSION_CODES.TIRAMISU) {
         // need to reissue a notification if we want to update the actions
         var actions = getActions(state)
         val notification = getMediaControlsNotification(actions)
@@ -384,6 +377,7 @@ class FreeTubeJavaScriptInterface {
   @JavascriptInterface
   fun readFile(basedir: String, filename: String): String {
     val promise = jsCommunicator.jsPromise()
+
     context.contentResolver.readFile(getDirectory(basedir), filename).then {
       result
       ->
@@ -692,5 +686,27 @@ class FreeTubeJavaScriptInterface {
   @JavascriptInterface
   fun setScale(scale: Int) {
     context.webView.setScale(scale / 100.0)
+  }
+
+  @JavascriptInterface
+  fun requestTotalFileManagerPermissions() {
+    if (SDK_INT >= Build.VERSION_CODES.R) {
+      if (false) {
+        context.startActivity(Intent(context, MainActivity::class.java))
+      } else { //request for the permission
+        val intent: Intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+        val uri = Uri.fromParts("package", context.packageName, null)
+        intent.setData(uri)
+        context.startActivity(intent)
+      }
+    } else {
+      //below android 11=======
+      context.startActivity(Intent(context, MainActivity::class.java))
+      ActivityCompat.requestPermissions(
+        context,
+        arrayOf<String>(WRITE_EXTERNAL_STORAGE),
+        1
+      )
+    }
   }
 }
