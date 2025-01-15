@@ -306,6 +306,8 @@ const state = {
   defaultInvidiousInstance: '',
   defaultVolume: 1,
   uiScale: 100,
+  uiScaleAndroid: 100,
+  useUiScale: false
 }
 
 const sideEffectHandlers = {
@@ -380,9 +382,9 @@ const sideEffectHandlers = {
 
     i18n.locale = targetLocale
     await dispatch('getRegionData', targetLocale)
-      if (process.env.IS_ANDROID) {
-        android.hideSplashScreen()
-      }
+    if (process.env.IS_ANDROID) {
+      android.hideSplashScreen()
+    }
   },
 
   defaultInvidiousInstance: ({ commit, rootState }, value) => {
@@ -401,8 +403,22 @@ const sideEffectHandlers = {
     if (process.env.IS_ELECTRON) {
       const { webFrame } = require('electron')
       webFrame.setZoomFactor(value / 100)
-    } else if (process.env.IS_ANDROID) {
+    }
+  },
+
+  uiScaleAndroid: (_, value) => {
+    if (state.useUiScale) {
       android.setScale(value)
+    }
+  },
+
+  useUiScale: (_, value) => {
+    if (process.env.IS_ANDROID) {
+      if (!value) {
+        android.setScale(0)
+      } else {
+        android.setScale(state.uiScaleAndroid)
+      }
     }
   }
 }

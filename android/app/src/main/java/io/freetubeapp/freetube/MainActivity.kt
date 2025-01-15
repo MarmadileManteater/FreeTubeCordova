@@ -1,13 +1,18 @@
 package io.freetubeapp.freetube
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Color
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.util.DisplayMetrics
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
+import android.view.WindowMetrics
 import android.webkit.ConsoleMessage
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
@@ -19,11 +24,13 @@ import androidx.activity.addCallback
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat.OnRequestPermissionsResultCallback
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.documentfile.provider.DocumentFile
 import io.freetubeapp.freetube.databinding.ActivityMainBinding
 import io.freetubeapp.freetube.javascript.BotGuardJavascriptInterface
 import io.freetubeapp.freetube.javascript.FreeTubeJavaScriptInterface
@@ -36,6 +43,8 @@ import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLEncoder
+import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.UUID
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.LinkedBlockingQueue
@@ -44,7 +53,7 @@ import java.util.concurrent.TimeUnit
 
 
 class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
-
+  private val CONSOLE_LOG_NAME: String = "console.txt"
   private lateinit var binding: ActivityMainBinding
   private lateinit var permissionsListeners: MutableList<(Int, Array<String?>, IntArray) -> Unit>
   private lateinit var activityResultListeners: MutableList<(ActivityResult?) -> Unit>
@@ -63,29 +72,11 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
   var paused: Boolean = false
   var isInAPrompt: Boolean = false
   var pendingRequestBodies: MutableMap<String, String> = mutableMapOf()
+  var consoleLogFileUri: String? = null
   /*
    * Gets the number of available cores
    * (not always the same as the maximum number of cores)
    */
-  private val NUMBER_OF_CORES = Runtime.getRuntime().availableProcessors()
-
-  // Instantiates the queue of Runnables as a LinkedBlockingQueue
-  private val workQueue: BlockingQueue<Runnable> = LinkedBlockingQueue()
-
-  // Sets the amount of time an idle thread waits before terminating
-  private val KEEP_ALIVE_TIME = 1
-
-  // Sets the Time Unit to seconds
-  private val KEEP_ALIVE_TIME_UNIT: TimeUnit = TimeUnit.SECONDS
-
-  // Creates a thread pool manager
-  var threadPoolExecutor = ThreadPoolExecutor(
-    NUMBER_OF_CORES,  // Initial pool size
-    NUMBER_OF_CORES,  // Max pool size
-    KEEP_ALIVE_TIME.toLong(),
-    KEEP_ALIVE_TIME_UNIT,
-    workQueue
-  )
 
   @SuppressLint("SetJavaScriptEnabled")
   @Suppress("DEPRECATION")
@@ -188,6 +179,47 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
         messageData.put("sourceId", consoleMessage.sourceId())
         messageData.put("lineNumber", consoleMessage.lineNumber())
         consoleMessages.add(messageData)
+        contentResolver.readFile(jsInterface.getDirectory("data://"), "data-location.json").then {
+          result ->
+          val documentsDir = DocumentFile.fromTreeUri(this@MainActivity, Uri.parse(JSONObject(result).get("directory").toString()))
+          try {
+            if (documentsDir!!.findFile( CONSOLE_LOG_NAME) == null && consoleLogFileUri == null) {
+              val attempt = documentsDir!!.createFile("text/plain",  CONSOLE_LOG_NAME)
+              val attemptedUri = attempt!!.uri.toString()
+              val pattern = """\([0-9]*\)"""
+              if (attemptedUri.contains(Regex(pattern))) {
+                // android decides it likes to add more and more files instead of erroring out
+                attempt.delete()
+                consoleLogFileUri = documentsDir!!.findFile( CONSOLE_LOG_NAME)!!.uri.toString()
+              } else {
+                consoleLogFileUri = attempt!!.uri.toString()
+              }
+            } else if (consoleLogFileUri == null) {
+              val attempt = documentsDir!!.createFile("text/plain",  CONSOLE_LOG_NAME)
+              val attemptedUri = attempt!!.uri.toString()
+              val pattern = """\([0-9]*\)"""
+              if (attemptedUri.contains(Regex(pattern))) {
+                // android decides it likes to add more and more files instead of erroring out
+                attempt.delete()
+                consoleLogFileUri = documentsDir!!.findFile( CONSOLE_LOG_NAME)!!.uri.toString()
+              } else {
+                consoleLogFileUri = attempt!!.uri.toString()
+              }
+            }
+          } catch (ex: Exception) {
+            // pass
+          }
+          val emoji = if (messageData.get("level") == "LOG") {
+            "ℹ\uFE0F"
+          } else if (messageData.get("level") == "WARNING") {
+            "⚠\uFE0F"
+          } else if (messageData.get("level") == "ERROR") {
+            "\uD83D\uDEAB"
+          } else {
+            ""
+          }
+          contentResolver.writeFile(consoleLogFileUri.toString(), "", "[${emoji}${messageData.get("level")}][${SimpleDateFormat("dd/M/yyyy hh:mm:ss").format(Date())}]: ${consoleMessage.message()} / ${messageData.get("sourceId")} at line ${messageData.get("lineNumber")}\n", "wa")
+        }
         webView.dispatchEvent("console-message", "data", messageData)
         return super.onConsoleMessage(consoleMessage);
       }
@@ -323,10 +355,6 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
   fun listenForActivityResults(listener: (ActivityResult?) -> Unit) {
     activityResultListeners.add(listener)
   }
-
-  // region webview methods
-
-  //endregion
 
   fun readTextAsset(assetName: String) : String {
     val lines = mutableListOf<String>()
