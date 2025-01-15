@@ -1,5 +1,6 @@
 package io.freetubeapp.freetube.javascript
 
+import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Notification
@@ -15,21 +16,28 @@ import android.media.session.PlaybackState
 import android.media.session.PlaybackState.STATE_PAUSED
 import android.net.Uri
 import android.os.Build
+import android.os.Build.VERSION.SDK_INT
 import android.provider.OpenableColumns
+import android.provider.Settings
 import android.view.WindowManager
 import android.webkit.JavascriptInterface
 import androidx.activity.result.ActivityResult
 import androidx.annotation.RequiresApi
+import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.view.WindowCompat
 import androidx.documentfile.provider.DocumentFile
 import io.freetubeapp.freetube.MainActivity
 import io.freetubeapp.freetube.MediaControlsReceiver
 import io.freetubeapp.freetube.R
+import io.freetubeapp.freetube.helpers.WriteMode
+import io.freetubeapp.freetube.helpers.readFile
+import io.freetubeapp.freetube.helpers.readText
+import io.freetubeapp.freetube.helpers.writeFile
+import io.freetubeapp.freetube.helpers.writeText
+import org.json.JSONObject
 import java.io.File
-import java.io.FileInputStream
 import java.net.URL
-import java.net.URLDecoder
 import java.util.UUID.*
 
 
@@ -58,14 +66,7 @@ class FreeTubeJavaScriptInterface {
 
   @JavascriptInterface
   fun getLogs(): String {
-    var logs = "["
-    for (message in context.consoleMessages) {
-      logs += "${message},"
-    }
-    // get rid of trailing comma
-    logs = logs.substring(0, logs.length - 1)
-    logs += "]"
-    return logs
+    return "${context.consoleMessages}"
   }
 
   /**
@@ -90,7 +91,7 @@ class FreeTubeJavaScriptInterface {
   private fun getActions(state: Int = lastState): Array<Notification.Action> {
     var neutralAction = arrayOf("Pause", "pause")
     var neutralIcon = androidx.media3.ui.R.drawable.exo_icon_pause
-    if (state == PlaybackState.STATE_PAUSED) {
+    if (state == STATE_PAUSED) {
       neutralAction = arrayOf("Play", "play")
       neutralIcon = androidx.media3.ui.R.drawable.exo_icon_play
     }
@@ -178,7 +179,7 @@ class FreeTubeJavaScriptInterface {
    */
   @SuppressLint("MissingPermission")
   private fun pushNotification(notification: Notification) {
-    if (lastNotification !== null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+    if (lastNotification !== null && SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
       // always set notifications to pause before sending another on android 13+
       setState(mediaSession!!, STATE_PAUSED)
     }
@@ -196,7 +197,7 @@ class FreeTubeJavaScriptInterface {
   private fun setState(session: MediaSession, state: Int, position: Long? = null) {
 
     if (state != lastState) {
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+      if (SDK_INT >= Build.VERSION_CODES.O && SDK_INT < Build.VERSION_CODES.TIRAMISU) {
         // need to reissue a notification if we want to update the actions
         var actions = getActions(state)
         val notification = getMediaControlsNotification(actions)
@@ -376,21 +377,21 @@ class FreeTubeJavaScriptInterface {
   @JavascriptInterface
   fun readFile(basedir: String, filename: String): String {
     val promise = jsCommunicator.jsPromise()
-    context.threadPoolExecutor.execute {
-      try {
-        if (basedir.startsWith("content://")) {
-          val stream = context.contentResolver.openInputStream(Uri.parse(basedir))
-          val content = String(stream!!.readBytes())
-          stream!!.close()
-          jsCommunicator.resolve(promise, content)
-        } else {
-          val path = getDirectory(basedir)
-          val file = File(path, filename)
-          jsCommunicator.resolve(promise, FileInputStream(file).bufferedReader().use { it.readText() })
-        }
-      } catch (ex: Exception) {
-        jsCommunicator.reject(promise, ex.stackTraceToString())
-      }
+
+    val reject = {
+      error: JSONObject ->
+      context.webView.consoleError(error.get("stackTrace").toString())
+      jsCommunicator.reject(promise, error.get("stackTrace").toString())
+    }
+
+    if (basedir.startsWith("content://")) {
+      context.contentResolver.readFile(Uri.parse(basedir)).then {
+        jsCommunicator.resolve(promise, String(it))
+      }.catch(reject)
+    } else {
+      File(getDirectory(basedir), filename).readText().then {
+        jsCommunicator.resolve(promise, it)
+      }.catch(reject)
     }
     return promise
   }
@@ -401,28 +402,28 @@ class FreeTubeJavaScriptInterface {
   @JavascriptInterface
   fun writeFile(basedir: String, filename: String, content: String): String {
     val promise = jsCommunicator.jsPromise()
-    context.threadPoolExecutor.execute {
-      try {
-        if (basedir.startsWith("content://")) {
-          // urls created by save dialog
-          val stream = context.contentResolver.openOutputStream(Uri.parse(basedir), "wt")
-          stream!!.write(content.toByteArray())
-          stream!!.flush()
-          stream!!.close()
-          jsCommunicator.resolve(promise, "true")
-        } else {
-          val path = getDirectory(basedir)
-          var file = File(path, filename)
-          if (!file.exists()) {
-            file.createNewFile()
-          }
-          file.writeText(content)
-          jsCommunicator.resolve(promise, "true")
-        }
-      } catch (ex: Exception) {
-        jsCommunicator.reject(promise, ex.stackTraceToString())
-      }
+
+    val resolve = {
+      _: Unit? ->
+      jsCommunicator.resolve(promise, "true")
     }
+
+    val reject = {
+      error: JSONObject ->
+      context.webView.consoleError(error.get("stackTrace").toString())
+      jsCommunicator.reject(promise, error.get("stackTrace").toString())
+    }
+
+    if (basedir.startsWith("content://")) {
+      context.contentResolver.writeFile(Uri.parse(basedir), content.toByteArray(), "wt")
+        .then(resolve)
+        .catch(reject)
+    } else {
+      File(getDirectory(basedir), filename).writeText(content, WriteMode.Truncate)
+        .then(resolve)
+        .catch(reject)
+    }
+
     return promise
   }
 
@@ -438,7 +439,7 @@ class FreeTubeJavaScriptInterface {
       .setType(fileType)
       .putExtra(Intent.EXTRA_TITLE, fileName)
     context.listenForActivityResults {
-      result: ActivityResult? ->
+        result: ActivityResult? ->
       if (result!!.resultCode == Activity.RESULT_CANCELED) {
         jsCommunicator.resolve(promise, "USER_CANCELED")
       }
@@ -598,6 +599,7 @@ class FreeTubeJavaScriptInterface {
       }
     }
   }
+
   private fun hexToColour(hex: String) : Int {
     return if (hex.length === 7) {
       Color.rgb(
@@ -703,5 +705,27 @@ class FreeTubeJavaScriptInterface {
   @JavascriptInterface
   fun setScale(scale: Int) {
     context.webView.setScale(scale / 100.0)
+  }
+
+  @JavascriptInterface
+  fun requestTotalFileManagerPermissions() {
+    if (SDK_INT >= Build.VERSION_CODES.R) {
+      if (false) {
+        context.startActivity(Intent(context, MainActivity::class.java))
+      } else { //request for the permission
+        val intent: Intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+        val uri = Uri.fromParts("package", context.packageName, null)
+        intent.setData(uri)
+        context.startActivity(intent)
+      }
+    } else {
+      //below android 11=======
+      context.startActivity(Intent(context, MainActivity::class.java))
+      ActivityCompat.requestPermissions(
+        context,
+        arrayOf<String>(WRITE_EXTERNAL_STORAGE),
+        1
+      )
+    }
   }
 }

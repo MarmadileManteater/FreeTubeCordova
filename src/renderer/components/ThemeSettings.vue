@@ -37,6 +37,13 @@
           :default-value="hideHeaderLogo"
           @change="updateHideHeaderLogo"
         />
+        <FtToggleSwitch
+          v-if="usingAndroid"
+          :label="$t('Theme Settings.Enable Ui Scale')"
+          compact
+          :default-value="useUiScale"
+          @change="updateUseUiScale"
+        />
       </div>
     </div>
     <template v-if="usingElectron || usingAndroid">
@@ -102,7 +109,7 @@ import FtSelect from './ft-select/ft-select.vue'
 import FtToggleSwitch from './ft-toggle-switch/ft-toggle-switch.vue'
 import FtSlider from './ft-slider/ft-slider.vue'
 import FtFlexBox from './ft-flex-box/ft-flex-box.vue'
-import FtPrompt from './ft-prompt/ft-prompt.vue'
+import FtPrompt from './FtPrompt/FtPrompt.vue'
 
 import store from '../store/index'
 
@@ -256,13 +263,29 @@ function updateHideHeaderLogo(value) {
 }
 
 /** @type {import('vue').ComputedRef<number>} */
-const uiScale = computed(() => store.getters.getUiScale)
+const uiScale = computed(() => {
+  if (process.env.IS_ANDROID) {
+    return store.getters.getUiScaleAndroid
+  } else {
+    return store.getters.getUiScale
+  }
+})
 
 /**
  * @param {number} value
  */
 function updateUiScale(value) {
-  store.dispatch('updateUiScale', value)
+  if (process.env.IS_ANDROID) {
+    store.dispatch('updateUiScaleAndroid', value)
+  } else {
+    store.dispatch('updateUiScale', value)
+  }
+}
+
+const useUiScale = computed(() => store.getters.getUseUiScale)
+
+function updateUseUiScale(value) {
+  store.dispatch('updateUseUiScale', value)
 }
 
 /** @type {boolean} */

@@ -12,9 +12,6 @@
         class="logs-wrapper"
         :data-theme="theme"
       >
-        <h2>
-          {{ $t('Log Viewer.Console Log') }}
-        </h2>
         <div class="logs">
           <div
             v-for="log in logsReversed"

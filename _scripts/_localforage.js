@@ -1,9 +1,6 @@
-import localforage from '../node_modules/localforage/dist/localforage'
-import android from 'android'
 import { readFile, writeFile } from '../src/renderer/helpers/android'
 
 export function createInstance(kwargs) {
-  const instance = localforage.createInstance(kwargs)
   return {
     async getItem(key) {
       const dataLocationFile = await readFile('data://', 'data-location.json')

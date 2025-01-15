@@ -1,7 +1,7 @@
 import { defineComponent } from 'vue'
 import { mapActions } from 'vuex'
 import FtFlexBox from '../ft-flex-box/ft-flex-box.vue'
-import FtPrompt from '../ft-prompt/ft-prompt.vue'
+import FtPrompt from '../FtPrompt/FtPrompt.vue'
 import FtButton from '../ft-button/ft-button.vue'
 import { getConsoleLogs, isColourDark } from '../../helpers/android'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
