@@ -33,8 +33,12 @@ import androidx.documentfile.provider.DocumentFile
 import io.freetubeapp.freetube.MainActivity
 import io.freetubeapp.freetube.MediaControlsReceiver
 import io.freetubeapp.freetube.R
+import io.freetubeapp.freetube.WriteMode
 import io.freetubeapp.freetube.readFile
+import io.freetubeapp.freetube.readText
 import io.freetubeapp.freetube.writeFile
+import io.freetubeapp.freetube.writeText
+import org.json.JSONObject
 import java.io.File
 import java.io.FileInputStream
 import java.net.URL
@@ -378,15 +382,20 @@ class FreeTubeJavaScriptInterface {
   fun readFile(basedir: String, filename: String): String {
     val promise = jsCommunicator.jsPromise()
 
-    context.contentResolver.readFile(getDirectory(basedir), filename).then {
-      result
-      ->
-      jsCommunicator.resolve(promise, result)
-    }.catch {
-      exception
-      ->
-      context.webView.consoleError(exception.get("stackTrace").toString())
-      jsCommunicator.reject(promise, exception.get("stackTrace").toString())
+    val reject = {
+      error: JSONObject ->
+      context.webView.consoleError(error.get("stackTrace").toString())
+      jsCommunicator.reject(promise, error.get("stackTrace").toString())
+    }
+
+    if (basedir.startsWith("content://")) {
+      context.contentResolver.readFile(Uri.parse(basedir)).then {
+        jsCommunicator.resolve(promise, String(it))
+      }.catch(reject)
+    } else {
+      File(getDirectory(basedir), filename).readText().then {
+        jsCommunicator.resolve(promise, it)
+      }.catch(reject)
     }
     return promise
   }
@@ -398,13 +407,27 @@ class FreeTubeJavaScriptInterface {
   fun writeFile(basedir: String, filename: String, content: String): String {
     val promise = jsCommunicator.jsPromise()
 
-    context.contentResolver.writeFile(getDirectory(basedir), filename, content, "wt").then {
+    val resolve = {
+      _: Unit? ->
       jsCommunicator.resolve(promise, "true")
-    }.catch {
-      exception ->
-      context.webView.consoleError(exception.get("stackTrace").toString())
-      jsCommunicator.reject(promise, exception.get("stackTrace").toString())
     }
+
+    val reject = {
+      error: JSONObject ->
+      context.webView.consoleError(error.get("stackTrace").toString())
+      jsCommunicator.reject(promise, error.get("stackTrace").toString())
+    }
+
+    if (basedir.startsWith("content://")) {
+      context.contentResolver.writeFile(Uri.parse(basedir), content.toByteArray(), "wt")
+        .then(resolve)
+        .catch(reject)
+    } else {
+      File(getDirectory(basedir), filename).writeText(content, WriteMode.Truncate)
+        .then(resolve)
+        .catch(reject)
+    }
+
     return promise
   }
 

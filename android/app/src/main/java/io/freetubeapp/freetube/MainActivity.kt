@@ -39,6 +39,7 @@ import io.freetubeapp.freetube.webviews.BackgroundPlayWebView
 import io.freetubeapp.freetube.webviews.BotGuardWebView
 import org.json.JSONObject
 import java.io.BufferedReader
+import java.io.File
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
@@ -72,7 +73,7 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
   var paused: Boolean = false
   var isInAPrompt: Boolean = false
   var pendingRequestBodies: MutableMap<String, String> = mutableMapOf()
-  var consoleLogFileUri: String? = null
+  var consoleLogFileUri: Uri? = null
   /*
    * Gets the number of available cores
    * (not always the same as the maximum number of cores)
@@ -156,7 +157,6 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
         }
       }
     }
-
     webView.settings.javaScriptEnabled = true
 
     // this is the 🥃 special sauce that makes local api streaming a possibility
@@ -179,8 +179,9 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
         messageData.put("sourceId", consoleMessage.sourceId())
         messageData.put("lineNumber", consoleMessage.lineNumber())
         consoleMessages.add(messageData)
-        contentResolver.readFile(jsInterface.getDirectory("data://"), "data-location.json").then {
+        File(jsInterface.getDirectory("data://"), "data-location.json").readText().then {
           result ->
+          // TODO i was likely drunk and so this is nonsense; rewrite this better
           val documentsDir = DocumentFile.fromTreeUri(this@MainActivity, Uri.parse(JSONObject(result).get("directory").toString()))
           try {
             if (documentsDir!!.findFile( CONSOLE_LOG_NAME) == null && consoleLogFileUri == null) {
@@ -190,9 +191,9 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
               if (attemptedUri.contains(Regex(pattern))) {
                 // android decides it likes to add more and more files instead of erroring out
                 attempt.delete()
-                consoleLogFileUri = documentsDir!!.findFile( CONSOLE_LOG_NAME)!!.uri.toString()
+                consoleLogFileUri = documentsDir!!.findFile( CONSOLE_LOG_NAME)!!.uri
               } else {
-                consoleLogFileUri = attempt!!.uri.toString()
+                consoleLogFileUri = attempt!!.uri
               }
             } else if (consoleLogFileUri == null) {
               val attempt = documentsDir!!.createFile("text/plain",  CONSOLE_LOG_NAME)
@@ -201,9 +202,9 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
               if (attemptedUri.contains(Regex(pattern))) {
                 // android decides it likes to add more and more files instead of erroring out
                 attempt.delete()
-                consoleLogFileUri = documentsDir!!.findFile( CONSOLE_LOG_NAME)!!.uri.toString()
+                consoleLogFileUri = documentsDir!!.findFile( CONSOLE_LOG_NAME)!!.uri
               } else {
-                consoleLogFileUri = attempt!!.uri.toString()
+                consoleLogFileUri = attempt!!.uri
               }
             }
           } catch (ex: Exception) {
@@ -218,7 +219,7 @@ class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
           } else {
             ""
           }
-          contentResolver.writeFile(consoleLogFileUri.toString(), "", "[${emoji}${messageData.get("level")}][${SimpleDateFormat("dd/M/yyyy hh:mm:ss").format(Date())}]: ${consoleMessage.message()} / ${messageData.get("sourceId")} at line ${messageData.get("lineNumber")}\n", "wa")
+          contentResolver.writeFile(consoleLogFileUri!!, "[${emoji}${messageData.get("level")}][${SimpleDateFormat("dd/M/yyyy hh:mm:ss").format(Date())}]: ${consoleMessage.message()} / ${messageData.get("sourceId")} at line ${messageData.get("lineNumber")}\n".toByteArray(), "wa")
         }
         webView.dispatchEvent("console-message", "data", messageData)
         return super.onConsoleMessage(consoleMessage);
